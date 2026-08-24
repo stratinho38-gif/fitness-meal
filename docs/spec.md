@@ -1,6 +1,6 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v7.1 (Παραμετροποιήσιμο στάνταρ)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v7.2 (Ρύθμιση θέματος, Αρχική με όλες τις λίστες, Material Symbols)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
@@ -51,6 +51,24 @@
   - Ανά προϊόν: +/− ποσότητας (βήμα `unitStep`, clamp), διαγραφή. Προσθήκη νέου προϊόντος μέσω του υπάρχοντος addSheet σε **template mode** (`openAddSheet('template')`) — με συγχώνευση διπλοτύπων.
   - «↺ Επαναφορά στο αρχικό πρόγραμμα» (με confirm): διαγράφει το `dietTemplate` → ισχύει ξανά το hardcoded DIET.
 - Όλα τα user strings στο sheet με `textContent`. Όλα τα writes με `.catch(dbErr)`.
+
+### Ρύθμιση θέματος, Αρχική snapshot, Material Symbols (v7.2)
+
+- **Ρύθμιση dark/light**: κουμπί στο hero (Αρχική + Λίστα) κάνει κύκλο Αυτόματο → Φωτεινό → Σκούρο. Προτίμηση σε localStorage `sm-scheme` (per device). Manual override μέσω `:root[data-scheme="light|dark"]`· το auto μένει στο media query (`:root:not([data-scheme="light"])`). Pure functions (testable): `nextScheme(cur)` και `resolveDark(pref, systemDark)`.
+- **Αρχική — snapshot όλων των λιστών**: η κάρτα ψώνων δείχνει πλέον ΟΛΕΣ τις λίστες (χρωματική κουκκίδα, όνομα, mini μπάρα προόδου, done/total)· tap σε λίστα → την ενεργοποιεί και ανοίγει την καρτέλα Λίστα. Χτίζεται με DOM APIs/`textContent` (ονόματα = user input), όχι innerHTML.
+- **Εικονίδια**: **Material Symbols Rounded** (Google Fonts, δωρεάν/Apache 2.0, `FILL@1`, `display=block`) αντί για emojis σε όλο το UI chrome — nav, FAB, chips, bulk, μενού, κατηγορίες (`CAT_ICON`, πρώην CAT_EMOJI), chevrons, +/−/✕, swap, AI, empty states, tips. Χρήση με ligatures σε `<span class="msr">name</span>`. Στα `<option>` (text-only) μόνο το όνομα κατηγορίας. Emojis αφαιρέθηκαν και από toasts/τίτλους.
+
+### Πρόγραμμα γυμναστηρίου — read-only από Google Sheet (v7.3)
+
+- **Δύο «λειτουργίες» εφαρμογής** με εναλλαγή από διακριτό στρογγυλό κουμπί δεξιά στο bottom nav (στυλ Stoiximan):
+  - **Διατροφή** (default): nav Αρχική/Λίστα/Γεύματα, κουμπί = 🏋️ → πάει σε λειτουργία γυμναστηρίου.
+  - **Γυμναστήριο**: το nav αλλάζει τελείως — 5 κουμπιά ημερών (Α Στήθος, Β Πόδια, Γ Ώμοι, Δ Πλάτη, Ε Οπίσθιοι), κουμπί = 🍽️ → επιστροφή στη διατροφή (στην τελευταία καρτέλα).
+  - Εναλλαγή μέσω `body.gym` class + `setMode(gym)`. Προτιμήσεις σε localStorage: `sm-mode`, `sm-gym-day`.
+- **Δεδομένα**: Google Sheet «Gym program» (id `1VPNVq0KLeHfqGDNjyntgXQPbLXtAP4qN462kl20Hmog`), φύλλα «Ημέρα Α»…«Ημέρα Ε», μέσω public **gviz JSON** endpoint (`/gviz/tq?tqx=out:json&sheet=Ημέρα X`). Καμία αλλαγή στο sheet από την εφαρμογή — **μόνο ανάγνωση**· τα κιλά καταχωρούνται στο ίδιο το Sheet.
+- **Pure functions** (testable, πριν το Room block): `gymParseGviz(text)` (εξαγωγή/έλεγχος JSON από το gviz wrapper), `gymHeaderParts(label)` (τίτλος + σημείωση ημέρας από το merged header), `gymLastKg(row, cols)` (τελευταία καταχωρημένα κιλά + εβδομάδα από τις στήλες Εβδ N), `gymDayModel(table)` (μοντέλο ημέρας: ασκήσεις {name, sets, reps, rir, rest, notes, last}, σύνολο σετ).
+- **Render**: κάρτες ασκήσεων ανά ημέρα (σετ/επαναλήψεις/RIR/ξεκούραση chips, σημείωση εκτέλεσης, badge «Εβδ N: X kg»), σημείωση ημέρας σε details, σύνολο σετ, ώρα τελευταίας ενημέρωσης, κουμπί ανανέωσης, link «Άνοιγμα στο Google Sheets».
+- **Cache offline**: τελευταίο επιτυχές μοντέλο ανά ημέρα σε localStorage `sm-gym-<Χ>` (stale-while-revalidate: δείχνει cache αμέσως, φέρνει φρέσκα στο background). Αποτυχία fetch χωρίς cache → μήνυμα σφάλματος με retry.
+- **Ασφάλεια**: το περιεχόμενο του Sheet είναι **εξωτερικό/untrusted** → μπαίνει στο DOM ΜΟΝΟ με `textContent`/DOM APIs, ποτέ innerHTML. Το FAB κρύβεται σε λειτουργία γυμναστηρίου. Το Sheet πρέπει να είναι «Anyone with the link → Viewer» για να διαβάζεται.
 
 ### Schema (Firebase)
 ```

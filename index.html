@@ -11,9 +11,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#15803d">
-<title>🛒 Λίστα Σούπερ Μάρκετ</title>
+<title>Λίστα Σούπερ Μάρκετ</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=block" rel="stylesheet">
 <style>
   :root {
     color-scheme: light;
@@ -47,8 +48,9 @@
     --elev2: 0 2px 6px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
     --elev3: 0 8px 24px rgba(0,0,0,.18);
   }
+  /* Auto: ακολουθεί το σύστημα, εκτός αν ο χρήστης έχει επιλέξει ρητά light */
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-scheme="light"]) {
       color-scheme: dark;
       /* ---- Material 3 tokens — dark ---- */
       --primary: #4ade80;
@@ -81,6 +83,38 @@
       --elev3: 0 8px 24px rgba(0,0,0,.55);
     }
   }
+  /* Ρητή επιλογή σκούρου (ρύθμιση χρήστη) — ίδια tokens με το auto-dark */
+  :root[data-scheme="dark"] {
+    color-scheme: dark;
+    --primary: #4ade80;
+    --primary-light: #86efac;
+    --on-primary: #052e16;
+    --primary-container: #166534;
+    --on-primary-container: #dcfce7;
+    --surface: #101410;
+    --surface-container: #1b201b;
+    --surface-container-high: #252b25;
+    --surface-variant: #262c26;
+    --outline: #8b948a;
+    --outline-variant: #3a413a;
+    --text: #e1e4dd;
+    --muted: #a5ada3;
+    --disabled: #5c655c;
+    --danger: #ffb4ab;
+    --danger-container: #93000a;
+    --on-danger-container: #ffdad6;
+    --inverse-surface: #e1e4dd;
+    --inverse-on-surface: #1b201b;
+    --scrim: rgba(0,0,0,.6);
+    --warn-bg: #332a12;
+    --warn-border: #6b5b1e;
+    --warn-text: #e8c876;
+    --lunch: #e2b077;  --lunch-soft: #3a2f1f;
+    --dinner: #a9bce8; --dinner-soft: #242c40;
+    --elev1: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.35);
+    --elev2: 0 2px 6px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+    --elev3: 0 8px 24px rgba(0,0,0,.55);
+  }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; }
   body {
@@ -92,6 +126,19 @@
   button { font-family: inherit; }
   .app { max-width: 680px; margin: 0 auto; padding: 12px 14px 120px; }
 
+  /* ---------- Material Symbols (ligatures) ---------- */
+  .msr {
+    font-family: 'Material Symbols Rounded';
+    font-weight: normal; font-style: normal; font-size: 20px;
+    line-height: 1; letter-spacing: normal; text-transform: none;
+    white-space: nowrap; word-wrap: normal; direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; user-select: none;
+  }
+  .msr.tiny { font-size: 13px; vertical-align: -2px; }
+
   /* ---------- Hero (M3 primary card) ---------- */
   .hero {
     background: linear-gradient(135deg, var(--primary), var(--primary-light));
@@ -100,7 +147,13 @@
   }
   .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .hero h1 { font-size: 20px; margin: 0; font-weight: 500; letter-spacing: .2px; }
-  .hero-actions { display: flex; gap: 8px; align-items: center; }
+  .hero-actions { display: flex; gap: 10px; align-items: center; }
+  .scheme-btn {
+    border: none; background: rgba(0,0,0,.16); color: var(--on-primary);
+    width: 36px; height: 36px; border-radius: 999px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 19px;
+  }
+  .scheme-btn:active { transform: scale(.92); }
   .status-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.4); }
   .status-dot.on { background: #a7f3d0; box-shadow: 0 0 6px #a7f3d0; }
   .hero .subtitle { font-size: 12.5px; opacity: .85; margin-top: 3px; }
@@ -131,7 +184,7 @@
   }
   .list-tab.active .count { background: rgba(255,255,255,.22); }
   .list-tab.active .more {
-    font-size: 16px; font-weight: 700; margin: -4px -8px -4px 0; padding: 6px 9px;
+    font-size: 17px; font-weight: 700; margin: -4px -8px -4px 0; padding: 5px 6px;
     border-radius: 999px; background: rgba(255,255,255,.18); line-height: 1;
   }
   .list-tab.active .more:active { background: rgba(255,255,255,.35); }
@@ -156,7 +209,9 @@
   .bulk button {
     padding: 8px 12px; border-radius: 999px; border: none; background: transparent;
     cursor: pointer; font-size: 13px; color: var(--primary); font-weight: 700;
+    display: inline-flex; align-items: center; gap: 4px;
   }
+  .bulk .msr, .chip .msr { font-size: 16px; }
   .bulk button:hover { background: var(--primary-container); }
   .bulk button:disabled { color: var(--disabled); cursor: default; background: transparent; }
 
@@ -172,13 +227,14 @@
   .cat-header h2 {
     font-size: 14.5px; letter-spacing: .02em;
     color: var(--on-primary-container); margin: 0; flex: 1; font-weight: 700;
-    transition: color .2s;
+    transition: color .2s; display: flex; align-items: center; gap: 8px; min-width: 0;
   }
+  .cat-header .cat-ic { font-size: 19px; }
   .cat-header .cat-count {
     font-size: 12.5px; color: var(--on-primary); background: var(--primary);
     padding: 3px 10px; border-radius: 999px; font-weight: 700; transition: background .2s, color .2s;
   }
-  .cat-header .chev { color: var(--on-primary-container); font-size: 12px; transition: transform .2s, color .2s; }
+  .cat-header .chev { color: var(--on-primary-container); font-size: 20px; transition: transform .2s, color .2s; }
   /* Collapsed: neutral, flat — clearly different from expanded */
   .category.collapsed .cat-header {
     background: var(--surface-variant); box-shadow: none; border-radius: 12px;
@@ -213,15 +269,15 @@
   .item .btns { display: flex; gap: 4px; flex-shrink: 0; }
   .item .btns button {
     width: 30px; height: 30px; border: none; background: var(--surface-variant);
-    border-radius: 999px; cursor: pointer; font-size: 15px; line-height: 1; color: var(--muted);
+    border-radius: 999px; cursor: pointer; font-size: 17px; line-height: 1; color: var(--muted);
     display: flex; align-items: center; justify-content: center;
   }
   .item .btns button:active { transform: scale(.92); }
-  .item .btns .del { color: var(--muted); font-size: 13px; }
+  .item .btns .del { color: var(--muted); font-size: 15px; }
   .item .btns .del:hover { color: var(--on-danger-container); background: var(--danger-container); }
 
   .empty { text-align: center; color: var(--muted); padding: 44px 16px; font-size: 15px; }
-  .empty .big { font-size: 46px; margin-bottom: 8px; }
+  .empty .big { font-size: 46px; margin-bottom: 8px; display: flex; justify-content: center; color: var(--outline); }
   .empty .cta {
     margin-top: 16px; padding: 12px 22px; border-radius: 999px; border: none;
     background: var(--primary); color: var(--on-primary); font-size: 15px; font-weight: 600; cursor: pointer;
@@ -230,7 +286,8 @@
 
   /* ---------- Tips ---------- */
   .tips { background: var(--warn-bg); border-radius: 16px; margin-top: 18px; padding: 4px 16px 6px; box-shadow: var(--elev1); }
-  .tips summary { cursor: pointer; font-size: 14px; font-weight: 700; color: var(--warn-text); padding: 11px 0; list-style: none; }
+  .tips summary { cursor: pointer; font-size: 14px; font-weight: 700; color: var(--warn-text); padding: 11px 0; list-style: none; display: flex; align-items: center; gap: 6px; }
+  .tips summary .msr { font-size: 17px; }
   .tips summary::-webkit-details-marker { display: none; }
   .tips ul { margin: 0 0 10px; padding-left: 4px; list-style: none; }
   .tips li { font-size: 13px; color: var(--warn-text); opacity: .9; padding: 4px 0; }
@@ -273,7 +330,8 @@
   .menu-item.danger { color: var(--danger); }
   .menu-sep { height: 1px; background: var(--surface-variant); margin: 4px 0; }
 
-  .color-label { font-size: 12.5px; color: var(--muted); font-weight: 600; margin: 10px 10px 8px; }
+  .color-label { font-size: 12.5px; color: var(--muted); font-weight: 600; margin: 10px 10px 8px; display: flex; align-items: center; gap: 6px; }
+  .color-label .msr { font-size: 16px; }
   .tpl-sub { font-size: 12.5px; color: var(--muted); margin: -6px 4px 10px; line-height: 1.45; }
   #tplList .items { margin-bottom: 4px; }
   .swatches { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 10px 12px; }
@@ -350,7 +408,18 @@
 
   /* ---------- Αρχική ---------- */
   #viewHome .home-card { background: var(--surface-container); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: var(--elev1); }
-  #viewHome .home-card h3 { margin: 0 0 10px; font-size: 15px; }
+  #viewHome .home-card h3 { margin: 0 0 10px; font-size: 15px; display: flex; align-items: center; gap: 7px; }
+  #viewHome .home-card h3 .msr { font-size: 18px; color: var(--primary); }
+  #viewHome .home-list {
+    display: flex; align-items: center; gap: 10px; padding: 10px 0; width: 100%;
+    border: none; background: none; cursor: pointer; font: inherit; color: var(--text); text-align: left;
+  }
+  #viewHome .home-list + .home-list { border-top: 1px dashed var(--surface-variant); }
+  #viewHome .hl-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  #viewHome .hl-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #viewHome .hl-bar { width: 84px; height: 6px; background: var(--surface-variant); border-radius: 99px; overflow: hidden; flex-shrink: 0; }
+  #viewHome .hl-bar i { display: block; height: 100%; border-radius: 99px; transition: width .3s; }
+  #viewHome .hl-count { font-size: 11.5px; color: var(--muted); min-width: 42px; text-align: right; flex-shrink: 0; }
   #viewHome .home-meal { display: flex; align-items: center; gap: 10px; padding: 9px 0; cursor: pointer; }
   #viewHome .home-meal + .home-meal { border-top: 1px dashed var(--surface-variant); }
   #viewHome .tag { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 99px; width: 72px; text-align: center; flex-shrink: 0; }
@@ -358,7 +427,7 @@
   #viewHome .tag.dinner { background: var(--dinner-soft); color: var(--dinner); }
   #viewHome .hm-name { flex: 1; font-size: 14px; font-weight: 600; min-width: 0; }
   #viewHome .hm-done { text-decoration: line-through; color: var(--muted); font-weight: 400; }
-  #viewHome .hm-meta { font-size: 11.5px; color: var(--muted); flex-shrink: 0; }
+  #viewHome .hm-meta { font-size: 11.5px; color: var(--muted); flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; }
   #viewHome .home-link { margin-top: 10px; border: none; background: var(--primary-container); color: var(--on-primary-container); font-weight: 700; font-size: 13px; padding: 9px 14px; border-radius: 999px; cursor: pointer; }
   #viewHome .hp-bar { height: 8px; background: var(--surface-variant); border-radius: 99px; overflow: hidden; }
   #viewHome .hp-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; transition: width .3s; }
@@ -367,7 +436,8 @@
   /* ---------- Γεύματα ---------- */
   #viewMeals .g-sub { color: var(--muted); font-size: 12.5px; margin: 2px 0 12px; }
   #viewMeals .g-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
-  #viewMeals .g-toolbar button { font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--outline-variant); background: var(--surface-container); color: var(--text); padding: 9px 14px; font-size: 13px; font-weight: 600; }
+  #viewMeals .g-toolbar button { font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--outline-variant); background: var(--surface-container); color: var(--text); padding: 9px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+  #viewMeals .g-toolbar .msr { font-size: 16px; }
   #viewMeals .g-toolbar button.primary { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
   #viewMeals .g-progress { flex: 1; min-width: 150px; display: flex; align-items: center; gap: 8px; }
   #viewMeals .g-bar { flex: 1; height: 8px; background: var(--surface-variant); border-radius: 99px; overflow: hidden; }
@@ -384,9 +454,9 @@
   #viewMeals .tag.dinner { background: var(--dinner-soft); color: var(--dinner); }
   #viewMeals .meal { flex: 1; min-width: 0; cursor: pointer; }
   #viewMeals .meal-name { font-size: 14px; font-weight: 600; }
-  #viewMeals .meal-meta { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  #viewMeals .meal-meta { font-size: 11.5px; color: var(--muted); margin-top: 1px; display: flex; align-items: center; gap: 3px; }
   #viewMeals .slot.done .meal-name { text-decoration: line-through; color: var(--muted); font-weight: 400; }
-  #viewMeals .g-swap { border: none; background: var(--surface-variant); color: var(--text); border-radius: 999px; width: 30px; height: 30px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+  #viewMeals .g-swap { border: none; background: var(--surface-variant); color: var(--muted); border-radius: 999px; width: 30px; height: 30px; font-size: 17px; cursor: pointer; flex-shrink: 0; }
   #viewMeals .g-foot { margin-top: 14px; font-size: 12px; color: var(--warn-text); line-height: 1.5; background: var(--warn-bg); border-radius: 16px; padding: 12px 16px; }
   .g-overlay { position: fixed; inset: 0; background: var(--scrim); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
   .g-overlay.open { display: flex; }
@@ -403,7 +473,9 @@
   .g-modal .g-close { margin-top: 16px; width: 100%; padding: 12px; border-radius: 999px; border: none; background: var(--primary); color: var(--on-primary); font-size: 15px; font-weight: 600; cursor: pointer; }
   /* AI συνταγές (v6.2) — M3 outlined + filled buttons */
   .ai-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-  .ai-row button, .ai-row a { flex: 1; min-width: 110px; padding: 10px 8px; border-radius: 999px; border: 1px solid var(--outline); background: transparent; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
+  .ai-row button, .ai-row a { flex: 1; min-width: 110px; padding: 10px 8px; border-radius: 999px; border: 1px solid var(--outline); background: transparent; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .ai-row .msr { font-size: 16px; }
+  .g-modal .m-meta .msr, .hm-meta .msr, .meal-meta .msr { font-size: 13px; }
   .ai-row button.ai-main { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
   .ai-box { margin-top: 10px; background: var(--primary-container); border-radius: 12px; padding: 12px; font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; display: none; }
   .ai-box.show { display: block; }
@@ -415,8 +487,11 @@
     <div class="hero">
       <div class="hero-top">
         <div>
-          <h1>👋 Καλώς ήρθατε!</h1>
+          <h1>Καλώς ήρθατε!</h1>
           <div class="subtitle" style="display:block">Ψώνια & γεύματα για 2 άτομα · πρόγραμμα Nutrimed</div>
+        </div>
+        <div class="hero-actions">
+          <button class="scheme-btn msr" onclick="cycleScheme()" title="Θέμα">brightness_auto</button>
         </div>
       </div>
     </div>
@@ -428,11 +503,12 @@
   <div class="hero">
     <div class="hero-top">
       <div>
-        <h1 id="heroTitle">🛒 Τα ψώνια μας</h1>
+        <h1 id="heroTitle">Τα ψώνια μας</h1>
         <div class="subtitle" id="heroSubtitle" style="display:none">Λίστα Σούπερ Μάρκετ</div>
       </div>
       <div class="hero-actions">
         <span class="status-dot" id="statusDot" title="Κατάσταση σύνδεσης"></span>
+        <button class="scheme-btn msr" onclick="cycleScheme()" title="Θέμα">brightness_auto</button>
       </div>
     </div>
     <div id="heroProgress" style="display:none">
@@ -449,24 +525,24 @@
     <div class="filters">
       <button class="chip active" data-f="all">Όλα</button>
       <button class="chip" data-f="left">Μένουν</button>
-      <button class="chip" data-f="done">✓</button>
+      <button class="chip" data-f="done"><span class="msr">done</span></button>
     </div>
     <div class="bulk">
-      <button id="bulkUncheck" onclick="uncheckAll()">↺ Ξετσεκάρισμα</button>
-      <button id="bulkClear" onclick="clearChecked()">🧹 Καθαρισμός</button>
+      <button id="bulkUncheck" onclick="uncheckAll()"><span class="msr">undo</span>Ξετσεκάρισμα</button>
+      <button id="bulkClear" onclick="clearChecked()"><span class="msr">delete_sweep</span>Καθαρισμός</button>
     </div>
   </div>
 
-  <div id="content"><div class="empty"><div class="big">⏳</div>Σύνδεση…</div></div>
+  <div id="content"><div class="empty"><div class="big msr">hourglass_top</div>Σύνδεση…</div></div>
 
   <details class="tips" id="tipsBox" style="display:none">
-    <summary>⚡ Λίγος χρόνος μαγειρέματος — έξυπνες κινήσεις</summary>
+    <summary><span class="msr">bolt</span>Λίγος χρόνος μαγειρέματος — έξυπνες κινήσεις</summary>
     <ul>
-      <li>🔥 Ψήσε ~1,5 κιλό κοτόπουλο μαζί (meal prep) και μοίρασέ το σε γεύματα της εβδομάδας.</li>
-      <li>🥫 Κράτα πάντα κονσέρβα τόνο & όσπρια έτοιμα για μέρες χωρίς χρόνο.</li>
-      <li>🥚 Βραστά αυγά για 3 μέρες μαζί — έτοιμη πρωτεΐνη για πρωινό/σνακ.</li>
-      <li>🥗 Πλύνε & κόψε λαχανικά σαλάτας από την αρχή της εβδομάδας.</li>
-      <li>🍚 Μαγείρεψε ρύζι/κινόα σε μεγάλη ποσότητα και κράτα στο ψυγείο.</li>
+      <li>Ψήσε ~1,5 κιλό κοτόπουλο μαζί (meal prep) και μοίρασέ το σε γεύματα της εβδομάδας.</li>
+      <li>Κράτα πάντα κονσέρβα τόνο & όσπρια έτοιμα για μέρες χωρίς χρόνο.</li>
+      <li>Βραστά αυγά για 3 μέρες μαζί — έτοιμη πρωτεΐνη για πρωινό/σνακ.</li>
+      <li>Πλύνε & κόψε λαχανικά σαλάτας από την αρχή της εβδομάδας.</li>
+      <li>Μαγείρεψε ρύζι/κινόα σε μεγάλη ποσότητα και κράτα στο ψυγείο.</li>
     </ul>
   </details>
   </div><!-- /viewShop -->
@@ -474,14 +550,14 @@
   <div id="viewMeals" class="hidden">
     <div class="g-sub">Μεσημέρι & βράδυ κατά Nutrimed · 33 συνταγές · μερίδες cut για σένα, ×2 στα ψώνια · πάτα σε γεύμα για συνταγή</div>
     <div class="g-toolbar">
-      <button class="primary" id="gShuffleBtn">🎲 Νέα εβδομάδα</button>
+      <button class="primary" id="gShuffleBtn"><span class="msr">shuffle</span>Νέα εβδομάδα</button>
       <button id="gClearBtn">Καθάρισμα τικ</button>
       <div class="g-progress"><div class="g-bar"><i id="gBarFill"></i></div><div class="g-pct" id="gPctTxt"></div></div>
     </div>
     <div id="gWeek"></div>
     <div class="g-foot">
-      💡 <b>Meal prep:</b> Κυριακή διπλή δόση από όσπρια ή κοτόπουλο κατσαρόλας = 3-4 έτοιμα μεσημέρια. Ψητό στήθος σε batch καλύπτει τις κοτοσαλάτες.<br>
-      Το 🔄 αλλάζει τη συνταγή με άλλη ίδιας κατηγορίας (η εβδομαδιαία δομή Nutrimed δεν χαλάει).
+      <b>Meal prep:</b> Κυριακή διπλή δόση από όσπρια ή κοτόπουλο κατσαρόλας = 3-4 έτοιμα μεσημέρια. Ψητό στήθος σε batch καλύπτει τις κοτοσαλάτες.<br>
+      Το κουμπί ανανέωσης δίπλα σε κάθε γεύμα το αλλάζει με άλλο ίδιας κατηγορίας (η εβδομαδιαία δομή Nutrimed δεν χαλάει).
     </div>
   </div><!-- /viewMeals -->
 </div>
@@ -491,12 +567,12 @@
 </div>
 
 <nav class="bottom-nav">
-  <button id="navHome"><span class="ic">🏠</span>Αρχική</button>
-  <button id="navShop"><span class="ic">🛒</span>Λίστα</button>
-  <button id="navMeals"><span class="ic">🍽️</span>Γεύματα</button>
+  <button id="navHome"><span class="ic msr">home</span>Αρχική</button>
+  <button id="navShop"><span class="ic msr">shopping_cart</span>Λίστα</button>
+  <button id="navMeals"><span class="ic msr">restaurant</span>Γεύματα</button>
 </nav>
 
-<button class="fab" id="fab" onclick="openAddSheet()" title="Προσθήκη προϊόντος" style="display:none">＋</button>
+<button class="fab msr" id="fab" onclick="openAddSheet()" title="Προσθήκη προϊόντος" style="display:none">add</button>
 
 <div class="sheet-bg" id="sheetBg" onclick="closeSheets()"></div>
 
@@ -504,27 +580,27 @@
 <div class="sheet" id="menuSheet">
   <div class="grip"></div>
   <h3 id="menuTitle"></h3>
-  <button class="menu-item" onclick="closeSheets(); addDietItems()"><span class="ic">🥗</span> Προσθήκη προγράμματος διατροφής</button>
-  <button class="menu-item" onclick="closeSheets(); openTemplateSheet()"><span class="ic">⚙️</span> Επεξεργασία στάνταρ λίστας</button>
-  <button class="menu-item" onclick="closeSheets(); renameList()"><span class="ic">✏️</span> Μετονομασία</button>
-  <button class="menu-item" onclick="closeSheets(); duplicateList()"><span class="ic">📄</span> Δημιουργία αντιγράφου</button>
-  <button class="menu-item" onclick="closeSheets(); shareLink()"><span class="ic">🔗</span> Κοινοποίηση λίστας</button>
+  <button class="menu-item" onclick="closeSheets(); addDietItems()"><span class="ic msr">restaurant_menu</span> Προσθήκη προγράμματος διατροφής</button>
+  <button class="menu-item" onclick="closeSheets(); openTemplateSheet()"><span class="ic msr">settings</span> Επεξεργασία στάνταρ λίστας</button>
+  <button class="menu-item" onclick="closeSheets(); renameList()"><span class="ic msr">edit</span> Μετονομασία</button>
+  <button class="menu-item" onclick="closeSheets(); duplicateList()"><span class="ic msr">content_copy</span> Δημιουργία αντιγράφου</button>
+  <button class="menu-item" onclick="closeSheets(); shareLink()"><span class="ic msr">share</span> Κοινοποίηση λίστας</button>
   <div class="menu-sep"></div>
-  <div class="color-label">🎨 Χρώμα λίστας</div>
+  <div class="color-label"><span class="msr">palette</span>Χρώμα λίστας</div>
   <div class="swatches" id="colorSwatches"></div>
   <div class="menu-sep"></div>
-  <button class="menu-item danger" onclick="closeSheets(); deleteList()"><span class="ic">🗑</span> Διαγραφή λίστας</button>
+  <button class="menu-item danger" onclick="closeSheets(); deleteList()"><span class="ic msr">delete</span> Διαγραφή λίστας</button>
 </div>
 
 <!-- Template editor sheet (στάνταρ πρόγραμμα, v7.1) -->
 <div class="sheet" id="tplSheet">
   <div class="grip"></div>
-  <h3>⚙️ Στάνταρ λίστα προγράμματος</h3>
-  <div class="tpl-sub">Ό,τι αλλάξεις εδώ ισχύει για κάθε επόμενο «🥗 Προσθήκη προγράμματος» — κοινό και για τους δύο.</div>
-  <button class="menu-item" onclick="openAddSheet('template')"><span class="ic">＋</span> Προσθήκη προϊόντος στο στάνταρ</button>
+  <h3>Στάνταρ λίστα προγράμματος</h3>
+  <div class="tpl-sub">Ό,τι αλλάξεις εδώ ισχύει για κάθε επόμενη «Προσθήκη προγράμματος» — κοινό και για τους δύο.</div>
+  <button class="menu-item" onclick="openAddSheet('template')"><span class="ic msr">add</span> Προσθήκη προϊόντος στο στάνταρ</button>
   <div id="tplList"></div>
   <div class="menu-sep"></div>
-  <button class="menu-item danger" onclick="resetTemplate()"><span class="ic">↺</span> Επαναφορά στο αρχικό πρόγραμμα</button>
+  <button class="menu-item danger" onclick="resetTemplate()"><span class="ic msr">restart_alt</span> Επαναφορά στο αρχικό πρόγραμμα</button>
 </div>
 
 <!-- Add product sheet -->
@@ -615,24 +691,24 @@ function cleanText(v, max) {
 /* Κάθε αποτυχημένο write στη βάση → toast, όχι σιωπηλή απώλεια. */
 function dbErr(err) {
   console.error('DB write failed:', err);
-  showToast('⚠️ Δεν αποθηκεύτηκε — έλεγξε τη σύνδεση');
+  showToast('Δεν αποθηκεύτηκε — έλεγξε τη σύνδεση');
 }
 
-/* ---------- Categories & units ---------- */
+/* ---------- Categories & units (icons = Material Symbols ligatures) ---------- */
 const CATEGORIES = [
-  ['🍗', 'Κρέας & Ψάρι'],
-  ['🥚', 'Αυγά & Γαλακτοκομικά'],
-  ['🍞', 'Ψωμί & Δημητριακά'],
-  ['🫘', 'Όσπρια & Κονσέρβες'],
-  ['🥦', 'Λαχανικά'],
-  ['🍎', 'Φρούτα'],
-  ['🥜', 'Ξηροί καρποί & Σπόροι'],
-  ['🧂', 'Παντοπωλείο & Βασικά'],
-  ['🧻', 'Χαρτικά & Καθαριότητα'],
-  ['🧴', 'Προσωπική φροντίδα'],
-  ['📦', 'Άλλα'],
+  ['set_meal', 'Κρέας & Ψάρι'],
+  ['egg', 'Αυγά & Γαλακτοκομικά'],
+  ['bakery_dining', 'Ψωμί & Δημητριακά'],
+  ['rice_bowl', 'Όσπρια & Κονσέρβες'],
+  ['eco', 'Λαχανικά'],
+  ['nutrition', 'Φρούτα'],
+  ['spa', 'Ξηροί καρποί & Σπόροι'],
+  ['storefront', 'Παντοπωλείο & Βασικά'],
+  ['cleaning_services', 'Χαρτικά & Καθαριότητα'],
+  ['soap', 'Προσωπική φροντίδα'],
+  ['inventory_2', 'Άλλα'],
 ];
-const CAT_EMOJI = Object.fromEntries(CATEGORIES.map(([e, c]) => [c, e]));
+const CAT_ICON = Object.fromEntries(CATEGORIES.map(([e, c]) => [c, e]));
 
 /* ---------- Χρώματα λίστας (Material 3 tones, light + dark) ---------- */
 const PALETTE = {
@@ -659,11 +735,19 @@ function themeTokens(colorKey, isDark) {
   if (isDark) return c.dark;
   return { primary: c.primary, onPrimary: '#ffffff', light: c.light, container: c.container, on: c.on };
 }
+/* Pure: ρύθμιση θέματος — κύκλος auto → light → dark και επίλυση σκούρου. Testable. */
+const SCHEMES = ['auto', 'light', 'dark'];
+function nextScheme(cur) {
+  return SCHEMES[(SCHEMES.indexOf(cur) + 1) % SCHEMES.length];
+}
+function resolveDark(pref, systemDark) {
+  return pref === 'dark' || (pref !== 'light' && !!systemDark);
+}
 let themeColorKey = 'green';
 function applyTheme(colorKey) {
   themeColorKey = colorKey || 'green';
-  const isDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const t = themeTokens(themeColorKey, isDark);
+  const sysDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const t = themeTokens(themeColorKey, resolveDark(schemePref, sysDark));
   const r = document.documentElement.style;
   r.setProperty('--primary', t.primary);
   r.setProperty('--on-primary', t.onPrimary);
@@ -791,6 +875,7 @@ lsSet('sm-room', ROOM);
 const roomRef = db.ref('rooms/' + ROOM + '/lists');
 
 /* ---------- State ---------- */
+let schemePref = lsGet('sm-scheme') || 'auto';   /* 'auto' | 'light' | 'dark' — ρύθμιση θέματος (per device) */
 let lists = {};
 let dietTemplate = null;   /* custom στάνταρ πρόγραμμα (Firebase, κοινό) — null = default DIET */
 let activeId = lsGet('sm-active-' + ROOM) || null;
@@ -872,8 +957,8 @@ function render() {
     }
     if (isActive) {
       const more = document.createElement('span');
-      more.className = 'more';
-      more.textContent = '⋮';
+      more.className = 'more msr';
+      more.textContent = 'more_vert';
       more.title = 'Επιλογές λίστας';
       more.onclick = (e) => { e.stopPropagation(); openMenuSheet(); };
       btn.appendChild(more);
@@ -891,7 +976,7 @@ function render() {
   const done = items.filter(i => i.done).length;
 
   applyTheme(list && list.color);
-  document.getElementById('heroTitle').textContent = list ? '🛒 ' + list.name : '🛒 Τα ψώνια μας';
+  document.getElementById('heroTitle').textContent = list ? list.name : 'Τα ψώνια μας';
   document.getElementById('heroSubtitle').style.display = list ? 'block' : 'none';
 
   document.getElementById('fab').style.display = list ? 'flex' : 'none';
@@ -906,10 +991,10 @@ function render() {
   if (!list) {
     const d = document.createElement('div');
     d.className = 'empty';
-    d.innerHTML = '<div class="big">🛒</div>Καμία λίστα ακόμα.<br>';
+    d.innerHTML = '<div class="big msr">shopping_cart</div>Καμία λίστα ακόμα.<br>';
     const b = document.createElement('button');
     b.className = 'cta';
-    b.textContent = '🥗 Ξεκίνα με το πρόγραμμα διατροφής';
+    b.textContent = 'Ξεκίνα με το πρόγραμμα διατροφής';
     b.onclick = startWithDiet;
     d.appendChild(b);
     content.appendChild(d);
@@ -928,13 +1013,14 @@ function render() {
   }
 
   if (total === 0) {
-    content.innerHTML = '<div class="empty"><div class="big">📝</div>Η λίστα είναι άδεια.<br>Πάτα το ＋ για προϊόν ή άνοιξε το μενού της λίστας για το 🥗 πρόγραμμα.</div>';
+    content.innerHTML = '<div class="empty"><div class="big msr">checklist</div>Η λίστα είναι άδεια.<br>Πάτα το + για προϊόν ή άνοιξε το μενού της λίστας για το πρόγραμμα.</div>';
     return;
   }
 
   const visible = items.filter(i => filter === 'all' || (filter === 'left' ? !i.done : i.done));
   if (!visible.length) {
-    content.innerHTML = '<div class="empty"><div class="big">✨</div>' +
+    content.innerHTML = '<div class="empty"><div class="big msr">' +
+      (filter === 'left' ? 'celebration' : 'search_off') + '</div>' +
       (filter === 'left' ? 'Όλα στο καλάθι — μπράβο σας!' : 'Τίποτα εδώ ακόμα.') + '</div>';
     return;
   }
@@ -957,13 +1043,18 @@ function render() {
       section.classList.toggle('collapsed');
     };
     const h = document.createElement('h2');
-    h.textContent = (CAT_EMOJI[cat] || '📦') + ' ' + cat;
+    const hIc = document.createElement('span');
+    hIc.className = 'msr cat-ic';
+    hIc.textContent = CAT_ICON[cat] || 'inventory_2';
+    const hTx = document.createElement('span');
+    hTx.textContent = cat;   /* πιθανό user data → textContent */
+    h.appendChild(hIc); h.appendChild(hTx);
     const cc = document.createElement('span');
     cc.className = 'cat-count';
     cc.textContent = catItems.filter(i => !i.done).length + '/' + catItems.length;
     const chev = document.createElement('span');
-    chev.className = 'chev';
-    chev.textContent = '▼';
+    chev.className = 'chev msr';
+    chev.textContent = 'expand_more';
     header.appendChild(h); header.appendChild(cc); header.appendChild(chev);
     section.appendChild(header);
 
@@ -1015,21 +1106,23 @@ function renderItem(listId, item) {
 
   const step = unitStep(unit);
   const minus = document.createElement('button');
-  minus.textContent = '−';
+  minus.className = 'msr';
+  minus.textContent = 'remove';
   minus.title = 'Μείωση';
   minus.onclick = () => {
     const next = Math.round((qty - step) * 100) / 100;
     if (next >= step) db.ref(base + '/qty').set(next).catch(dbErr);
   };
   const plus = document.createElement('button');
-  plus.textContent = '+';
+  plus.className = 'msr';
+  plus.textContent = 'add';
   plus.title = 'Αύξηση';
   plus.onclick = () => db.ref(base + '/qty').set(clampQty(qty + step)).catch(dbErr);
   btns.appendChild(minus); btns.appendChild(plus);
 
   const del = document.createElement('button');
-  del.className = 'del';
-  del.textContent = '✕';
+  del.className = 'del msr';
+  del.textContent = 'close';
   del.title = 'Διαγραφή';
   del.onclick = () => db.ref(base).remove().catch(dbErr);
   btns.appendChild(del);
@@ -1050,7 +1143,7 @@ document.querySelectorAll('.filters .chip').forEach(b => {
 /* ---------- Sheets ---------- */
 function openMenuSheet() {
   const l = getActive(); if (!l) return;
-  document.getElementById('menuTitle').textContent = '📝 ' + l.name;
+  document.getElementById('menuTitle').textContent = l.name;
   buildSwatches(l);
   document.getElementById('sheetBg').classList.add('open');
   document.getElementById('menuSheet').classList.add('open');
@@ -1062,16 +1155,16 @@ function buildSwatches(l) {
   const current = l.color || 'green';
   Object.entries(PALETTE).forEach(([key, c]) => {
     const b = document.createElement('button');
-    b.className = 'swatch' + (key === current ? ' sel' : '');
+    b.className = 'swatch msr' + (key === current ? ' sel' : '');
     b.style.background = 'linear-gradient(135deg,' + c.primary + ',' + c.light + ')';
     b.title = c.name;
-    b.textContent = key === current ? '✓' : '';
+    b.textContent = key === current ? 'check' : '';
     b.onclick = () => {
       db.ref('rooms/' + ROOM + '/lists/' + l.id + '/color').set(key).catch(dbErr);
       applyTheme(key);
       wrap.querySelectorAll('.swatch').forEach(x => { x.classList.remove('sel'); x.textContent = ''; });
       b.classList.add('sel');
-      b.textContent = '✓';
+      b.textContent = 'check';
     };
     wrap.appendChild(b);
   });
@@ -1113,7 +1206,7 @@ function addItem(e) {
     nameEl.value = '';
     document.getElementById('itemQty').value = '1';
     document.getElementById('addSheet').classList.remove('open');   /* το tplSheet μένει ανοιχτό */
-    showToast(`«${name}» μπήκε στο στάνταρ ✔`);
+    showToast(`«${name}» μπήκε στο στάνταρ`);
     return;
   }
 
@@ -1129,7 +1222,7 @@ function addItem(e) {
   nameEl.value = '';
   document.getElementById('itemQty').value = '1';
   closeSheets();
-  showToast(`«${name}» προστέθηκε ✔`);
+  showToast(`«${name}» προστέθηκε`);
 }
 
 function dietPayload() {
@@ -1149,7 +1242,7 @@ function startWithDiet() {
   const id = newId();
   db.ref('rooms/' + ROOM + '/lists/' + id)
     .set({ name: 'Εβδομαδιαία', ts: Date.now(), items: dietPayload() })
-    .then(() => showToast('Έτοιμη η λίστα από το πρόγραμμα διατροφής 🥗'))
+    .then(() => showToast('Έτοιμη η λίστα από το πρόγραμμα διατροφής'))
     .catch(dbErr);
   activeId = id;
   lsSet('sm-active-' + ROOM, id);
@@ -1175,10 +1268,10 @@ function addDietItems() {
   });
   if (added) {
     db.ref('rooms/' + ROOM + '/lists/' + l.id + '/items').update(updates)
-      .then(() => showToast(`Προστέθηκαν ${added} προϊόντα από το πρόγραμμα 🥗`))
+      .then(() => showToast(`Προστέθηκαν ${added} προϊόντα από το πρόγραμμα`))
       .catch(dbErr);
   } else {
-    showToast('Όλα τα προϊόντα του προγράμματος υπάρχουν ήδη ✔');
+    showToast('Όλα τα προϊόντα του προγράμματος υπάρχουν ήδη');
   }
 }
 
@@ -1213,7 +1306,12 @@ function tplRender() {
     if (!catItems.length) return;
     const label = document.createElement('div');
     label.className = 'color-label';
-    label.textContent = (CAT_EMOJI[cat] || '📦') + ' ' + cat;   /* user data → textContent */
+    const lIc = document.createElement('span');
+    lIc.className = 'msr';
+    lIc.textContent = CAT_ICON[cat] || 'inventory_2';
+    const lTx = document.createElement('span');
+    lTx.textContent = cat;   /* user data → textContent */
+    label.appendChild(lIc); label.appendChild(lTx);
     wrap.appendChild(label);
     const box = document.createElement('div');
     box.className = 'items';
@@ -1250,9 +1348,10 @@ function tplRow(it) {
   const btns = document.createElement('span');
   btns.className = 'btns';
   const step = unitStep(unit);
-  const guard = () => { if (!it.id) { showToast('⏳ Μισό λεπτό — συγχρονίζεται…'); return false; } return true; };
+  const guard = () => { if (!it.id) { showToast('Μισό λεπτό — συγχρονίζεται…'); return false; } return true; };
   const minus = document.createElement('button');
-  minus.textContent = '−';
+  minus.className = 'msr';
+  minus.textContent = 'remove';
   minus.title = 'Μείωση';
   minus.onclick = () => {
     if (!guard()) return;
@@ -1260,15 +1359,16 @@ function tplRow(it) {
     if (next >= step) db.ref(tplPath() + '/' + it.id + '/qty').set(next).catch(dbErr);
   };
   const plus = document.createElement('button');
-  plus.textContent = '+';
+  plus.className = 'msr';
+  plus.textContent = 'add';
   plus.title = 'Αύξηση';
   plus.onclick = () => {
     if (!guard()) return;
     db.ref(tplPath() + '/' + it.id + '/qty').set(clampQty(qty + step)).catch(dbErr);
   };
   const del = document.createElement('button');
-  del.className = 'del';
-  del.textContent = '✕';
+  del.className = 'del msr';
+  del.textContent = 'close';
   del.title = 'Αφαίρεση από το στάνταρ';
   del.onclick = () => {
     if (!guard()) return;
@@ -1282,7 +1382,7 @@ function tplRow(it) {
 function resetTemplate() {
   openConfirm('Επαναφορά του στάνταρ στο αρχικό πρόγραμμα Nutrimed;', () => {
     db.ref(tplPath()).remove()
-      .then(() => showToast('Επαναφορά στο αρχικό πρόγραμμα ↺'))
+      .then(() => showToast('Επαναφορά στο αρχικό πρόγραμμα'))
       .catch(dbErr);
   }, 'Επαναφορά');
 }
@@ -1317,7 +1417,7 @@ function duplicateList() {
   const copyData = { name: cleanText(l.name + ' (αντίγραφο)', LIMITS.listName), ts: Date.now(), items };
   if (l.color) copyData.color = l.color;
   db.ref('rooms/' + ROOM + '/lists/' + id).set(copyData)
-    .then(() => showToast('Δημιουργήθηκε αντίγραφο 📄'))
+    .then(() => showToast('Δημιουργήθηκε αντίγραφο'))
     .catch(dbErr);
   activeId = id;
   lsSet('sm-active-' + ROOM, id);
@@ -1353,7 +1453,7 @@ function clearChecked() {
 /* ---------- Share ---------- */
 function shareLink() {
   const url = location.href;
-  const done = () => showToast('Ο σύνδεσμος αντιγράφηκε! Στείλ’ τον για κοινή λίστα 🛒');
+  const done = () => showToast('Ο σύνδεσμος αντιγράφηκε! Στείλ’ τον για κοινή λίστα');
   if (navigator.share) {
     navigator.share({ title: 'Λίστα Σούπερ Μάρκετ', url }).catch(() => {});
   } else if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1424,10 +1524,10 @@ document.getElementById('confirmBg').addEventListener('click', e => {
 
 /* ---------- Init ---------- */
 const catSel = document.getElementById('itemCat');
-CATEGORIES.forEach(([emoji, cat]) => {
+CATEGORIES.forEach(([icon, cat]) => {
   const o = document.createElement('option');
   o.value = cat;
-  o.textContent = emoji + ' ' + cat;
+  o.textContent = cat;   /* τα <option> δεν δέχονται icon font — μόνο όνομα */
   catSel.appendChild(o);
 });
 const unitSel = document.getElementById('itemUnit');
@@ -1448,10 +1548,40 @@ unitSel.addEventListener('change', () => {
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeSheets();
 });
-/* Auto dark mode: re-apply τα primary tokens όταν αλλάζει το σχήμα του συστήματος */
+
+/* ---------- Ρύθμιση θέματος (auto / light / dark) ---------- */
+const SCHEME_META = {
+  auto:  { icon: 'brightness_auto', label: 'Αυτόματο (σύστημα)' },
+  light: { icon: 'light_mode',      label: 'Φωτεινό' },
+  dark:  { icon: 'dark_mode',       label: 'Σκούρο' },
+};
+function applyScheme() {
+  const m = SCHEME_META[schemePref] || SCHEME_META.auto;
+  if (schemePref === 'light' || schemePref === 'dark') {
+    document.documentElement.setAttribute('data-scheme', schemePref);
+  } else {
+    document.documentElement.removeAttribute('data-scheme');
+  }
+  document.querySelectorAll('.scheme-btn').forEach(b => {
+    b.textContent = m.icon;
+    b.title = 'Θέμα: ' + m.label;
+  });
+  applyTheme(themeColorKey);
+  homeRender();   /* τα χρώματα του snapshot ακολουθούν το σχήμα */
+}
+function cycleScheme() {
+  schemePref = nextScheme(schemePref);
+  lsSet('sm-scheme', schemePref);
+  applyScheme();
+  showToast('Θέμα: ' + (SCHEME_META[schemePref] || SCHEME_META.auto).label);
+}
+function isDarkNow() {
+  return resolveDark(schemePref, !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
+}
+/* Auto dark mode: re-apply όταν αλλάζει το σχήμα του συστήματος */
 if (window.matchMedia) {
   const schemeMq = window.matchMedia('(prefers-color-scheme: dark)');
-  const onSchemeChange = () => applyTheme(themeColorKey);
+  const onSchemeChange = () => applyScheme();
   if (schemeMq.addEventListener) schemeMq.addEventListener('change', onSchemeChange);
   else if (schemeMq.addListener) schemeMq.addListener(onSchemeChange);
 }
@@ -1638,7 +1768,7 @@ function gOpenModal(id) {
   // Στατικά δεδομένα συνταγών (hardcoded στον κώδικα) — όχι user input.
   m.innerHTML = `
     <h2>${r.n}</h2>
-    <div class="m-meta">⏱ ${r.t} · ποσότητες για 2 άτομα</div>
+    <div class="m-meta"><span class="msr tiny">schedule</span> ${r.t} · ποσότητες για 2 άτομα</div>
     <h3>Υλικά</h3>
     <ul>${r.ing.map(x=>`<li>${x}</li>`).join("")}</ul>
     <h3>Εκτέλεση</h3>
@@ -1652,7 +1782,7 @@ function gOpenModal(id) {
     <div class="m-meta" style="margin-top:8px">* ανά δική σου μερίδα (cut)</div>
     <h3>Θες κάτι διαφορετικό;</h3>
     <div class="ai-row">
-      <button class="ai-main" onclick="gAskAi('${id}')">🤖 Ρώτα το AI εδώ</button>
+      <button class="ai-main" onclick="gAskAi('${id}')"><span class="msr">smart_toy</span>Ρώτα το AI εδώ</button>
       <a id="aiLinkGpt" target="_blank" rel="noopener">ChatGPT ↗</a>
       <a id="aiLinkClaude" target="_blank" rel="noopener">Claude ↗</a>
     </div>
@@ -1673,7 +1803,7 @@ function gAskAi(id) {
   if (!r || !box || aiBusy) return;
   aiBusy = true;
   box.classList.add('show');
-  box.textContent = '🤖 Σκέφτομαι… (5-10 δευτερόλεπτα)';
+  box.textContent = 'Σκέφτομαι… (5-10 δευτερόλεπτα)';
   fetch('/.netlify/functions/recipe-ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1686,7 +1816,7 @@ function gAskAi(id) {
         : 'Δεν ήρθε απάντηση — δοκίμασε τα κουμπιά ChatGPT/Claude από πάνω.';
     })
     .catch(() => {
-      box.textContent = '⚠️ Το AI εδώ δουλεύει μόνο στο lista-supemarket.netlify.app (και αφού στηθεί το κλειδί). Χρησιμοποίησε τα κουμπιά ChatGPT ή Claude — ανοίγουν με έτοιμη ερώτηση.';
+      box.textContent = 'Το AI εδώ δουλεύει μόνο στο lista-supemarket.netlify.app (και αφού στηθεί το κλειδί). Χρησιμοποίησε τα κουμπιά ChatGPT ή Claude — ανοίγουν με έτοιμη ερώτηση.';
     })
     .finally(() => { aiBusy = false; });
 }
@@ -1718,9 +1848,9 @@ function gSlot(i, cls, label, r) {
       <span class="tag ${cls}">${label}</span>
       <div class="meal" onclick="gOpenModal('${gState.picks[i]}')">
         <div class="meal-name">${r.n}</div>
-        <div class="meal-meta">⏱ ${r.t} · ${r.kcal} kcal · ${r.p}γρ πρωτεΐνη</div>
+        <div class="meal-meta"><span class="msr tiny">schedule</span>${r.t} · ${r.kcal} kcal · ${r.p}γρ πρωτεΐνη</div>
       </div>
-      <button class="g-swap" title="Άλλη συνταγή ίδιας κατηγορίας" onclick="gSwap(${i})">🔄</button>
+      <button class="g-swap msr" title="Άλλη συνταγή ίδιας κατηγορίας" onclick="gSwap(${i})">autorenew</button>
     </div>`;
 }
 
@@ -1735,39 +1865,89 @@ document.getElementById("gClearBtn").addEventListener("click", () => {
 function homeRender() {
   const homeToday = document.getElementById('homeToday');
   if (!homeToday) return;
-  // Σημερινά γεύματα (0 = Δευτέρα)
+  // Σημερινά γεύματα (0 = Δευτέρα) — στατικά δεδομένα συνταγών, όχι user input
   const di = (new Date().getDay() + 6) % 7;
   const li = di * 2, bi = di * 2 + 1;
   const L = MEALS[gState.picks[li]], B = MEALS[gState.picks[bi]];
   homeToday.innerHTML = `
-    <h3>🍽️ Σήμερα · ${MEAL_TEMPLATE[di].day}</h3>
+    <h3><span class="msr">restaurant</span>Σήμερα · ${MEAL_TEMPLATE[di].day}</h3>
     <div class="home-meal" onclick="gOpenModal('${gState.picks[li]}')">
       <span class="tag lunch">Μεσημέρι</span>
       <span class="hm-name${gState.done[li] ? ' hm-done' : ''}">${L.n}</span>
-      <span class="hm-meta">⏱ ${L.t}</span>
+      <span class="hm-meta"><span class="msr tiny">schedule</span>${L.t}</span>
     </div>
     <div class="home-meal" onclick="gOpenModal('${gState.picks[bi]}')">
       <span class="tag dinner">Βράδυ</span>
       <span class="hm-name${gState.done[bi] ? ' hm-done' : ''}">${B.n}</span>
-      <span class="hm-meta">⏱ ${B.t}</span>
+      <span class="hm-meta"><span class="msr tiny">schedule</span>${B.t}</span>
     </div>
     <button class="home-link" onclick="switchTab('meals')">Όλη η εβδομάδα →</button>`;
-  // Πρόοδος λίστας ψώνων
-  const list = getActive();
-  const items = list ? itemArray(list) : [];
-  const done = items.filter(i => i.done).length;
-  const pct = items.length ? Math.round(done / items.length * 100) : 0;
-  document.getElementById('homeShop').innerHTML = `
-    <h3>🛒 ${list ? escapeForHome(list.name) : 'Λίστα ψώνων'}</h3>
-    ${items.length ? `
-    <div class="hp-bar"><i style="width:${pct}%"></i></div>
-    <div class="hp-txt">${done} / ${items.length} στο καλάθι (${pct}%)</div>` : `
-    <div class="hp-txt">${ready ? 'Δεν υπάρχει ακόμα λίστα — ξεκίνα με το πρόγραμμα διατροφής.' : 'Σύνδεση…'}</div>`}
-    <button class="home-link" onclick="switchTab('shop')">Άνοιξε τη λίστα →</button>`;
-}
-// Το όνομα λίστας είναι user input → escaping πριν μπει σε innerHTML
-function escapeForHome(s) {
-  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+  // Snapshot ΟΛΩΝ των λιστών (ονόματα = user input → DOM APIs/textContent, όχι innerHTML)
+  const homeShop = document.getElementById('homeShop');
+  homeShop.innerHTML = '';
+  const h3 = document.createElement('h3');
+  const h3Ic = document.createElement('span');
+  h3Ic.className = 'msr';
+  h3Ic.textContent = 'shopping_cart';
+  h3.appendChild(h3Ic);
+  h3.appendChild(document.createTextNode('Οι λίστες μας'));
+  homeShop.appendChild(h3);
+
+  const arr = listArray();
+  if (!ready || !arr.length) {
+    const p = document.createElement('div');
+    p.className = 'hp-txt';
+    p.textContent = ready ? 'Δεν υπάρχει ακόμα λίστα — ξεκίνα με το πρόγραμμα διατροφής.' : 'Σύνδεση…';
+    homeShop.appendChild(p);
+    if (ready) {
+      const b = document.createElement('button');
+      b.className = 'home-link';
+      b.textContent = 'Ξεκίνα με το πρόγραμμα →';
+      b.onclick = startWithDiet;
+      homeShop.appendChild(b);
+    }
+    return;
+  }
+
+  const dark = isDarkNow();
+  arr.forEach(l => {
+    const items = itemArray(l);
+    const done = items.filter(i => i.done).length;
+    const pct = items.length ? Math.round(done / items.length * 100) : 0;
+    const tk = themeTokens(l.color, dark);
+    const row = document.createElement('button');
+    row.className = 'home-list';
+    row.title = 'Άνοιγμα λίστας';
+    row.onclick = () => {
+      activeId = l.id;
+      lsSet('sm-active-' + ROOM, l.id);
+      render();
+      switchTab('shop');
+    };
+    const dot = document.createElement('span');
+    dot.className = 'hl-dot';
+    dot.style.background = tk.primary;
+    const nm = document.createElement('span');
+    nm.className = 'hl-name';
+    nm.textContent = l.name;
+    const bar = document.createElement('span');
+    bar.className = 'hl-bar';
+    const fill = document.createElement('i');
+    fill.style.width = pct + '%';
+    fill.style.background = tk.primary;
+    bar.appendChild(fill);
+    const cnt = document.createElement('span');
+    cnt.className = 'hl-count';
+    cnt.textContent = items.length ? done + '/' + items.length : 'κενή';
+    row.appendChild(dot); row.appendChild(nm); row.appendChild(bar); row.appendChild(cnt);
+    homeShop.appendChild(row);
+  });
+  const open = document.createElement('button');
+  open.className = 'home-link';
+  open.textContent = 'Άνοιξε τα ψώνια →';
+  open.onclick = () => switchTab('shop');
+  homeShop.appendChild(open);
 }
 
 /* ---------- Bottom nav ---------- */
@@ -1785,6 +1965,7 @@ function switchTab(t) {
 }
 Object.keys(NAV).forEach(k => document.getElementById(NAV[k]).addEventListener('click', () => switchTab(k)));
 
+applyScheme();
 gRender();
 switchTab(lsGet('sm-tab') || 'home');
 </script>

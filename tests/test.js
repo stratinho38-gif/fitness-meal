@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, CATEGORIES, DIET, PALETTE, CAT_EMOJI, dietDefaults, dietItems};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -52,7 +52,7 @@ t('formatQty γρ', m.formatQty(400, 'γρ') === '400 γρ');
 // Δομή δεδομένων
 t('11 κατηγορίες', m.CATEGORIES.length === 11);
 t('DIET μη κενό', m.DIET.length >= 50);
-t('DIET κατηγορίες έγκυρες', m.DIET.every(d => m.CAT_EMOJI[d[3]] !== undefined));
+t('DIET κατηγορίες έγκυρες', m.DIET.every(d => m.CAT_ICON[d[3]] !== undefined));
 t('DIET ποσότητες έγκυρες', m.DIET.every(d => Number.isFinite(d[1]) && d[1] > 0));
 t('DIET ονόματα εντός ορίου', m.DIET.every(d => d[0].length <= m.LIMITS.name));
 t('PALETTE 8 χρώματα', Object.keys(m.PALETTE).length === 8);
@@ -87,6 +87,17 @@ t('buildAiPrompt εντός ορίου function (1200)', prompt.length > 50 && p
 t('buildAiPrompt χωρίς kcal', m.buildAiPrompt({ n: 'Τεστ', ing: ['α'] }).includes('Τεστ'));
 t('buildAiPrompt null → κενό', m.buildAiPrompt(null) === '');
 t('buildAiPrompt χωρίς όνομα → κενό', m.buildAiPrompt({}) === '');
+
+// Ρύθμιση θέματος (v7.2): nextScheme / resolveDark / CAT_ICON
+t('nextScheme auto→light', m.nextScheme('auto') === 'light');
+t('nextScheme light→dark', m.nextScheme('light') === 'dark');
+t('nextScheme dark→auto', m.nextScheme('dark') === 'auto');
+t('nextScheme άγνωστο→auto', m.nextScheme('whatever') === 'auto');
+t('resolveDark ρητό dark', m.resolveDark('dark', false) === true);
+t('resolveDark ρητό light αγνοεί σύστημα', m.resolveDark('light', true) === false);
+t('resolveDark auto + σύστημα dark', m.resolveDark('auto', true) === true);
+t('resolveDark auto + σύστημα light', m.resolveDark('auto', false) === false);
+t('CATEGORIES: έγκυρα Material Symbols ligatures', m.CATEGORIES.every(c => /^[a-z0-9_]+$/.test(c[0])));
 
 // themeTokens (Material 3 light/dark, v7)
 const TOKEN_KEYS = ['primary', 'onPrimary', 'light', 'container', 'on'];

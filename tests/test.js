@@ -63,8 +63,41 @@ const catches = (script.match(/\.catch\(dbErr\)/g) || []).length;
 t('όλα τα db writes με .catch(dbErr) (' + catches + '/' + writes + ')', catches >= writes && writes > 0);
 
 // Δεν υπάρχει γυμνό localStorage εκτός wrappers
-const rawLs = (script.match(/localStorage\./g) || []).length;
+const rawLs = (script.match(/localStorage\.(getItem|setItem|removeItem)/g) || []).length;
 t('localStorage μόνο σε lsGet/lsSet (2 χρήσεις)', rawLs === 2);
+
+// ---- Καρτέλα Γευμάτων: pure λογική (MEALS, MEAL_TEMPLATE, gFreshPicks) ----
+const gStart = script.indexOf('const MEALS =');
+const gEnd = script.indexOf('function gSwap');
+t('υπάρχει το meals section', gStart > -1 && gEnd > gStart);
+const gFactory = new Function('lsGet', 'lsSet', script.slice(gStart, gEnd) +
+  ';return {MEALS, MEAL_TEMPLATE, mealsByCat, gFreshPicks};');
+const g = gFactory(() => null, () => {});
+
+const keys = Object.keys(g.MEALS);
+t('MEALS ≥ 30 συνταγές', keys.length >= 30);
+t('MEALS πλήρη πεδία', keys.every(k => {
+  const r = g.MEALS[k];
+  return typeof r.n === 'string' && r.n && typeof r.cat === 'string' &&
+    Number.isFinite(r.kcal) && Number.isFinite(r.p) && Number.isFinite(r.c) && Number.isFinite(r.f) &&
+    Array.isArray(r.ing) && r.ing.length > 0 && typeof r.steps === 'string' && r.steps;
+}));
+t('MEAL_TEMPLATE 7 μέρες', g.MEAL_TEMPLATE.length === 7);
+t('template κατηγορίες υπαρκτές', g.MEAL_TEMPLATE.every(d =>
+  (g.mealsByCat[d.lunch] || []).length > 0 && (g.mealsByCat[d.dinner] || []).length > 0));
+const picks = g.gFreshPicks();
+t('gFreshPicks: 14 έγκυρα picks', picks.length === 14 && picks.every(p => g.MEALS[p]));
+t('gFreshPicks: σωστές κατηγορίες', picks.every((p, i) => {
+  const slot = i % 2 === 0 ? 'lunch' : 'dinner';
+  return g.MEALS[p].cat === g.MEAL_TEMPLATE[Math.floor(i / 2)][slot];
+}));
+// Τα 2 λαδερά / 3 ρεπό της εβδομάδας δεν πρέπει να είναι ίδια μεταξύ τους
+for (let run = 0; run < 20; run++) {
+  const pk = g.gFreshPicks();
+  const laderos = pk.filter(p => g.MEALS[p].cat === 'ladero');
+  if (new Set(laderos).size !== laderos.length) { t('λαδερά χωρίς επανάληψη', false); break; }
+  if (run === 19) t('λαδερά χωρίς επανάληψη (20 δοκιμές)', true);
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

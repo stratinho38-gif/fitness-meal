@@ -3,7 +3,7 @@
 {
   "name": "Lista Psonon Stratos",
   "schemaVersion": 1,
-  "description": "Κοινή realtime λίστα ψώνων (Firebase) για 2 άτομα: πολλαπλές λίστες με χρώματα, +/− ποσότητες με μονάδες, import προγράμματος διατροφής Nutrimed, κοινοποίηση με link. Source of truth: repo lista-psonon."
+  "description": "2 καρτέλες: (1) κοινή realtime λίστα ψώνων (Firebase) για 2 άτομα — πολλαπλές λίστες, +/− ποσότητες, import Nutrimed, κοινοποίηση με link· (2) εβδομαδιαίο πρόγραμμα γευμάτων με 33 συνταγές cut, swap, τικ και modal υλικών/μακροθρεπτικών. Source of truth: repo lista-psonon."
 }
 </script>
 <html lang="el">
@@ -270,10 +270,62 @@
   .modal .row button { padding: 10px 18px; border-radius: 999px; cursor: pointer; font-size: 14px; font-weight: 600; border: none; background: transparent; color: var(--primary); }
   .modal .row .primary { background: var(--primary); color: #fff; }
   .modal .row .danger-btn { background: var(--danger); color: #fff; }
+
+  /* ---------- Top tabs (Λίστα / Γεύματα) ---------- */
+  .hidden { display: none !important; }
+  .top-tabs { display: flex; gap: 6px; background: var(--surface-variant); padding: 5px; border-radius: 14px; margin-bottom: 12px; }
+  .top-tabs button { flex: 1; border: none; background: transparent; color: var(--muted); font-size: 14.5px; font-weight: 700; padding: 10px; border-radius: 10px; cursor: pointer; }
+  .top-tabs button.on { background: #fff; color: var(--text); box-shadow: var(--elev1); }
+  body.meals-mode .fab { display: none !important; }
+
+  /* ---------- Γεύματα ---------- */
+  #viewMeals { --lunch:#b9762a; --lunch-soft:#f8efe2; --dinner:#4a5f9e; --dinner-soft:#e9edf8; }
+  #viewMeals .g-sub { color: var(--muted); font-size: 12.5px; margin: 2px 0 12px; }
+  #viewMeals .g-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+  #viewMeals .g-toolbar button { font: inherit; cursor: pointer; border-radius: 9px; border: 1px solid var(--outline); background: var(--surface-container); padding: 8px 12px; font-size: 13px; font-weight: 600; }
+  #viewMeals .g-toolbar button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  #viewMeals .g-progress { flex: 1; min-width: 150px; display: flex; align-items: center; gap: 8px; }
+  #viewMeals .g-bar { flex: 1; height: 8px; background: var(--surface-variant); border-radius: 99px; overflow: hidden; }
+  #viewMeals .g-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; transition: width .3s; }
+  #viewMeals .g-pct { font-size: 12px; color: var(--muted); min-width: 78px; text-align: right; }
+  #viewMeals .day { background: var(--surface-container); border-radius: 16px; margin-bottom: 10px; overflow: hidden; box-shadow: var(--elev1); }
+  #viewMeals .day-head { padding: 10px 14px; font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--surface-variant); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  #viewMeals .day-kcal { font-weight: 400; font-size: 11.5px; color: var(--muted); }
+  #viewMeals .slot { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
+  #viewMeals .slot + .slot { border-top: 1px dashed var(--surface-variant); }
+  #viewMeals .slot input[type=checkbox] { width: 19px; height: 19px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+  #viewMeals .tag { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 99px; flex-shrink: 0; width: 72px; text-align: center; }
+  #viewMeals .tag.lunch { background: var(--lunch-soft); color: var(--lunch); }
+  #viewMeals .tag.dinner { background: var(--dinner-soft); color: var(--dinner); }
+  #viewMeals .meal { flex: 1; min-width: 0; cursor: pointer; }
+  #viewMeals .meal-name { font-size: 14px; font-weight: 600; }
+  #viewMeals .meal-meta { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  #viewMeals .slot.done .meal-name { text-decoration: line-through; color: var(--muted); font-weight: 400; }
+  #viewMeals .g-swap { border: none; background: var(--surface-variant); border-radius: 999px; width: 30px; height: 30px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+  #viewMeals .g-foot { margin-top: 14px; font-size: 12px; color: var(--muted); line-height: 1.5; background: #fffbeb; border-radius: 16px; padding: 12px 16px; }
+  .g-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+  .g-overlay.open { display: flex; }
+  .g-modal { background: #fff; border-radius: 20px; max-width: 480px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 22px; box-shadow: var(--elev3); }
+  .g-modal h2 { font-size: 17px; margin: 0 0 4px; }
+  .g-modal .m-meta { font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
+  .g-modal h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 12px 0 5px; }
+  .g-modal p, .g-modal li { font-size: 14px; line-height: 1.5; }
+  .g-modal ul { padding-left: 18px; margin: 0; }
+  .g-modal .macros { display: flex; gap: 8px; margin-top: 14px; }
+  .g-modal .macros div { flex: 1; background: var(--primary-container); border-radius: 10px; padding: 8px 4px; text-align: center; }
+  .g-modal .macros b { display: block; font-size: 15px; }
+  .g-modal .macros span { font-size: 10.5px; color: var(--muted); }
+  .g-modal .g-close { margin-top: 16px; width: 100%; padding: 12px; border-radius: 999px; border: none; background: var(--primary); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
 <div class="app">
+  <div class="top-tabs">
+    <button id="tabShop" class="on">🛒 Λίστα</button>
+    <button id="tabMeals">🍽️ Γεύματα</button>
+  </div>
+
+  <div id="viewShop">
   <div class="hero">
     <div class="hero-top">
       <div>
@@ -318,6 +370,24 @@
       <li>🍚 Μαγείρεψε ρύζι/κινόα σε μεγάλη ποσότητα και κράτα στο ψυγείο.</li>
     </ul>
   </details>
+  </div><!-- /viewShop -->
+
+  <div id="viewMeals" class="hidden">
+    <div class="g-sub">Μεσημέρι & βράδυ κατά Nutrimed · 33 συνταγές · μερίδες cut για σένα, ×2 στα ψώνια · πάτα σε γεύμα για συνταγή</div>
+    <div class="g-toolbar">
+      <button class="primary" id="gShuffleBtn">🎲 Νέα εβδομάδα</button>
+      <button id="gClearBtn">Καθάρισμα τικ</button>
+      <div class="g-progress"><div class="g-bar"><i id="gBarFill"></i></div><div class="g-pct" id="gPctTxt"></div></div>
+    </div>
+    <div id="gWeek"></div>
+    <div class="g-foot">
+      💡 <b>Meal prep:</b> Κυριακή διπλή δόση από όσπρια ή κοτόπουλο κατσαρόλας = 3-4 έτοιμα μεσημέρια. Ψητό στήθος σε batch καλύπτει τις κοτοσαλάτες.<br>
+      Το 🔄 αλλάζει τη συνταγή με άλλη ίδιας κατηγορίας (η εβδομαδιαία δομή Nutrimed δεν χαλάει).
+    </div>
+    <div class="g-overlay" id="gOverlay">
+      <div class="g-modal" id="gModal"></div>
+    </div>
+  </div><!-- /viewMeals -->
 </div>
 
 <button class="fab" id="fab" onclick="openAddSheet()" title="Προσθήκη προϊόντος" style="display:none">＋</button>
@@ -1075,6 +1145,257 @@ window.addEventListener('hashchange', () => {
   const m = location.hash.match(/r=([A-Za-z0-9_-]{4,})/);
   if (m && m[1] !== ROOM) { lsSet('sm-room', m[1]); location.reload(); }
 });
+
+/* ============================================================
+   Καρτέλα Γεύματα — εβδομαδιαίο πρόγραμμα (Nutrimed + 20 συνταγές cut)
+   Στατικά δεδομένα συνταγών (όχι user input). State σε localStorage.
+   ============================================================ */
+const MEALS = {
+  // ΜΕΣΗΜΕΡΙΑΝΑ — κοτόπουλο ψητό
+  kotSxaras:{n:"Κοτόπουλο σχάρας με ρύζι",cat:"kot_psito",t:"25'",kcal:480,p:48,c:45,f:12,
+    ing:["400γρ στήθος κοτόπουλο","1 φλ ρύζι (άβραστο)","Λεμόνι, ρίγανη","Σαλάτα"],
+    steps:"Μαρινάρεις 10' σε λεμόνι-ρίγανη. Γκριλ ή αντικολλητικό 5-6' ανά πλευρά. Ρύζι βραστό δίπλα."},
+  kotFournou:{n:"Κοτόπουλο φούρνου με πατάτες",cat:"kot_psito",t:"55'",kcal:500,p:46,c:42,f:14,
+    ing:["400γρ στήθος ή μπούτι φιλέτο","3 πατάτες κυδωνάτες","Λεμόνι, μουστάρδα, ρίγανη","Σαλάτα"],
+    steps:"Όλα σε ταψί με λαδόκολλα, λεμόνι-μουστάρδα-ρίγανη, 200°C για 45'. Μηδέν επίβλεψη — ό,τι πρέπει για ρεπό."},
+  souvlakia:{n:"Σουβλάκια κοτόπουλου με ρύζι",cat:"kot_psito",t:"25'",kcal:470,p:46,c:44,f:11,
+    ing:["400γρ στήθος σε κύβους","Ξυλάκια σουβλακιού","Πάπρικα, ρίγανη, λεμόνι","1 φλ ρύζι (άβραστο)"],
+    steps:"Περνάς σε ξυλάκια, μαρινάρεις 10', γκριλ/αντικολλητικό 10-12' γυρνώντας. Meal prep: ψήσε διπλά, κρύα για κοτοσαλάτες."},
+  // κοτόπουλο μαγειρεμένο
+  kotLemonato:{n:"Κοτόπουλο λεμονάτο με πατάτες",cat:"kot_mag",t:"40'",kcal:520,p:42,c:40,f:18,
+    ing:["400γρ μπούτι φιλέτο","2 πατάτες","Χυμός 1 λεμονιού, σκόρδο"],
+    steps:"Σοτάρεις το κοτόπουλο, προσθέτεις νερό + λεμόνι + πατάτες, σιγοβράζεις 30'. Meal prep: διπλή δόση."},
+  kotKokkinisto:{n:"Κοτόπουλο κοκκινιστό με ρύζι",cat:"kot_mag",t:"40'",kcal:500,p:45,c:40,f:15,
+    ing:["400γρ κοτόπουλο κομμένο","1 κονσέρβα ντομάτα","Κρεμμύδι, μπαχάρι","Ρύζι"],
+    steps:"Σοτάρεις, ρίχνεις ντομάτα + νερό, 30'. Μερίδα: 1,5 φλ φαγητό + ρύζι."},
+  kotPilafi:{n:"Κοτόπουλο πιλάφι κατσαρόλας",cat:"kot_mag",t:"35'",kcal:510,p:44,c:45,f:13,
+    ing:["400γρ κοτόπουλο σε κύβους","1 φλ ρύζι","Κρεμμύδι, καρότο","Ζωμός/νερό, λεμόνι"],
+    steps:"Σοτάρεις κοτόπουλο + κρεμμύδι, ρίχνεις ρύζι + 2,5 φλ νερό, καπάκι 20'. Ένα σκεύος, μηδέν πιάτα."},
+  // ψάρι
+  psariFournou:{n:"Ψάρι φούρνου με λαχανικά",cat:"psari",t:"35'",kcal:420,p:45,c:10,f:20,
+    ing:["700γρ τσιπούρα/λαβράκι","Κολοκύθια, ντομάτα","Λεμόνι"],
+    steps:"Όλα σε ταψί με λαδόκολλα, 200°C για 30'. Προετοιμασία 5'."},
+  bakaliaros:{n:"Μπακαλιάρος πλακί",cat:"psari",t:"30'",kcal:380,p:42,c:15,f:14,
+    ing:["600γρ κατεψ. μπακαλιάρος","1 κονσέρβα ντομάτα","Κρεμμύδι, μαϊντανός"],
+    steps:"Σοτάρεις κρεμμύδι, ρίχνεις ντομάτα, βάζεις το ψάρι μέσα για 15'."},
+  perka:{n:"Πέρκα λεμονάτη με βραστά λαχανικά",cat:"psari",t:"25'",kcal:390,p:42,c:14,f:15,
+    ing:["600γρ φιλέτο πέρκα/γαλέο (κατεψ. οκ)","Κολοκύθια, καρότα, πατάτα","Λεμόνι, λάδι"],
+    steps:"Βράζεις τα λαχανικά 15', προσθέτεις το φιλέτο τα τελευταία 8'. Λαδολέμονο στο σερβίρισμα."},
+  sardeles:{n:"Σαρδέλες φούρνου με ρίγανη",cat:"psari",t:"30'",kcal:430,p:36,c:8,f:24,
+    ing:["600γρ σαρδέλες καθαρισμένες","Λεμόνι, ρίγανη, σκόρδο","Μεγάλη σαλάτα"],
+    steps:"Σε ταψί με λαδόκολλα, 200°C για 20'. Ωμέγα-3 + φθηνό ψάρι — ιδανικό στο cut."},
+  // όσπρια
+  fakes:{n:"Φακές με κατίκι",cat:"ospria",t:"30'",kcal:520,p:30,c:65,f:13,
+    ing:["1,5 φλ φακές","Κρεμμύδι, σκόρδο, δάφνη","60γρ κατίκι + παξιμάδι"],
+    steps:"Όλα στην κατσαρόλα 25' (χύτρα 12'). Σερβίρεις με κατίκι και παξιμάδι."},
+  mavromatika:{n:"Μαυρομάτικα σαλάτα με αυγό",cat:"ospria",t:"25'",kcal:480,p:28,c:50,f:16,
+    ing:["1,5 φλ μαυρομάτικα","Ντομάτα, κρεμμυδάκι, μαϊντανός","2 βραστά αυγά"],
+    steps:"Βράζεις τα μαυρομάτικα 20', ανακατεύεις όλα με λάδι-ξύδι."},
+  revithia:{n:"Ρεβίθια λεμονάτα",cat:"ospria",t:"30'",kcal:500,p:24,c:60,f:15,
+    ing:["1,5 φλ ρεβίθια μουλιασμένα","Κρεμμύδι, λεμόνι, ρίγανη"],
+    steps:"Χύτρα 25' ή κατσαρόλα 1h. Meal prep: διπλή δόση, κρατάει 4 μέρες."},
+  fasolada:{n:"Φασολάδα με κατίκι",cat:"ospria",t:"40'",kcal:490,p:26,c:58,f:14,
+    ing:["1,5 φλ φασόλια μέτρια (μουλιασμένα)","Καρότο, σέλερι, κρεμμύδι","Ντομάτα","60γρ κατίκι + παξιμάδι"],
+    steps:"Χύτρα 30' ή κατσαρόλα 1h15'. Meal prep: διπλή δόση, καλύτερη τη 2η μέρα."},
+  // λαδερά
+  briam:{n:"Μπριάμ με ανθότυρο",cat:"ladero",t:"60'",kcal:450,p:18,c:45,f:20,
+    ing:["Κολοκύθια, μελιτζάνες","Πατάτες, ντομάτα, κρεμμύδι","100γρ ανθότυρο"],
+    steps:"Όλα κομμένα σε ταψί, 200°C για 50'. Προετοιμασία 10'."},
+  arakas:{n:"Αρακάς λεμονάτος",cat:"ladero",t:"30'",kcal:460,p:20,c:50,f:18,
+    ing:["500γρ κατεψ. αρακάς","Πατάτα, καρότο, άνηθος","Λεμόνι + κατίκι"],
+    steps:"Σοτάρεις, νερό να σκεπάσει, 25'."},
+  spanakorizo:{n:"Σπανακόρυζο με αυγό",cat:"ladero",t:"25'",kcal:470,p:25,c:45,f:18,
+    ing:["500γρ σπανάκι (κατεψ. οκ)","½ φλ ρύζι, λεμόνι","2 αυγά + ανθότυρο"],
+    steps:"Κατσαρόλα 20'. Το αυγό ανεβάζει την πρωτεΐνη της ημέρας λαδερού."},
+  bamies:{n:"Μπάμιες κοκκινιστές",cat:"ladero",t:"40'",kcal:400,p:16,c:35,f:18,
+    ing:["500γρ κατεψ. μπάμιες","Ντομάτα, κρεμμύδι","100γρ ανθότυρο/κατίκι"],
+    steps:"Σοτάρεις, ντομάτα, σιγοβράζεις 30' χωρίς ανακάτεμα."},
+  fasolakia:{n:"Φασολάκια κοκκινιστά με ανθότυρο",cat:"ladero",t:"35'",kcal:430,p:18,c:40,f:18,
+    ing:["500γρ κατεψ. φασολάκια","Ντομάτα, κρεμμύδι, πατάτα","100γρ ανθότυρο"],
+    steps:"Σοτάρεις κρεμμύδι, ρίχνεις ντομάτα + φασολάκια + πατάτα, σιγοβράζεις 30'. Κλασικό λαδερό Nutrimed."},
+  // κρέας
+  snitsel:{n:"Σνίτσελ φούρνου με πατάτες",cat:"kreas",t:"35'",kcal:520,p:40,c:40,f:18,
+    ing:["2×150γρ μοσχαρίσιο σνίτσελ","Φρυγανιά ολικής + 1 αυγό","Πατάτες φούρνου"],
+    steps:"Πανάρεις, φούρνος 200°C για 25' — όχι τηγάνι."},
+  sykoti:{n:"Συκώτι τηγανιά",cat:"kreas",t:"15'",kcal:420,p:45,c:20,f:16,
+    ing:["400γρ μοσχαρίσιο συκώτι","Ρίγανη, λεμόνι","Σαλάτα + 1 φέτα ψωμί"],
+    steps:"Ελαφρύ αλεύρωμα, αντικολλητικό 3-4' ανά πλευρά. Σίδηρος — ιδανικό στο cut."},
+  biftekia:{n:"Μπιφτέκια φούρνου με πατάτες",cat:"kreas",t:"35'",kcal:500,p:42,c:35,f:20,
+    ing:["400γρ άπαχος μοσχαρίσιος κιμάς","Κρεμμύδι, μαϊντανός, 1 αυγό","1 φέτα ψωμί μουλιασμένη","Πατάτες φούρνου"],
+    steps:"Ζυμώνεις, πλάθεις 4 μπιφτέκια, φούρνος 200°C για 25' μαζί με τις πατάτες. Meal prep: διπλή δόση, καταψύχονται ωμά."},
+  mosxariLemonato:{n:"Μοσχαράκι λεμονάτο με ρύζι",cat:"kreas",t:"70'",kcal:510,p:42,c:38,f:17,
+    ing:["300γρ μοσχάρι κιλότο σε κύβους (150γρ/άτομο)","Λεμόνι, σκόρδο, δάφνη","Ρύζι ή πουρές"],
+    steps:"Σοτάρεις, νερό + λεμόνι, σιγοβράζεις 1h (χύτρα 25'). Κυριακάτικο — βάλε και τα όσπρια της βδομάδας δίπλα."},
+  // ΒΡΑΔΙΝΑ — μετά προπόνηση
+  kotosalata:{n:"Κοτοσαλάτα (μετά προπόνηση)",cat:"br_prop",t:"15'",kcal:380,p:42,c:25,f:10,
+    ing:["300γρ ψητό στήθος (150γρ/άτομο)","Μεγάλη σαλάτα","Παξιμάδι + φρούτο"],
+    steps:"Με meal prep κοτόπουλο είναι έτοιμο σε 5'."},
+  kotLaxanika:{n:"Κοτόπουλο με ψητά λαχανικά (μετά προπόνηση)",cat:"br_prop",t:"20'",kcal:370,p:42,c:20,f:11,
+    ing:["300γρ στήθος (150γρ/άτομο)","Κολοκύθια, πιπεριές, μανιτάρια","Φρούτο μετά"],
+    steps:"Όλα στο γκριλ/αντικολλητικό 12-15'. Ζεστή εναλλακτική της κοτοσαλάτας για τις κρύες μέρες."},
+  // ομελέτα
+  omeleta:{n:"Ομελέτα λαχανικών",cat:"br_omeleta",t:"15'",kcal:380,p:32,c:22,f:16,
+    ing:["6 ασπράδια + 2 αυγά (για 2)","Πιπεριά, ντομάτα, μανιτάρια","60γρ κατίκι + ψωμί ολικής"],
+    steps:"Λαχανικά στο τηγάνι 3', αυγά από πάνω, καπάκι 5'."},
+  omeletaFournou:{n:"Ομελέτα φούρνου με σπανάκι",cat:"br_omeleta",t:"25'",kcal:370,p:30,c:20,f:16,
+    ing:["6 ασπράδια + 2 αυγά (για 2)","200γρ σπανάκι (κατεψ. οκ)","60γρ κατίκι","1 φέτα ψωμί ολικής/άτομο"],
+    steps:"Όλα σε πυρέξ, 180°C για 20'. Κόβεται σε κομμάτια — κρατάει και για επόμενο βράδυ."},
+  // τόνος
+  tonosalata:{n:"Τονοσαλάτα με κινόα",cat:"br_tonos",t:"20'",kcal:400,p:38,c:30,f:12,
+    ing:["2 κονσέρβες τόνος σε νερό","½ φλ κινόα ή καλαμπόκι","Μαρούλι, ντομάτα, αγγούρι"],
+    steps:"Βράζεις κινόα 15', ανακατεύεις όλα."},
+  tonosKalaboki:{n:"Τονοσαλάτα με καλαμπόκι (express)",cat:"br_tonos",t:"10'",kcal:380,p:36,c:28,f:10,
+    ing:["2 κονσέρβες τόνος σε νερό","1 μικρή κονσέρβα καλαμπόκι","Μαρούλι, αγγούρι, κρεμμυδάκι","Λεμόνι, λάδι"],
+    steps:"Στραγγίζεις, ανακατεύεις, τέλος. Μηδέν μαγείρεμα — για βράδια χωρίς όρεξη."},
+  // ρεπό
+  tost:{n:"Τοστ + σαλάτα",cat:"br_repo",t:"10'",kcal:350,p:28,c:32,f:10,
+    ing:["2 φέτες ψωμί ολικής/άτομο","Γαλοπούλα βραστή","Τυρί μειωμένων + σαλάτα"],
+    steps:"Τοστιέρα 4'. Για μέρες ρεπό."},
+  katikiSalata:{n:"Κατίκι + σαλάτα + παξιμάδια",cat:"br_repo",t:"5'",kcal:320,p:20,c:28,f:14,
+    ing:["100γρ κατίκι/άτομο","Μεγάλη σαλάτα","2 παξιμάδια"],
+    steps:"Μηδέν μαγείρεμα. Για μέρες ρεπό."},
+  giaourtiVromi:{n:"Γιαούρτι + λιναρόσπορος + βρώμη",cat:"br_repo",t:"3'",kcal:330,p:24,c:32,f:11,
+    ing:["200γρ γιαούρτι 2%/άτομο","1 κ.σ. λιναρόσπορος","2 κ.σ. βρώμη"],
+    steps:"Ανακατεύεις. Καζεΐνη το βράδυ — καλή για διατήρηση μυός."}
+};
+
+// Δομή Nutrimed: μεσημέρι = 1 όσπρια, 1 κοτ. ψητό, 2 λαδερά, 1 ψάρι, 1 κοτ. μαγειρεμένο, 1 κρέας
+// βράδυ = 2 μετά προπόνηση, 1 ομελέτα, 1 τόνος, 3 ρεπό
+const MEAL_TEMPLATE = [
+  { day:"Δευτέρα",   lunch:"ospria",    dinner:"br_prop" },
+  { day:"Τρίτη",     lunch:"kot_psito", dinner:"br_omeleta" },
+  { day:"Τετάρτη",   lunch:"ladero",    dinner:"br_repo" },
+  { day:"Πέμπτη",    lunch:"psari",     dinner:"br_prop" },
+  { day:"Παρασκευή", lunch:"kot_mag",   dinner:"br_tonos" },
+  { day:"Σάββατο",   lunch:"ladero",    dinner:"br_repo" },
+  { day:"Κυριακή",   lunch:"kreas",     dinner:"br_repo" }
+];
+const mealsByCat = {};
+Object.keys(MEALS).forEach(k => { (mealsByCat[MEALS[k].cat] = mealsByCat[MEALS[k].cat] || []).push(k); });
+
+const G_KEY = "programma-gevmaton-stratos";
+let gState = gLoad();
+
+function gLoad() {
+  try {
+    const s = JSON.parse(lsGet(G_KEY));
+    if (s && Array.isArray(s.picks) && s.picks.length === 14 && s.picks.every(p => MEALS[p]) &&
+        Array.isArray(s.done) && s.done.length === 14) {
+      return { picks: s.picks, done: s.done.map(Boolean) };
+    }
+  } catch (e) {}
+  return { picks: gFreshPicks(), done: Array(14).fill(false) };
+}
+function gSave() { lsSet(G_KEY, JSON.stringify(gState)); }
+
+function gFreshPicks() {
+  const used = {};
+  const start = {};
+  const picks = [];
+  MEAL_TEMPLATE.forEach(d => {
+    ["lunch","dinner"].forEach(sl => {
+      const cat = d[sl];
+      const opts = mealsByCat[cat];
+      // τυχαία αφετηρία ΜΙΑ φορά ανά κατηγορία + εναλλαγή,
+      // ώστε τα 2 λαδερά / 3 ρεπό της εβδομάδας να μη βγαίνουν ποτέ ίδια
+      if (start[cat] === undefined) start[cat] = Math.floor(Math.random() * opts.length);
+      used[cat] = used[cat] || 0;
+      picks.push(opts[(start[cat] + used[cat]) % opts.length]);
+      used[cat]++;
+    });
+  });
+  return picks;
+}
+
+function gSwap(i) {
+  const id = gState.picks[i];
+  const opts = mealsByCat[MEALS[id].cat];
+  gState.picks[i] = opts[(opts.indexOf(id) + 1) % opts.length];
+  gState.done[i] = false;
+  gSave(); gRender();
+}
+
+function gToggle(i) { gState.done[i] = !gState.done[i]; gSave(); gRender(); }
+
+function gOpenModal(id) {
+  const r = MEALS[id];
+  if (!r) return;
+  const m = document.getElementById("gModal");
+  // Στατικά δεδομένα συνταγών (hardcoded στον κώδικα) — όχι user input.
+  m.innerHTML = `
+    <h2>${r.n}</h2>
+    <div class="m-meta">⏱ ${r.t} · ποσότητες για 2 άτομα</div>
+    <h3>Υλικά</h3>
+    <ul>${r.ing.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <h3>Εκτέλεση</h3>
+    <p>${r.steps}</p>
+    <div class="macros">
+      <div><b>${r.kcal}</b><span>kcal*</span></div>
+      <div><b>${r.p}γρ</b><span>Πρωτ.</span></div>
+      <div><b>${r.c}γρ</b><span>Υδατ.</span></div>
+      <div><b>${r.f}γρ</b><span>Λίπη</span></div>
+    </div>
+    <div class="m-meta" style="margin-top:8px">* ανά δική σου μερίδα (cut)</div>
+    <button class="g-close" onclick="gCloseModal()">Κλείσιμο</button>`;
+  document.getElementById("gOverlay").classList.add("open");
+}
+function gCloseModal() { document.getElementById("gOverlay").classList.remove("open"); }
+document.getElementById("gOverlay").addEventListener("click", e => { if (e.target.id === "gOverlay") gCloseModal(); });
+
+function gRender() {
+  const w = document.getElementById("gWeek");
+  w.innerHTML = MEAL_TEMPLATE.map((d, di) => {
+    const li = di*2, bi = di*2+1;
+    const L = MEALS[gState.picks[li]], B = MEALS[gState.picks[bi]];
+    const kcal = L.kcal + B.kcal, p = L.p + B.p;
+    return `
+    <div class="day">
+      <div class="day-head"><span>${d.day}</span><span class="day-kcal">~${kcal} kcal · ${p}γρ πρωτ. (μεσημέρι+βράδυ)</span></div>
+      ${gSlot(li, "lunch", "Μεσημέρι", L)}
+      ${gSlot(bi, "dinner", "Βράδυ", B)}
+    </div>`;
+  }).join("");
+  const done = gState.done.filter(Boolean).length;
+  document.getElementById("gBarFill").style.width = (done/14*100) + "%";
+  document.getElementById("gPctTxt").textContent = done + "/14 γεύματα";
+}
+function gSlot(i, cls, label, r) {
+  return `
+    <div class="slot ${gState.done[i] ? "done" : ""}">
+      <input type="checkbox" ${gState.done[i] ? "checked" : ""} onchange="gToggle(${i})">
+      <span class="tag ${cls}">${label}</span>
+      <div class="meal" onclick="gOpenModal('${gState.picks[i]}')">
+        <div class="meal-name">${r.n}</div>
+        <div class="meal-meta">⏱ ${r.t} · ${r.kcal} kcal · ${r.p}γρ πρωτεΐνη</div>
+      </div>
+      <button class="g-swap" title="Άλλη συνταγή ίδιας κατηγορίας" onclick="gSwap(${i})">🔄</button>
+    </div>`;
+}
+
+document.getElementById("gShuffleBtn").addEventListener("click", () => {
+  gState.picks = gFreshPicks(); gState.done = Array(14).fill(false); gSave(); gRender();
+});
+document.getElementById("gClearBtn").addEventListener("click", () => {
+  gState.done = Array(14).fill(false); gSave(); gRender();
+});
+
+/* ---------- Εναλλαγή καρτελών ---------- */
+const tabShop = document.getElementById('tabShop');
+const tabMeals = document.getElementById('tabMeals');
+function switchTab(t) {
+  const shop = t === 'shop';
+  document.getElementById('viewShop').classList.toggle('hidden', !shop);
+  document.getElementById('viewMeals').classList.toggle('hidden', shop);
+  tabShop.classList.toggle('on', shop);
+  tabMeals.classList.toggle('on', !shop);
+  document.body.classList.toggle('meals-mode', !shop);
+  lsSet('sm-tab', t);
+}
+tabShop.addEventListener('click', () => switchTab('shop'));
+tabMeals.addEventListener('click', () => switchTab('meals'));
+if (lsGet('sm-tab') === 'meals') switchTab('meals');
+
+gRender();
 </script>
 </body>
 </html>

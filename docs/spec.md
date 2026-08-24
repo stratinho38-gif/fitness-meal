@@ -1,17 +1,24 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v5 (Firebase realtime)** · Αρχείο εφαρμογής: `index.html` · Deployed: Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v6 (Firebase realtime + καρτέλα Γευμάτων)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
-Κοινή realtime λίστα ψώνων για **2 άτομα** (Στράτος + κοπέλα). Πολλαπλές λίστες, βασισμένη στο πρόγραμμα διατροφής Nutrimed + είδη σπιτιού.
+Εφαρμογή 2 καρτελών για **2 άτομα** (Στράτος + κοπέλα): 🛒 κοινή realtime λίστα ψώνων + 🍽️ εβδομαδιαίο πρόγραμμα γευμάτων. Βασισμένη στο πρόγραμμα διατροφής Nutrimed + είδη σπιτιού.
 
 ## 2. Αρχιτεκτονική
 
-- Single-file HTML app, χωρίς build step.
-- **Backend**: Firebase Realtime Database (project `supermarket-lista`, EU-west1), anonymous auth.
+- Single-file HTML app, χωρίς build step. Δύο καρτέλες (top tabs): `viewShop` / `viewMeals`.
+- **Backend (λίστα)**: Firebase Realtime Database (project `supermarket-lista`, EU-west1), anonymous auth.
 - **Κοινή χρήση**: room code στο URL hash (`#r=<code>`). Όποιος έχει το link βλέπει/επεξεργάζεται τις ίδιες λίστες realtime.
-- **localStorage** (μόνο UI preferences): `sm-room`, `sm-active-<room>`, `sm-collapsed-<room>`. Όλα τα δεδομένα λιστών ζουν στο Firebase.
+- **localStorage** (UI preferences + γεύματα): `sm-room`, `sm-active-<room>`, `sm-collapsed-<room>`, `sm-tab`, `programma-gevmaton-stratos` (picks/done γευμάτων, ανά συσκευή). Όλα τα δεδομένα λιστών ψώνων ζουν στο Firebase.
+
+### Καρτέλα Γεύματα (v6)
+
+- 33 συνταγές cut (`MEALS`) με χρόνο, kcal/πρωτ./υδατ./λίπη, υλικά (για 2 άτομα), εκτέλεση.
+- Εβδομαδιαία δομή Nutrimed (`MEAL_TEMPLATE`): μεσημέρι 1×όσπρια, 1×κοτ. ψητό, 2×λαδερό, 1×ψάρι, 1×κοτ. μαγειρεμένο, 1×κρέας · βράδυ 2×μετά προπόνηση, 1×ομελέτα, 1×τόνος, 3×ρεπό.
+- 🎲 Νέα εβδομάδα (τυχαία, χωρίς επανάληψη μέσα στην ίδια κατηγορία), 🔄 swap ανά γεύμα, τικ ολοκλήρωσης με μπάρα, modal συνταγής.
+- Τα δεδομένα συνταγών είναι στατικά (hardcoded) — όχι user input.
 
 ### Schema (Firebase)
 ```

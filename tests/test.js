@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, mealIngItems, weekIngItems, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, ING_DICT, ingNorm, ingSplit, ingStripParens, ingMatch, ingParseQty, ingLineMinor, mergeQty, ingPlan, ingPlanPairs, weekPlan, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -88,21 +88,83 @@ t('buildAiPrompt χωρίς kcal', m.buildAiPrompt({ n: 'Τεστ', ing: ['α'] 
 t('buildAiPrompt null → κενό', m.buildAiPrompt(null) === '');
 t('buildAiPrompt χωρίς όνομα → κενό', m.buildAiPrompt({}) === '');
 
-// Υλικά γεύματος → λίστα (v8.2): mealIngItems
-const ingRes = m.mealIngItems(['400γρ στήθος κοτόπουλο', '1 φλ ρύζι'], [], 'Κοτόπουλο σχάρας');
-t('mealIngItems: όλα τα υλικά', ingRes.length === 2);
-t('mealIngItems: πλήρη πεδία item', ingRes.every(i =>
-  i.name && i.qty === 1 && i.unit === 'τεμ' && i.cat === 'Άλλα' && i.done === false));
-t('mealIngItems: note με όνομα γεύματος', ingRes.every(i => i.note === 'Για: Κοτόπουλο σχάρας'));
-t('mealIngItems: χωρίς mealName → χωρίς note', m.mealIngItems(['α'], []).every(i => !('note' in i)));
-t('mealIngItems: dedupe με υπάρχοντα (case-insensitive)',
-  m.mealIngItems(['1 φλ ρύζι', 'Σαλάτα'], ['1 ΦΛ ΡΥΖΙ']).length === 1);
-t('mealIngItems: dedupe μέσα στη συνταγή',
-  m.mealIngItems(['Σαλάτα', 'σαλάτα'], []).length === 1);
-t('mealIngItems: όνομα εντός ορίου 80', m.mealIngItems(['Α'.repeat(200)], [])[0].name.length === m.LIMITS.name);
-t('mealIngItems: κενά/null υλικά αγνοούνται', m.mealIngItems(['', '  ', null, 'Ρύζι'], []).length === 1);
-t('mealIngItems: null inputs → []', m.mealIngItems(null, null).length === 0);
-t('mealIngItems: χωρίς ts (το βάζει ο caller)', ingRes.every(i => !('ts' in i)));
+// Έξυπνη προσθήκη υλικών (v8.7): parsing / λεξικό / aggregate
+t('ING_DICT: έγκυρη δομή', m.ING_DICT.length > 60 && m.ING_DICT.every(e =>
+  Array.isArray(e.k) && e.k.length && typeof e.n === 'string' && e.n && m.CAT_ICON[e.c] !== undefined));
+t('ING_DICT: ονόματα εντός ορίου', m.ING_DICT.every(e => e.n.length <= m.LIMITS.name));
+
+// ingSplit: κόμμα/+ εκτός παρενθέσεων, δεκαδικό κόμμα δεν κόβει
+t('ingSplit: κόμμα και +', m.ingSplit('1 αυγό + χυμός 1 λεμονιού, ρίγανη').length === 3);
+t('ingSplit: δεκαδικό κόμμα δεν κόβει', m.ingSplit('1,5 κ.σ. ελαιόλαδο, λεμόνι').join('|') === '1,5 κ.σ. ελαιόλαδο|λεμόνι');
+t('ingSplit: κόμμα μέσα σε παρένθεση δεν κόβει', m.ingSplit('ντομάτες (ή 400γρ, κονσέρβα)').length === 1);
+t('ingSplit: null → []', m.ingSplit(null).length === 0);
+
+// ingParseQty
+t('ingParseQty: 400γρ', JSON.stringify(m.ingParseQty('400γρ στήθος κοτόπουλο')) === '{"qty":400,"unit":"γρ"}');
+t('ingParseQty: 1,5 κιλό', JSON.stringify(m.ingParseQty('1,5 κιλό μοσχάρι')) === '{"qty":1.5,"unit":"κιλά"}');
+t('ingParseQty: 2 πατάτες → τεμ', JSON.stringify(m.ingParseQty('2 μέτριες πατάτες')) === '{"qty":2,"unit":"τεμ"}');
+t('ingParseQty: 1/2 → 0.5 τεμ', m.ingParseQty('1/2 κουνουπίδι τριμμένο').qty === 0.5);
+t('ingParseQty: κονσέρβες', JSON.stringify(m.ingParseQty('1,5 κονσέρβα τόνος')) === '{"qty":1.5,"unit":"κονσέρβες"}');
+t('ingParseQty: εύρος 5-6 → 5', m.ingParseQty('5-6 ελιές').qty === 5);
+t('ingParseQty: φλ → null', m.ingParseQty('1 φλ ρύζι (άβραστο)') === null);
+t('ingParseQty: κ.σ. → null', m.ingParseQty('2 κ.σ. γιαούρτι') === null);
+t('ingParseQty: φέτες → null', m.ingParseQty('2 φέτες ψωμί ολικής') === null);
+t('ingParseQty: σκέτο όνομα → 1 τεμ', JSON.stringify(m.ingParseQty('Κρεμμύδι')) === '{"qty":1,"unit":"τεμ"}');
+t('ingParseQty: αγνοεί παρενθέσεις', m.ingParseQty('2 μπριζόλες λαιμού (400γρ)').unit === 'τεμ');
+
+// ingMatch: λεξικό — ειδικά πριν από γενικά
+t('ingMatch: στήθος κοτόπουλο → Κοτόπουλο', m.ingMatch('400γρ στήθος κοτόπουλο').n === 'Κοτόπουλο (στήθος/φιλέτο)');
+t('ingMatch: κιμάς κοτόπουλο ≠ Κοτόπουλο', m.ingMatch('400γρ κιμάς κοτόπουλο (στήθος)').n === 'Κιμάς κοτόπουλο');
+t('ingMatch: πιπεριά ≠ πιπέρι', m.ingMatch('1 πιπεριά').n === 'Πιπεριές' && m.ingMatch('Πιπέρι').n === 'Πιπέρι');
+t('ingMatch: μελιτζάνες ≠ μέλι', m.ingMatch('3 μελιτζάνες').n === 'Μελιτζάνες' && m.ingMatch('1 κ.γλ. μέλι').n === 'Μέλι');
+t('ingMatch: φέτα ≠ 2 φέτες ψωμί', m.ingMatch('80γρ φέτα').n === 'Φέτα' && m.ingMatch('2 φέτες ψωμί ολικής').n === 'Ψωμί ολικής');
+t('ingMatch: φέτα τυρί → Τυρί light', m.ingMatch('1 φέτα τυρί light').n === 'Τυρί light');
+t('ingMatch: γλυκοπατάτα ≠ πατάτα', m.ingMatch('2 γλυκοπατάτες').n === 'Γλυκοπατάτες' && m.ingMatch('2 πατάτες').n === 'Πατάτες');
+t('ingMatch: χυμός λεμονιού → Λεμόνια (minor)', m.ingMatch('Χυμός 1 λεμονιού').n === 'Λεμόνια' && m.ingMatch('Χυμός 1 λεμονιού').m === true);
+t('ingMatch: παρένθεση δεν επηρεάζει', m.ingMatch('1 αυγό + χυμός λεμονιού (αυγολέμονο)'.split('+')[1]).n === 'Λεμόνια');
+t('ingMatch: άγνωστο → null', m.ingMatch('κάτι εντελώς άγνωστο') === null);
+t('ingMatch: κάλυψη — όλα τα μέρη των 150 συνταγών', (() => {
+  const gS = script.indexOf('const MEALS ='), gE = script.indexOf('function gSwap');
+  const g = new Function('lsGet', 'lsSet', script.slice(gS, gE) + ';return {MEALS};')(() => null, () => {});
+  return Object.values(g.MEALS).every(r => r.ing.every(line => m.ingSplit(line).every(p => m.ingMatch(p) !== null)));
+})());
+
+// ingLineMinor: μικρο-υλικά ξετσεκαρισμένα
+t('ingLineMinor: καρυκεύματα → true', m.ingLineMinor('Λεμόνι, ρίγανη') && m.ingLineMinor('1 κ.σ. ελαιόλαδο') && m.ingLineMinor('Αλάτι, πιπέρι'));
+t('ingLineMinor: κανονικά υλικά → false', !m.ingLineMinor('400γρ στήθος κοτόπουλο') && !m.ingLineMinor('Κρεμμύδι, σκόρδο') && !m.ingLineMinor('Σαλάτα εποχής'));
+
+// mergeQty
+t('mergeQty: γρ + κιλά αθροίζονται', JSON.stringify(m.mergeQty(2, 'κιλά', 400, 'γρ')) === '{"qty":2.4,"unit":"κιλά"}');
+t('mergeQty: κιλά σε γρ', JSON.stringify(m.mergeQty(500, 'γρ', 1, 'κιλά')) === '{"qty":1500,"unit":"γρ"}');
+t('mergeQty: ίδια μονάδα', m.mergeQty(2, 'τεμ', 3, 'τεμ').qty === 5 && m.mergeQty(4, 'κονσέρβες', 1.5, 'κονσέρβες').qty === 5.5);
+t('mergeQty: άγνωστη ποσότητα → +1', m.mergeQty(2, 'κιλά', null, null).qty === 3);
+t('mergeQty: ασύμβατες μονάδες → +1', m.mergeQty(2, 'κιλά', 3, 'τεμ').qty === 3);
+
+// ingPlan: το βασικό σενάριο aggregate
+const exChicken = [{ id: 'a', name: 'Κοτόπουλο (στήθος/μπούτι φιλέτο)', qty: 2, unit: 'κιλά', cat: 'Κρέας & Ψάρι', done: true, ts: 1 }];
+const plan1 = m.ingPlan(['400γρ στήθος κοτόπουλο'], exChicken, 'Κοτόπουλο σχάρας');
+t('ingPlan: 400γρ + 2 κιλά = 2,4 κιλά στο υπάρχον', plan1.adds.length === 0 && plan1.updates.length === 1 &&
+  plan1.updates[0].id === 'a' && plan1.updates[0].qty === 2.4);
+t('ingPlan: το done ξετσεκάρεται', plan1.updates[0].done === false);
+t('ingPlan: note «Για: <γεύμα>» στο υπάρχον', plan1.updates[0].note === 'Για: Κοτόπουλο σχάρας');
+t('ingPlan: δεν ξαναγράφει note με ίδιο γεύμα', !('note' in m.ingPlan(['400γρ στήθος'],
+  [{ id: 'a', name: 'Κοτόπουλο', qty: 2, unit: 'κιλά', cat: 'Κρέας & Ψάρι', note: 'Για: Κοτόπουλο σχάρας', ts: 1 }], 'Κοτόπουλο σχάρας').updates[0]));
+const plan2 = m.ingPlan(['400γρ κιμάς μοσχαρίσιος άπαχος'], [], 'Μπιφτέκια');
+t('ingPlan: νέο item με parsing (όνομα/ποσότητα/κατηγορία)', plan2.adds.length === 1 &&
+  plan2.adds[0].name === 'Κιμάς μοσχαρίσιος άπαχος' && plan2.adds[0].qty === 400 &&
+  plan2.adds[0].unit === 'γρ' && plan2.adds[0].cat === 'Κρέας & Ψάρι' && plan2.adds[0].note === 'Για: Μπιφτέκια');
+t('ingPlan: γραμμή σπάει σε πολλά προϊόντα', m.ingPlan(['Κρεμμύδι, σκόρδο, δάφνη'], [], null).adds.length === 3);
+t('ingPlan: aggregate μέσα στην ίδια συνταγή', (() => {
+  const p = m.ingPlan(['600γρ σπανάκι', '500γρ σπανάκι'], [], 'Χ');
+  return p.adds.length === 1 && p.adds[0].qty === 1.1 && p.adds[0].unit === 'κιλά';
+})());
+t('ingPlan: μη μετατρέψιμη μονάδα → +1 στο υπάρχον', m.ingPlan(['1 φλ ρύζι (άβραστο)'],
+  [{ id: 'r', name: 'Ρύζι', qty: 2, unit: 'κιλά', cat: 'Ψωμί & Δημητριακά', ts: 1 }], 'Χ').updates[0].qty === 3);
+t('ingPlan: χωρίς ts στα adds', plan2.adds.every(i => !('ts' in i)));
+t('ingPlan: null inputs → κενό πλάνο', (() => {
+  const p = m.ingPlan(null, null, null);
+  return p.adds.length === 0 && p.updates.length === 0;
+})());
 
 // Επεξεργασία προϊόντος & undo (v8.3): itemPayload / itemSnapshot
 const pl = m.itemPayload('  Γάλα  ', '2.345', 'λίτρα', 'Αυγά & Γαλακτοκομικά', ' Για καφέ ');
@@ -122,16 +184,20 @@ t('itemSnapshot: χωρίς id', !('id' in snap));
 t('itemSnapshot: χωρίς note όταν λείπει', !('note' in m.itemSnapshot({ name: 'Ψωμί' })));
 t('itemSnapshot: defaults σε ελλιπές item', (() => { const s = m.itemSnapshot({}); return s.qty === 1 && s.unit === 'τεμ' && s.cat === 'Άλλα' && s.done === false && s.ts === 0; })());
 
-// Ψώνια εβδομάδας (v8.6): weekIngItems
-const wkMeals = { m1: { n: 'Γεύμα 1', ing: ['Ρύζι', 'Κοτόπουλο'] }, m2: { n: 'Γεύμα 2', ing: ['ρύζι', 'Ντομάτα'] } };
-const wk = m.weekIngItems(['m1', 'm2'], wkMeals, ['Κρεμμύδι']);
-t('weekIngItems: dedupe μεταξύ γευμάτων', wk.length === 3 && wk.map(i => i.name).join() === 'Ρύζι,Κοτόπουλο,Ντομάτα');
-t('weekIngItems: note από το γεύμα που το χρειάζεται', wk[0].note === 'Για: Γεύμα 1' && wk[2].note === 'Για: Γεύμα 2');
-t('weekIngItems: dedupe με υπάρχοντα (case-insensitive)', m.weekIngItems(['m1'], wkMeals, ['ΚΟΤΟΠΟΥΛΟ']).length === 1);
-t('weekIngItems: άγνωστα ids / null → []', m.weekIngItems(['nope'], wkMeals, []).length === 0 && m.weekIngItems(null, null, null).length === 0);
-t('weekIngItems: χωρίς ts (το βάζει ο caller)', wk.every(i => !('ts' in i)));
-t('weekIngItems: πλήρη πεδία item', wk.every(i => i.qty === 1 && i.unit === 'τεμ' && i.cat === 'Άλλα' && i.done === false));
-t('v8.6: κουμπί «Ψώνια εβδομάδας» υπάρχει', html.includes('gWeekShopBtn') && /weekIngItems\(gState\.picks/.test(script));
+// Ψώνια εβδομάδας (v8.6, έξυπνο aggregate v8.7): weekPlan
+const wkMeals = { m1: { n: 'Γεύμα 1', ing: ['1/2 φλ ρύζι (άβραστο)', '400γρ στήθος κοτόπουλο', 'Λεμόνι, ρίγανη'] },
+                  m2: { n: 'Γεύμα 2', ing: ['1/2 φλ ρύζι', '2 ντομάτες'] } };
+const wk = m.weekPlan(['m1', 'm2'], wkMeals, []);
+t('weekPlan: aggregate μεταξύ γευμάτων (1 Ρύζι, όχι 2)', wk.adds.filter(i => i.name === 'Ρύζι').length === 1);
+t('weekPlan: note και από τα δύο γεύματα', wk.adds.find(i => i.name === 'Ρύζι').note === 'Για: Γεύμα 1, Γεύμα 2');
+t('weekPlan: μικρο-υλικά (λεμόνι/ρίγανη) εκτός', !wk.adds.some(i => i.name === 'Λεμόνια' || i.name === 'Ρίγανη'));
+t('weekPlan: aggregate με υπάρχον (400γρ σε 2 κιλά → 2,4)', (() => {
+  const p = m.weekPlan(['m1'], wkMeals, [{ id: 'a', name: 'Κοτόπουλο (στήθος)', qty: 2, unit: 'κιλά', cat: 'Κρέας & Ψάρι', ts: 1 }]);
+  return p.updates.length === 1 && p.updates[0].qty === 2.4;
+})());
+t('weekPlan: άγνωστα ids / null → κενό πλάνο', m.weekPlan(['nope'], wkMeals, []).adds.length === 0 &&
+  m.weekPlan(null, null, null).adds.length === 0);
+t('v8.6: κουμπί «Ψώνια εβδομάδας» υπάρχει', html.includes('gWeekShopBtn') && /weekPlan\(gState\.picks/.test(script));
 
 // Δωμάτιο (v8.5): validRoomCode — ίδιο pattern με Database Rules
 t('validRoomCode: έγκυρος', m.validRoomCode('abc123XYZ') === true);
@@ -156,8 +222,10 @@ t('v8.5: κανένα font-size κάτω από 12px στο CSS', !/font-size:\s
 // Επιλογή υλικών γεύματος (v8.4) — δομικοί έλεγχοι στο script
 t('v8.4: checkbox ανά υλικό στο modal', /class="ing-chk" data-i=/.test(script));
 const gAddBody = script.slice(script.indexOf('function gAddIngredients'), script.indexOf('function gAskAi'));
-t('v8.4: προστίθενται μόνο τα τσεκαρισμένα', /mealIngItems\(picked/.test(gAddBody) && !/mealIngItems\(r\.ing/.test(gAddBody));
+t('v8.4: προστίθενται μόνο τα τσεκαρισμένα', /ingPlan\(picked/.test(gAddBody) && !/ingPlan\(r\.ing/.test(gAddBody));
 t('v8.4: toast όταν κανένα τσεκαρισμένο', script.includes('Διάλεξε τουλάχιστον ένα υλικό'));
+t('v8.7: μικρο-υλικά ξετσεκαρισμένα στο modal', script.includes("ingLineMinor(x) ? '' : ' checked'"));
+t('v8.7: updates με done:false και note μέσω applyIngPlan', /u\.id \+ '\/done'\] = false/.test(script) && /u\.id \+ '\/qty'\] = u\.qty/.test(script));
 
 // Ρύθμιση θέματος (v7.2): nextScheme / resolveDark / CAT_ICON
 t('nextScheme auto→light', m.nextScheme('auto') === 'light');

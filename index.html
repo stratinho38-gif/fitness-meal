@@ -794,25 +794,306 @@ function cleanText(v, max) {
 function validRoomCode(c) {
   return /^[A-Za-z0-9_-]{4,20}$/.test(String(c == null ? '' : c).trim());
 }
-/* Υλικά συνταγής → items λίστας (v8.2). Dedupe με υπάρχοντα ονόματα (case-insensitive)
-   και μέσα στην ίδια συνταγή. Χωρίς ts — το βάζει ο caller. */
-function mealIngItems(ing, existingNames, mealName) {
-  /* Σύγκριση χωρίς κεφαλαία/τόνους (π.χ. «ΡΥΖΙ» == «ρύζι») */
-  const norm = s => String(s == null ? '' : s).trim().toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const seen = {};
-  (Array.isArray(existingNames) ? existingNames : []).forEach(n => { seen[norm(n)] = true; });
+/* ============================================================
+   Έξυπνη προσθήκη υλικών (v8.7) — pure λογική, testable.
+   Γραμμή συνταγής → σπάσιμο σε μέρη → αναγνώριση προϊόντος από
+   λεξικό (ING_DICT) → parsing ποσότητας → aggregate σε υπάρχοντα
+   items (γρ↔κιλά άθροισμα, ίδια μονάδα άθροισμα, αλλιώς +1).
+   ============================================================ */
+
+/* Κανονικοποίηση για σύγκριση: πεζά, χωρίς τόνους, ς→σ */
+function ingNorm(s) {
+  return String(s == null ? '' : s).trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ς/g, 'σ');
+}
+/* Αφαίρεση παρενθέσεων: «(άβραστο)», «(ή 400γρ κονσέρβα)», «(αυγολέμονο)» */
+function ingStripParens(s) {
+  return String(s == null ? '' : s).replace(/\([^)]*\)/g, ' ');
+}
+/* Σπάσιμο γραμμής σε μέρη: κόμμα ή «+» εκτός παρενθέσεων.
+   Το κόμμα ανάμεσα σε ψηφία («1,5 κ.σ.») είναι δεκαδικό — δεν κόβει. */
+function ingSplit(line) {
+  const s = String(line == null ? '' : line);
   const out = [];
-  (Array.isArray(ing) ? ing : []).forEach(x => {
-    const name = cleanText(x, LIMITS.name);
-    if (!name || seen[norm(name)]) return;
-    seen[norm(name)] = true;
-    const it = { name, qty: 1, unit: 'τεμ', cat: 'Άλλα', done: false };
-    const note = cleanText(mealName ? 'Για: ' + mealName : '', LIMITS.note);
-    if (note) it.note = note;
-    out.push(it);
+  let cur = '', depth = 0;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === '(') depth++;
+    if (ch === ')') depth = Math.max(0, depth - 1);
+    const decimal = ch === ',' && /\d/.test(s[i - 1] || '') && /\d/.test(s[i + 1] || '');
+    if ((ch === ',' || ch === '+') && depth === 0 && !decimal) { out.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out.map(x => x.trim()).filter(Boolean);
+}
+
+/* Λεξικό υλικών: k = στελέχη (κανονικοποιημένα· με κενό = substring, αλλιώς
+   αρχή λέξης), n = κανονικό όνομα προϊόντος, c = κατηγορία, m = μικρο-υλικό
+   (καρυκεύματα/λάδι/λεμόνι κλπ — ξετσεκαρισμένα by default).
+   Η ΣΕΙΡΑ ΜΕΤΡΑΕΙ: το πρώτο ταίριασμα κερδίζει (ειδικά πριν από γενικά). */
+const ING_DICT = (() => {
+  const ΚΡ = 'Κρέας & Ψάρι', ΑΓ = 'Αυγά & Γαλακτοκομικά', ΨΔ = 'Ψωμί & Δημητριακά',
+        ΟΚ = 'Όσπρια & Κονσέρβες', ΛΑ = 'Λαχανικά', ΦΡ = 'Φρούτα',
+        ΞΣ = 'Ξηροί καρποί & Σπόροι', ΠΒ = 'Παντοπωλείο & Βασικά', ΑΛ = 'Άλλα';
+  return [
+    /* Κρέας & Ψάρι — τα σύνθετα (κιμάδες) πριν από τα απλά */
+    { k: ['κιμασ κοτοπουλ'], n: 'Κιμάς κοτόπουλο', c: ΚΡ },
+    { k: ['κιμασ γαλοπουλ'], n: 'Κιμάς γαλοπούλας', c: ΚΡ },
+    { k: ['κιμασ μοσχαρ'], n: 'Κιμάς μοσχαρίσιος άπαχος', c: ΚΡ },
+    { k: ['συκωτ'], n: 'Συκώτι μοσχαρίσιο', c: ΚΡ },
+    { k: ['μοσχαρ'], n: 'Μοσχάρι', c: ΚΡ },
+    { k: ['κοτοπουλ', 'στηθοσ', 'μπουτι'], n: 'Κοτόπουλο (στήθος/φιλέτο)', c: ΚΡ },
+    { k: ['γαλοπουλ'], n: 'Γαλοπούλα (φιλέτο/φέτες)', c: ΚΡ },
+    { k: ['χοιριν', 'ψαρονεφρ', 'σπαλα', 'μπριζολ'], n: 'Χοιρινό (ψαρονέφρι/σπάλα)', c: ΚΡ },
+    { k: ['σολομ'], n: 'Σολομός', c: ΚΡ },
+    { k: ['λαβρακ'], n: 'Λαβράκι', c: ΚΡ },
+    { k: ['τσιπουρ'], n: 'Τσιπούρα', c: ΚΡ },
+    { k: ['μπακαλιαρ'], n: 'Μπακαλιάρος', c: ΚΡ },
+    { k: ['περκα'], n: 'Πέρκα', c: ΚΡ },
+    { k: ['γαλεο'], n: 'Γαλέος', c: ΚΡ },
+    { k: ['σκουμπρ'], n: 'Σκουμπρί', c: ΚΡ },
+    { k: ['σαρδελ'], n: 'Σαρδέλες', c: ΚΡ },
+    { k: ['γαριδ'], n: 'Γαρίδες', c: ΚΡ },
+    { k: ['καλαμαρ'], n: 'Καλαμάρια', c: ΚΡ },
+    { k: ['μυδι'], n: 'Μύδια', c: ΚΡ },
+    { k: ['ψαρι'], n: 'Λευκό ψάρι (φιλέτο)', c: ΚΡ },
+    { k: ['τονο'], n: 'Τόνος κονσέρβα', c: ΟΚ },
+    /* Λαχανικά — ειδικά πριν από γενικά (γλυκοπατάτα πριν από πατάτα κλπ) */
+    { k: ['γλυκοπατατ'], n: 'Γλυκοπατάτες', c: ΛΑ },
+    { k: ['πατατ'], n: 'Πατάτες', c: ΛΑ },
+    { k: ['στιφαδ'], n: 'Κρεμμυδάκια στιφάδου', c: ΛΑ },
+    { k: ['κρεμμυδακ'], n: 'Φρέσκα κρεμμυδάκια', c: ΛΑ },
+    { k: ['κρεμμυδ'], n: 'Κρεμμύδια', c: ΛΑ },
+    { k: ['ντοματιν'], n: 'Ντοματίνια', c: ΛΑ },
+    { k: ['ντοματακ'], n: 'Ντοματάκια κονσέρβα', c: ΟΚ },
+    { k: ['ντοματ'], n: 'Ντομάτες', c: ΛΑ },
+    { k: ['πιπερια', 'πιπεριε'], n: 'Πιπεριές', c: ΛΑ },
+    { k: ['κολοκυθ'], n: 'Κολοκύθια', c: ΛΑ },
+    { k: ['καροτ'], n: 'Καρότα', c: ΛΑ },
+    { k: ['αγγουρ'], n: 'Αγγούρι', c: ΛΑ },
+    { k: ['μπροκολ'], n: 'Μπρόκολο', c: ΛΑ },
+    { k: ['κουνουπιδ'], n: 'Κουνουπίδι', c: ΛΑ },
+    { k: ['σπανακ'], n: 'Σπανάκι', c: ΛΑ },
+    { k: ['χορτα', 'σεσκουλ', 'βλιτ'], n: 'Χόρτα εποχής', c: ΛΑ },
+    { k: ['μαρουλ'], n: 'Μαρούλι', c: ΛΑ },
+    { k: ['ροκα'], n: 'Ρόκα', c: ΛΑ },
+    { k: ['λαχαν'], n: 'Λάχανο', c: ΛΑ },
+    { k: ['σελινοριζ', 'σελερ', 'σελιν'], n: 'Σέλερι', c: ΛΑ },
+    { k: ['πρασο', 'πρασα'], n: 'Πράσα', c: ΛΑ },
+    { k: ['μελιτζαν'], n: 'Μελιτζάνες', c: ΛΑ },
+    { k: ['μπαμι'], n: 'Μπάμιες', c: ΛΑ },
+    { k: ['αρακ'], n: 'Αρακάς (κατεψυγμένος)', c: ΛΑ },
+    { k: ['αγκιναρ'], n: 'Αγκινάρες (κατεψυγμένες)', c: ΛΑ },
+    { k: ['φασολακ', 'αμπελοφασουλ'], n: 'Φασολάκια (κατεψυγμένα)', c: ΛΑ },
+    { k: ['μανιταρ', 'πορτομπελο'], n: 'Μανιτάρια', c: ΛΑ },
+    { k: ['αβοκαντ'], n: 'Αβοκάντο', c: ΛΑ },
+    { k: ['σαλατ'], n: 'Σαλάτα εποχής', c: ΛΑ },
+    /* Όσπρια & Κονσέρβες */
+    { k: ['φακε'], n: 'Φακές', c: ΟΚ },
+    { k: ['ρεβιθ'], n: 'Ρεβίθια', c: ΟΚ },
+    { k: ['φασολ'], n: 'Φασόλια', c: ΟΚ },
+    { k: ['γιγαντ'], n: 'Γίγαντες', c: ΟΚ },
+    { k: ['φαβα'], n: 'Φάβα', c: ΟΚ },
+    { k: ['μαυροματ'], n: 'Μαυρομάτικα', c: ΟΚ },
+    { k: ['καλαμποκ'], n: 'Καλαμπόκι κονσέρβα', c: ΟΚ },
+    /* Ψωμί & Δημητριακά */
+    { k: ['ψωμι'], n: 'Ψωμί ολικής', c: ΨΔ },
+    { k: ['αραβικ', 'πιτα', 'πιτεσ'], n: 'Αραβικές πίτες ολικής', c: ΨΔ },
+    { k: ['τορτιγ'], n: 'Τορτίγιες ολικής', c: ΨΔ },
+    { k: ['παξιμαδ', 'κριθιν'], n: 'Παξιμάδια κρίθινα', c: ΨΔ },
+    { k: ['ρυζι'], n: 'Ρύζι', c: ΨΔ },
+    { k: ['μακαρον'], n: 'Μακαρόνια ολικής', c: ΨΔ },
+    { k: ['χυλοπιτ'], n: 'Χυλοπίτες', c: ΨΔ },
+    { k: ['κριθαρακ'], n: 'Κριθαράκι ολικής', c: ΨΔ },
+    { k: ['κουσ'], n: 'Κους κους', c: ΨΔ },
+    { k: ['πλιγουρ'], n: 'Πλιγούρι', c: ΨΔ },
+    { k: ['κινοα'], n: 'Κινόα', c: ΨΔ },
+    { k: ['βρωμη'], n: 'Βρώμη', c: ΨΔ },
+    /* Αυγά & Γαλακτοκομικά — τυριά πριν από «φέτα» (1 φέτα τυρί ≠ φέτα) */
+    { k: ['γιαουρτ'], n: 'Γιαούρτι στραγγιστό 2%', c: ΑΓ },
+    { k: ['cottage'], n: 'Cottage cheese', c: ΑΓ },
+    { k: ['ανθοτυρ'], n: 'Ανθότυρο', c: ΑΓ },
+    { k: ['κατικ'], n: 'Κατίκι Δομοκού', c: ΑΓ },
+    { k: ['κεφαλοτυρ'], n: 'Κεφαλοτύρι', c: ΑΓ },
+    { k: ['μυζηθρ'], n: 'Μυζήθρα ξερή', c: ΑΓ },
+    { k: ['χαλουμ'], n: 'Χαλούμι', c: ΑΓ },
+    { k: ['τυρι'], n: 'Τυρί light', c: ΑΓ },
+    { k: ['φετα'], n: 'Φέτα', c: ΑΓ },
+    { k: ['αυγα', 'αυγο', 'ασπραδ'], n: 'Αυγά', c: ΑΓ },
+    { k: ['γαλα'], n: 'Γάλα 1,5%', c: ΑΓ },
+    { k: ['πρωτειν'], n: 'Πρωτεΐνη (σκόνη)', c: ΑΛ },
+    /* Φρούτα */
+    { k: ['λεμον'], n: 'Λεμόνια', c: ΦΡ, m: true },
+    { k: ['μπαναν'], n: 'Μπανάνες', c: ΦΡ },
+    { k: ['φρουτ', 'μηλο', 'αχλαδ', 'σταφυλ', 'μουρα'], n: 'Φρούτα εποχής', c: ΦΡ },
+    /* Ξηροί καρποί & Σπόροι */
+    { k: ['αμυγδαλ'], n: 'Αμύγδαλα', c: ΞΣ },
+    { k: ['φουντουκ'], n: 'Φουντούκια', c: ΞΣ },
+    { k: ['καρυδι'], n: 'Καρύδια', c: ΞΣ },
+    { k: ['λιναροσπορ'], n: 'Λιναρόσπορος', c: ΞΣ, m: true },
+    { k: ['σουσαμ'], n: 'Σουσάμι', c: ΞΣ, m: true },
+    /* Παντοπωλείο & μικρο-υλικά (m: ξετσεκαρισμένα by default) */
+    { k: ['ελαιολαδ', 'λαδι'], n: 'Ελαιόλαδο', c: ΠΒ, m: true },
+    { k: ['ξυδι', 'βαλσαμικ', 'μπαλσαμικ'], n: 'Ξύδι/Βαλσάμικο', c: ΠΒ, m: true },
+    { k: ['μουσταρδ'], n: 'Μουστάρδα', c: ΠΒ, m: true },
+    { k: ['μελι'], n: 'Μέλι', c: ΠΒ, m: true },
+    { k: ['σογια'], n: 'Σόγια σος', c: ΠΒ, m: true },
+    { k: ['πελτε'], n: 'Πελτές ντομάτας', c: ΠΒ, m: true },
+    { k: ['ζωμ'], n: 'Ζωμός κότας', c: ΠΒ, m: true },
+    { k: ['ελιε', 'ελια'], n: 'Ελιές', c: ΠΒ, m: true },
+    { k: ['καπαρ'], n: 'Κάπαρη', c: ΠΒ, m: true },
+    { k: ['αλευρ'], n: 'Αλεύρι', c: ΠΒ, m: true },
+    { k: ['φρυγανι'], n: 'Φρυγανιά τριμμένη', c: ΠΒ, m: true },
+    { k: ['ριγαν'], n: 'Ρίγανη', c: ΠΒ, m: true },
+    { k: ['ανηθ'], n: 'Άνηθος', c: ΛΑ, m: true },
+    { k: ['μαινταν'], n: 'Μαϊντανός', c: ΛΑ, m: true },
+    { k: ['δυοσμ'], n: 'Δυόσμος', c: ΛΑ, m: true },
+    { k: ['βασιλικ'], n: 'Βασιλικός', c: ΛΑ, m: true },
+    { k: ['θυμαρ'], n: 'Θυμάρι', c: ΠΒ, m: true },
+    { k: ['δεντρολιβαν'], n: 'Δεντρολίβανο', c: ΠΒ, m: true },
+    { k: ['δαφν'], n: 'Δάφνη', c: ΠΒ, m: true },
+    { k: ['σχοινοπρασ'], n: 'Σχοινόπρασο', c: ΛΑ, m: true },
+    { k: ['κυμιν'], n: 'Κύμινο', c: ΠΒ, m: true },
+    { k: ['παπρικ'], n: 'Πάπρικα', c: ΠΒ, m: true },
+    { k: ['κανελ'], n: 'Κανέλα', c: ΠΒ, m: true },
+    { k: ['γαριφαλ'], n: 'Γαρίφαλο', c: ΠΒ, m: true },
+    { k: ['μπαχαρ'], n: 'Μπαχάρι', c: ΠΒ, m: true },
+    { k: ['μπουκοβ'], n: 'Μπούκοβο', c: ΠΒ, m: true },
+    { k: ['καρυ', 'κουρκουμ'], n: 'Κάρυ/Κουρκουμάς', c: ΠΒ, m: true },
+    { k: ['τζιντζερ'], n: 'Τζίντζερ', c: ΠΒ, m: true },
+    { k: ['σκορδ'], n: 'Σκόρδο', c: ΛΑ, m: true },
+    { k: ['αλατ'], n: 'Αλάτι', c: ΠΒ, m: true },
+    { k: ['πιπερ'], n: 'Πιπέρι', c: ΠΒ, m: true },
+    { k: ['ξυλακ'], n: 'Ξυλάκια σουβλακιού', c: ΑΛ },
+  ];
+})();
+
+/* Ταίριασμα κειμένου με προϊόν του λεξικού (ή null).
+   Στελέχη με κενό → substring στο σύνολο, αλλιώς αρχή λέξης. */
+function ingMatch(text) {
+  const p = ingNorm(ingStripParens(text));
+  if (!p) return null;
+  const words = p.split(/[^a-zα-ω0-9]+/).filter(Boolean);
+  for (const e of ING_DICT) {
+    for (const stem of e.k) {
+      if (stem.indexOf(' ') >= 0) { if (p.indexOf(stem) >= 0) return e; }
+      else if (words.some(w => w.indexOf(stem) === 0)) return e;
+    }
+  }
+  return null;
+}
+
+/* Parsing ποσότητας από μέρος γραμμής.
+   → {qty, unit} για γρ/κιλά/κονσέρβες/τεμ · null για μη μετατρέψιμες
+   μονάδες (φλ, κ.σ., κ.γλ., φέτες, σκουπ, κλωνάρια, σκελίδες, πρέζες). */
+function ingParseQty(text) {
+  const s = ingNorm(ingStripParens(text));
+  const num = x => {
+    const f = String(x).match(/(\d+)\s*\/\s*(\d+)/);
+    if (f) return (+f[1]) / (+f[2]);
+    return parseFloat(String(x).replace(',', '.'));
+  };
+  let m = s.match(/(\d+(?:[.,]\d+)?)\s*(?:γρ|gr)(?![a-zα-ω])/);
+  if (m) return { qty: clampQty(num(m[1])), unit: 'γρ' };
+  m = s.match(/(\d+(?:[.,]\d+)?)\s*κιλ/);
+  if (m) return { qty: clampQty(num(m[1])), unit: 'κιλά' };
+  m = s.match(/(\d+\s*\/\s*\d+|\d+(?:[.,]\d+)?)\s*κονσερβ/);
+  if (m) return { qty: clampQty(num(m[1])), unit: 'κονσέρβες' };
+  const words = s.split(/[^a-zα-ω0-9.\/]+/).filter(Boolean);
+  const nonconv = ['φλ', 'κ.σ', 'κσ', 'κ.γλ', 'κγλ', 'σκουπ', 'φετ', 'κλωναρ', 'σκελιδ', 'πρεζ', 'ματσ'];
+  if (words.some(w => nonconv.some(t => w.indexOf(t) === 0))) return null;
+  m = s.match(/^(\d+\s*\/\s*\d+|\d+(?:[.,]\d+)?)(?:\s*-\s*\d+)?[\s.]/);
+  if (m) return { qty: clampQty(num(m[1])), unit: 'τεμ' };
+  return { qty: 1, unit: 'τεμ' };
+}
+
+/* Μικρο-υλικό είναι η γραμμή αν ΟΛΑ τα μέρη της είναι m:true στο λεξικό */
+function ingLineMinor(line) {
+  const parts = ingSplit(line);
+  return parts.length > 0 && parts.every(p => {
+    const e = ingMatch(p);
+    return !!(e && e.m);
   });
-  return out;
+}
+
+/* Άθροισμα ποσοτήτων: γρ↔κιλά μετατροπή, ίδια μονάδα άθροισμα,
+   άγνωστη/ασύμβατη ποσότητα → +1 στην υπάρχουσα μονάδα. */
+function mergeQty(exQty, exUnit, addQty, addUnit) {
+  const ex = clampQty(exQty), exU = exUnit || 'τεμ';
+  if (addQty == null) return { qty: clampQty(ex + 1), unit: exU };
+  const mass = { 'γρ': 1, 'κιλά': 1000 };
+  if (mass[exU] && mass[addUnit]) {
+    const g = ex * mass[exU] + clampQty(addQty) * mass[addUnit];
+    return { qty: clampQty(g / mass[exU]), unit: exU };
+  }
+  if (exU === addUnit) return { qty: clampQty(ex + clampQty(addQty)), unit: exU };
+  return { qty: clampQty(ex + 1), unit: exU };
+}
+
+/* Πλάνο προσθήκης: ζεύγη {line, meal} + υπάρχοντα items →
+   { adds: νέα items (χωρίς ts), updates: [{id, qty, done:false, note?}] } */
+function ingPlanPairs(pairs, existingItems) {
+  const ex = (Array.isArray(existingItems) ? existingItems : []).filter(i => i && i.id && i.name);
+  const groups = [];
+  const byKey = {};
+  (Array.isArray(pairs) ? pairs : []).forEach(pr => {
+    if (!pr || !pr.line) return;
+    ingSplit(pr.line).forEach(part => {
+      const entry = ingMatch(part);
+      const parsed = ingParseQty(part);
+      const name = entry ? entry.n : cleanText(ingStripParens(part).replace(/\s+/g, ' '), LIMITS.name);
+      if (!name) return;
+      const key = entry ? 'd:' + entry.n : 'f:' + ingNorm(name);
+      let g = byKey[key];
+      if (!g) {
+        g = byKey[key] = { key, name, cat: entry ? entry.c : 'Άλλα', qty: null, unit: null, meals: [] };
+        groups.push(g);
+      }
+      if (parsed) {
+        if (g.qty == null) { g.qty = parsed.qty; g.unit = parsed.unit; }
+        else { const mm = mergeQty(g.qty, g.unit, parsed.qty, parsed.unit); g.qty = mm.qty; g.unit = mm.unit; }
+      } else if (g.qty != null) {
+        g.qty = clampQty(g.qty + 1);
+      }
+      if (pr.meal && g.meals.indexOf(pr.meal) < 0) g.meals.push(pr.meal);
+    });
+  });
+  const adds = [], updates = [];
+  const claimed = {};
+  groups.forEach(g => {
+    const match = ex.find(i => {
+      if (claimed[i.id]) return false;
+      const e = ingMatch(i.name);
+      return e ? ('d:' + e.n === g.key) : ('f:' + ingNorm(i.name) === g.key);
+    });
+    if (match) {
+      claimed[match.id] = true;
+      const mm = mergeQty(match.qty, match.unit || 'τεμ', g.qty, g.unit);
+      const u = { id: match.id, qty: mm.qty, done: false };
+      const oldNote = match.note || '';
+      const missing = g.meals.filter(x => oldNote.indexOf(x) < 0);
+      if (missing.length) {
+        u.note = cleanText((oldNote ? oldNote + ' · ' : '') + 'Για: ' + missing.join(', '), LIMITS.note);
+      }
+      updates.push(u);
+    } else {
+      let qty = g.qty == null ? 1 : clampQty(g.qty), unit = g.unit || 'τεμ';
+      if (unit === 'γρ' && qty >= 1000) { qty = clampQty(qty / 1000); unit = 'κιλά'; }
+      const it = { name: g.name, qty, unit, cat: g.cat, done: false };
+      if (g.meals.length) {
+        const note = cleanText('Για: ' + g.meals.join(', '), LIMITS.note);
+        if (note) it.note = note;
+      }
+      adds.push(it);
+    }
+  });
+  return { adds, updates };
+}
+
+/* Υλικά ενός γεύματος → πλάνο για τη λίστα (v8.7) */
+function ingPlan(lines, existingItems, mealName) {
+  return ingPlanPairs((Array.isArray(lines) ? lines : []).map(l => ({ line: l, meal: mealName })), existingItems);
 }
 /* Καθαρισμένο αντικείμενο item για create/edit (v8.3). null αν λείπει όνομα. Testable. */
 function itemPayload(name, qty, unit, cat, note) {
@@ -836,20 +1117,19 @@ function itemSnapshot(item) {
   if (item && item.note) it.note = item.note;
   return it;
 }
-/* Υλικά ΟΛΩΝ των γευμάτων της εβδομάδας → items λίστας (v8.6).
-   Σωρευτικό dedupe: μέσα σε συνταγή, μεταξύ γευμάτων, και με τα υπάρχοντα. Testable. */
-function weekIngItems(picks, mealsMap, existingNames) {
-  const out = [];
-  const seen = Array.isArray(existingNames) ? existingNames.slice() : [];
+/* Υλικά ΟΛΩΝ των γευμάτων της εβδομάδας → πλάνο (v8.6, έξυπνο v8.7).
+   Aggregate σε όλη την εβδομάδα και με τα υπάρχοντα· τα μικρο-υλικά
+   (ingLineMinor) παραλείπονται — όπως το default του modal. Testable. */
+function weekPlan(picks, mealsMap, existingItems) {
+  const pairs = [];
   (Array.isArray(picks) ? picks : []).forEach(id => {
     const r = mealsMap && mealsMap[id];
     if (!r || !Array.isArray(r.ing)) return;
-    mealIngItems(r.ing, seen, r.n).forEach(it => {
-      out.push(it);
-      seen.push(it.name);
+    r.ing.forEach(line => {
+      if (!ingLineMinor(line)) pairs.push({ line, meal: r.n });
     });
   });
-  return out;
+  return ingPlanPairs(pairs, existingItems);
 }
 /* Κάθε αποτυχημένο write στη βάση → toast, όχι σιωπηλή απώλεια. */
 function dbErr(err) {
@@ -2456,10 +2736,10 @@ function gOpenModal(id) {
     <h2>${r.n}</h2>
     <div class="m-meta"><span class="msr tiny" aria-hidden="true">schedule</span> ${r.t} · ποσότητες για 2 άτομα</div>
     <h3>Υλικά</h3>
-    <ul class="ing-list">${r.ing.map((x, i) => `<li><label><input type="checkbox" class="ing-chk" data-i="${i}" checked><span>${x}</span></label></li>`).join("")}</ul>
+    <ul class="ing-list">${r.ing.map((x, i) => `<li><label><input type="checkbox" class="ing-chk" data-i="${i}"${ingLineMinor(x) ? '' : ' checked'}><span>${x}</span></label></li>`).join("")}</ul>
     <div class="ing-add">
       <select id="ingListSel" aria-label="Λίστα ψώνων"></select>
-      <button type="button" id="ingAddBtn" onclick="gAddIngredients('${id}')"><span class="msr" aria-hidden="true">add_shopping_cart</span><span id="ingAddLabel">Στη λίστα (${r.ing.length})</span></button>
+      <button type="button" id="ingAddBtn" onclick="gAddIngredients('${id}')"><span class="msr" aria-hidden="true">add_shopping_cart</span><span id="ingAddLabel">Στη λίστα (${r.ing.filter(x => !ingLineMinor(x)).length})</span></button>
     </div>
     <h3>Εκτέλεση — αναλυτικά βήματα</h3>
     <ol class="m-steps">${(Array.isArray(r.steps)?r.steps:[String(r.steps)]).map(s=>`<li>${s}</li>`).join("")}</ol>
@@ -2507,7 +2787,44 @@ function gOpenModal(id) {
   document.getElementById("gOverlay").classList.add("open");
 }
 
-/* Υλικά συνταγής → επιλεγμένη λίστα ψώνων (v8.2 · επιλογή με checkbox v8.4) */
+/* Υλικά συνταγής → επιλεγμένη λίστα (v8.2 · checkbox v8.4 · έξυπνο aggregate v8.7) */
+
+/* Εφαρμογή πλάνου (adds + updates) σε λίστα με ΕΝΑ Firebase update. */
+function applyIngPlan(listId, listName, plan) {
+  const up = {};
+  plan.adds.forEach((it, idx) => {
+    it.ts = Date.now() + idx;
+    up[newId() + idx] = it;
+  });
+  plan.updates.forEach(u => {
+    up[u.id + '/qty'] = u.qty;
+    up[u.id + '/done'] = false;
+    if (u.note) up[u.id + '/note'] = u.note;
+  });
+  const msg = [];
+  if (plan.adds.length) msg.push(plan.adds.length + ' νέα');
+  if (plan.updates.length) msg.push(plan.updates.length + ' ενημερώθηκαν');
+  db.ref('rooms/' + ROOM + '/lists/' + listId + '/items').update(up)
+    .then(() => showToast('Λίστα «' + (listName || 'Λίστα') + '»: ' + msg.join(' · ')))
+    .catch(dbErr);
+}
+
+/* Νέα λίστα «Ψώνια» από πλάνο (όταν δεν υπάρχει καμία λίστα). */
+function newListFromPlan(plan, toastMsg) {
+  const nid = newId();
+  const items = {};
+  plan.adds.forEach((it, idx) => {
+    it.ts = Date.now() + idx;
+    items[newId() + idx] = it;
+  });
+  db.ref('rooms/' + ROOM + '/lists/' + nid)
+    .set({ name: 'Ψώνια', ts: Date.now(), items })
+    .then(() => showToast(toastMsg))
+    .catch(dbErr);
+  activeId = nid;
+  lsSet('sm-active-' + ROOM, nid);
+}
+
 function gAddIngredients(id) {
   const r = MEALS[id];
   if (!r) return;
@@ -2520,32 +2837,13 @@ function gAddIngredients(id) {
   const sel = document.getElementById('ingListSel');
   const listId = sel ? sel.value : '';
   if (!listId || !lists[listId]) {
-    /* Δεν υπάρχει καμία λίστα → νέα λίστα «Ψώνια» με τα επιλεγμένα υλικά */
-    const nid = newId();
-    const items = {};
-    mealIngItems(picked, [], r.n).forEach((it, idx) => {
-      it.ts = Date.now() + idx;
-      items[newId() + idx] = it;
-    });
-    db.ref('rooms/' + ROOM + '/lists/' + nid)
-      .set({ name: 'Ψώνια', ts: Date.now(), items })
-      .then(() => showToast('Νέα λίστα «Ψώνια» με τα υλικά του γεύματος'))
-      .catch(dbErr);
-    activeId = nid;
-    lsSet('sm-active-' + ROOM, nid);
+    newListFromPlan(ingPlan(picked, [], r.n), 'Νέα λίστα «Ψώνια» με τα υλικά του γεύματος');
     return;
   }
   const l = { id: listId, ...lists[listId] };
-  const toAdd = mealIngItems(picked, itemArray(l).map(i => i.name), r.n);
-  if (!toAdd.length) { showToast('Όλα τα υλικά υπάρχουν ήδη στη λίστα'); return; }
-  const updates = {};
-  toAdd.forEach((it, idx) => {
-    it.ts = Date.now() + idx;
-    updates[newId() + idx] = it;
-  });
-  db.ref('rooms/' + ROOM + '/lists/' + listId + '/items').update(updates)
-    .then(() => showToast('Μπήκαν ' + toAdd.length + ' υλικά στη λίστα «' + (l.name || 'Λίστα') + '»'))
-    .catch(dbErr);
+  const plan = ingPlan(picked, itemArray(l), r.n);
+  if (!plan.adds.length && !plan.updates.length) { showToast('Τίποτα νέο για προσθήκη'); return; }
+  applyIngPlan(listId, l.name, plan);
 }
 
 /* In-app AI μέσω Netlify function. Η απάντηση είναι untrusted → ΜΟΝΟ textContent. */
@@ -2617,36 +2915,18 @@ document.getElementById("gClearBtn").addEventListener("click", () => {
   gState.done = Array(14).fill(false); gSave(); gRender();
 });
 
-/* v8.6: υλικά ΟΛΗΣ της εβδομάδας → ενεργή λίστα (ή νέα «Ψώνια») */
+/* v8.6: υλικά ΟΛΗΣ της εβδομάδας → ενεργή λίστα (ή νέα «Ψώνια») · v8.7 έξυπνο aggregate */
 document.getElementById('gWeekShopBtn').addEventListener('click', () => {
   const l = getActive();
   const target = l ? `στη λίστα «${l.name}»` : 'σε νέα λίστα «Ψώνια»';
-  openConfirm(`Να μπουν τα υλικά όλων των γευμάτων της εβδομάδας ${target};`, () => {
+  openConfirm(`Να μπουν τα υλικά όλων των γευμάτων της εβδομάδας ${target}; (ποσότητες αθροίζονται σε όσα υπάρχουν ήδη)`, () => {
     if (!l) {
-      const nid = newId();
-      const items = {};
-      weekIngItems(gState.picks, MEALS, []).forEach((it, idx) => {
-        it.ts = Date.now() + idx;
-        items[newId() + idx] = it;
-      });
-      db.ref('rooms/' + ROOM + '/lists/' + nid)
-        .set({ name: 'Ψώνια', ts: Date.now(), items })
-        .then(() => showToast('Νέα λίστα «Ψώνια» με τα υλικά της εβδομάδας'))
-        .catch(dbErr);
-      activeId = nid;
-      lsSet('sm-active-' + ROOM, nid);
+      newListFromPlan(weekPlan(gState.picks, MEALS, []), 'Νέα λίστα «Ψώνια» με τα υλικά της εβδομάδας');
       return;
     }
-    const toAdd = weekIngItems(gState.picks, MEALS, itemArray(l).map(i => i.name));
-    if (!toAdd.length) { showToast('Όλα τα υλικά της εβδομάδας υπάρχουν ήδη στη λίστα'); return; }
-    const updates = {};
-    toAdd.forEach((it, idx) => {
-      it.ts = Date.now() + idx;
-      updates[newId() + idx] = it;
-    });
-    db.ref('rooms/' + ROOM + '/lists/' + l.id + '/items').update(updates)
-      .then(() => showToast(`Μπήκαν ${toAdd.length} υλικά στη λίστα «${l.name}»`))
-      .catch(dbErr);
+    const plan = weekPlan(gState.picks, MEALS, itemArray(l));
+    if (!plan.adds.length && !plan.updates.length) { showToast('Τίποτα νέο για προσθήκη'); return; }
+    applyIngPlan(l.id, l.name, plan);
   }, 'Προσθήκη');
 });
 

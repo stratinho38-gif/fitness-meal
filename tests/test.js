@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, mealIngItems, itemPayload, itemSnapshot, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, mealIngItems, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -121,6 +121,26 @@ t('itemSnapshot: done → boolean', snap.done === true);
 t('itemSnapshot: χωρίς id', !('id' in snap));
 t('itemSnapshot: χωρίς note όταν λείπει', !('note' in m.itemSnapshot({ name: 'Ψωμί' })));
 t('itemSnapshot: defaults σε ελλιπές item', (() => { const s = m.itemSnapshot({}); return s.qty === 1 && s.unit === 'τεμ' && s.cat === 'Άλλα' && s.done === false && s.ts === 0; })());
+
+// Δωμάτιο (v8.5): validRoomCode — ίδιο pattern με Database Rules
+t('validRoomCode: έγκυρος', m.validRoomCode('abc123XYZ') === true);
+t('validRoomCode: trim', m.validRoomCode('  abcd  ') === true);
+t('validRoomCode: με - και _', m.validRoomCode('a-b_c-d') === true);
+t('validRoomCode: 4 chars min ok', m.validRoomCode('abcd') === true);
+t('validRoomCode: 3 chars → όχι', m.validRoomCode('abc') === false);
+t('validRoomCode: 20 chars ok', m.validRoomCode('a'.repeat(20)) === true);
+t('validRoomCode: 21 chars → όχι', m.validRoomCode('a'.repeat(21)) === false);
+t('validRoomCode: ελληνικά → όχι', m.validRoomCode('αβγδε') === false);
+t('validRoomCode: κενό/null → όχι', m.validRoomCode('') === false && m.validRoomCode(null) === false);
+t('validRoomCode: με κενό στη μέση → όχι', m.validRoomCode('ab cd') === false);
+
+// Προσβασιμότητα & τυπογραφία (v8.5) — δομικοί έλεγχοι
+t('v8.5: focus-visible στο CSS', html.includes(':focus-visible'));
+t('v8.5: prefers-reduced-motion', html.includes('prefers-reduced-motion'));
+t('v8.5: role=dialog στα sheets/dialogs', (html.match(/role="dialog"/g) || []).length >= 5);
+t('v8.5: aria-hidden pass για ligature icons', script.includes("setAttribute('aria-hidden'"));
+t('v8.5: line-height στο body', /body\s*{[^}]*line-height/.test(html));
+t('v8.5: κανένα font-size κάτω από 12px στο CSS', !/font-size:\s*(?:[0-9]|10|11)(?:\.\d+)?px/.test(html.slice(0, html.indexOf('</style>'))));
 
 // Επιλογή υλικών γεύματος (v8.4) — δομικοί έλεγχοι στο script
 t('v8.4: checkbox ανά υλικό στο modal', /class="ing-chk" data-i=/.test(script));

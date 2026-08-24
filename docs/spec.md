@@ -1,6 +1,6 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v8.4 (Επιλογή υλικών γεύματος → λίστα)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v8.5 (Τυπογραφία, προσβασιμότητα, δωμάτιο στο μενού)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
@@ -87,6 +87,13 @@
 - **Undo διαγραφής**: το ✕ διαγράφει και δείχνει snackbar **«Διαγράφηκε» με κουμπί «Αναίρεση»** (5"): επαναφέρει το item στο ίδιο path με τα ίδια δεδομένα. Το snackbar απέκτησε προαιρετικό action (`showToast(msg, {label, fn})`, pointer-events μόνο όταν έχει action)· χρώμα action από νέο token `--inverse-primary` (light+dark).
 - **Pure functions** (testable, πριν το Room block): `itemPayload(name, qty, unit, cat, note)` — καθαρισμένο αντικείμενο item για create/edit (null αν δεν έχει όνομα) · `itemSnapshot(item)` — αντίγραφο item χωρίς `id` για την επαναφορά undo.
 - **Touch targets**: αόρατη επέκταση hit area (::before, inset −6px) στα κουμπιά +/−/✕ των γραμμών και στο 🔄 swap των γευμάτων (~42px). Checkbox λίστας 24px τυλιγμένο σε `<label class="cbwrap">` 40×40. `.app` padding-bottom 176px ώστε το τέλος της λίστας να καθαρίζει το FAB.
+
+### Τυπογραφία, προσβασιμότητα, δωμάτιο στο μενού (v8.5)
+
+- **Τυπογραφική κλίμακα**: τίποτα κάτω από 12px — tags «Μεσημέρι/Βράδυ» 12px (min-width 76), σημειώσεις items 13px, meta/counters 12.5px, macros labels 12px. `body { line-height: 1.45 }`. Hero τίτλος 22px/700. Safe area top στο `.app` (`env(safe-area-inset-top)`).
+- **Προσβασιμότητα**: καθολικό `:focus-visible` outline · `prefers-reduced-motion: reduce` κόβει transitions/animations · sheets & dialogs με `role="dialog"`, `aria-modal`, `aria-labelledby` (το modal συνταγής παίρνει `aria-label` το όνομα της συνταγής) · όλα τα ligature icons (`.msr`) με `aria-hidden` (στατικά μέσω init pass, δυναμικά στο σημείο δημιουργίας) · icon-only κουμπιά με `aria-label` (FAB, +/−/✕, swap, ⋮, chip «✓», scheme, navSwitch, swatches) · `--lunch` (light) σκούρυνε σε `#8a5719` για αντίθεση AA.
+- **Δωμάτιο στο μενού λίστας**: εμφάνιση του room code + κουμπί **«Σύνδεση σε άλλο δωμάτιο»** → modal εισαγωγής κωδικού· έγκυρος = `[A-Za-z0-9_-]{4,20}` (pure `validRoomCode`, testable)· θέτει το URL hash και το υπάρχον hashchange listener αποθηκεύει & κάνει reload. Άκυρος κωδικός ή ίδιο δωμάτιο → toast, καμία αλλαγή.
+- **Επιβεβαίωση στο 🎲 «Νέα εβδομάδα»** (confirm dialog): προστασία από κατά λάθος αντικατάσταση του εβδομαδιαίου προγράμματος.
 
 ### Schema (Firebase)
 ```

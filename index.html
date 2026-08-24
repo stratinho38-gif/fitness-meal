@@ -43,7 +43,7 @@
     --warn-bg: #fef3c7;
     --warn-border: #fcd34d;
     --warn-text: #92400e;
-    --lunch: #b9762a;  --lunch-soft: #f8efe2;
+    --lunch: #8a5719;  --lunch-soft: #f8efe2;   /* v8.5: πιο σκούρο για αντίθεση AA */
     --dinner: #4a5f9e; --dinner-soft: #e9edf8;
     --elev1: 0 1px 2px rgba(0,0,0,.05), 0 1px 3px rgba(0,0,0,.08);
     --elev2: 0 2px 6px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
@@ -125,9 +125,16 @@
     background: var(--surface);
     color: var(--text);
     min-height: 100vh;
+    line-height: 1.45; /* v8.5: αναπνοή στα 2γραμμα κείμενα */
   }
   button { font-family: inherit; }
-  .app { max-width: 680px; margin: 0 auto; padding: 12px 14px 176px; } /* v8.3: καθαρίζει το FAB στο τέλος της λίστας */
+  .app { max-width: 680px; margin: 0 auto; padding: calc(12px + env(safe-area-inset-top)) 14px 176px; } /* v8.3 FAB clearance · v8.5 safe area top */
+  /* v8.5: ορατό focus για πληκτρολόγιο/switch access */
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  /* v8.5: σεβασμός στο prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
 
   /* ---------- Material Symbols (ligatures) ---------- */
   .msr {
@@ -149,7 +156,7 @@
     box-shadow: var(--elev2);
   }
   .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .hero h1 { font-size: 20px; margin: 0; font-weight: 500; letter-spacing: .2px; }
+  .hero h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: .2px; } /* v8.5 */
   .hero-actions { display: flex; gap: 10px; align-items: center; }
   .scheme-btn {
     border: none; background: rgba(0,0,0,.16); color: var(--on-primary);
@@ -183,7 +190,7 @@
     background: var(--primary); color: var(--on-primary); font-weight: 700; box-shadow: var(--elev1);
   }
   .list-tab .count {
-    font-size: 11.5px; background: rgba(0,0,0,.08); border-radius: 999px; padding: 1px 7px;
+    font-size: 12px; background: rgba(0,0,0,.08); border-radius: 999px; padding: 1px 7px;
   }
   .list-tab.active .count { background: rgba(255,255,255,.22); }
   .list-tab.active .more {
@@ -267,7 +274,7 @@
   }
   .item .body { flex: 1; min-width: 0; cursor: pointer; }
   .item .name { font-size: 15px; word-break: break-word; display: block; }
-  .item .note { font-size: 12px; color: var(--muted); display: block; margin-top: 1px; }
+  .item .note { font-size: 13px; color: var(--muted); display: block; margin-top: 1px; } /* v8.5 */
   .item.done .name, .item.done .note { text-decoration: line-through; color: var(--disabled); }
   .item .qty {
     font-size: 12.5px; color: var(--on-primary-container); background: var(--primary-container);
@@ -447,14 +454,14 @@
   #viewGym .gym-meta { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; }
   #viewGym .gym-meta button { font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--outline-variant); background: var(--surface-container); color: var(--text); padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
   #viewGym .gym-meta button .msr { font-size: 16px; }
-  #viewGym .gym-updated { font-size: 11.5px; color: var(--muted); flex: 1; text-align: right; }
+  #viewGym .gym-updated { font-size: 12.5px; color: var(--muted); flex: 1; text-align: right; } /* v8.5 */
   #viewGym .gym-note { background: var(--surface-container); border-radius: 16px; padding: 4px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--muted); }
   #viewGym .gym-note summary { cursor: pointer; padding: 8px 0; font-weight: 600; color: var(--text); font-size: 13px; }
   #viewGym .gym-note p { margin: 0 0 10px; line-height: 1.5; white-space: pre-wrap; }
   #viewGym .ex-card { background: var(--surface-container); border-radius: 16px; padding: 13px 14px; margin-bottom: 10px; box-shadow: var(--elev1); }
   #viewGym .ex-name { font-size: 14.5px; font-weight: 700; margin-bottom: 7px; }
   #viewGym .ex-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  #viewGym .ex-chip { font-size: 11.5px; font-weight: 600; background: var(--surface-variant); color: var(--text); border-radius: 8px; padding: 4px 8px; }
+  #viewGym .ex-chip { font-size: 12.5px; font-weight: 600; background: var(--surface-variant); color: var(--text); border-radius: 8px; padding: 4px 8px; } /* v8.5 */
   #viewGym .ex-chip.kg { background: var(--primary-container); color: var(--on-primary-container); }
   #viewGym .ex-notes { font-size: 12px; color: var(--muted); margin-top: 7px; line-height: 1.45; }
   #viewGym .gym-total { text-align: center; font-size: 12.5px; color: var(--muted); margin: 12px 0 4px; }
@@ -475,15 +482,15 @@
   #viewHome .hl-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #viewHome .hl-bar { width: 84px; height: 6px; background: var(--surface-variant); border-radius: 99px; overflow: hidden; flex-shrink: 0; }
   #viewHome .hl-bar i { display: block; height: 100%; border-radius: 99px; transition: width .3s; }
-  #viewHome .hl-count { font-size: 11.5px; color: var(--muted); min-width: 42px; text-align: right; flex-shrink: 0; }
+  #viewHome .hl-count { font-size: 12.5px; color: var(--muted); min-width: 46px; text-align: right; flex-shrink: 0; } /* v8.5 */
   #viewHome .home-meal { display: flex; align-items: center; gap: 10px; padding: 9px 0; cursor: pointer; }
   #viewHome .home-meal + .home-meal { border-top: 1px dashed var(--surface-variant); }
-  #viewHome .tag { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 99px; width: 72px; text-align: center; flex-shrink: 0; }
+  #viewHome .tag { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 99px; min-width: 76px; text-align: center; flex-shrink: 0; } /* v8.5 */
   #viewHome .tag.lunch { background: var(--lunch-soft); color: var(--lunch); }
   #viewHome .tag.dinner { background: var(--dinner-soft); color: var(--dinner); }
   #viewHome .hm-name { flex: 1; font-size: 14px; font-weight: 600; min-width: 0; }
   #viewHome .hm-done { text-decoration: line-through; color: var(--muted); font-weight: 400; }
-  #viewHome .hm-meta { font-size: 11.5px; color: var(--muted); flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; }
+  #viewHome .hm-meta { font-size: 12.5px; color: var(--muted); flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; } /* v8.5 */
   #viewHome .home-link { margin-top: 10px; border: none; background: var(--primary-container); color: var(--on-primary-container); font-weight: 700; font-size: 13px; padding: 9px 14px; border-radius: 999px; cursor: pointer; }
   #viewHome .hp-bar { height: 8px; background: var(--surface-variant); border-radius: 99px; overflow: hidden; }
   #viewHome .hp-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; transition: width .3s; }
@@ -501,16 +508,16 @@
   #viewMeals .g-pct { font-size: 12px; color: var(--muted); min-width: 78px; text-align: right; }
   #viewMeals .day { background: var(--surface-container); border-radius: 16px; margin-bottom: 10px; overflow: hidden; box-shadow: var(--elev1); }
   #viewMeals .day-head { padding: 10px 14px; font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--surface-variant); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-  #viewMeals .day-kcal { font-weight: 400; font-size: 11.5px; color: var(--muted); }
+  #viewMeals .day-kcal { font-weight: 400; font-size: 12.5px; color: var(--muted); } /* v8.5 */
   #viewMeals .slot { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
   #viewMeals .slot + .slot { border-top: 1px dashed var(--surface-variant); }
   #viewMeals .slot input[type=checkbox] { width: 19px; height: 19px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
-  #viewMeals .tag { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 99px; flex-shrink: 0; width: 72px; text-align: center; }
+  #viewMeals .tag { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 99px; flex-shrink: 0; min-width: 76px; text-align: center; } /* v8.5 */
   #viewMeals .tag.lunch { background: var(--lunch-soft); color: var(--lunch); }
   #viewMeals .tag.dinner { background: var(--dinner-soft); color: var(--dinner); }
   #viewMeals .meal { flex: 1; min-width: 0; cursor: pointer; }
   #viewMeals .meal-name { font-size: 14px; font-weight: 600; }
-  #viewMeals .meal-meta { font-size: 11.5px; color: var(--muted); margin-top: 1px; display: flex; align-items: center; gap: 3px; }
+  #viewMeals .meal-meta { font-size: 12.5px; color: var(--muted); margin-top: 1px; display: flex; align-items: center; gap: 3px; } /* v8.5 */
   #viewMeals .slot.done .meal-name { text-decoration: line-through; color: var(--muted); font-weight: 400; }
   #viewMeals .g-swap { border: none; background: var(--surface-variant); color: var(--muted); border-radius: 999px; width: 30px; height: 30px; font-size: 17px; cursor: pointer; flex-shrink: 0; position: relative; }
   #viewMeals .g-foot { margin-top: 14px; font-size: 12px; color: var(--warn-text); line-height: 1.5; background: var(--warn-bg); border-radius: 16px; padding: 12px 16px; }
@@ -538,7 +545,7 @@
   .g-modal .macros { display: flex; gap: 8px; margin-top: 14px; }
   .g-modal .macros div { flex: 1; background: var(--primary-container); border-radius: 10px; padding: 8px 4px; text-align: center; }
   .g-modal .macros b { display: block; font-size: 15px; }
-  .g-modal .macros span { font-size: 10.5px; color: var(--muted); }
+  .g-modal .macros span { font-size: 12px; color: var(--muted); } /* v8.5 */
   .g-modal .g-close { margin-top: 16px; width: 100%; padding: 12px; border-radius: 999px; border: none; background: var(--primary); color: var(--on-primary); font-size: 15px; font-weight: 600; cursor: pointer; }
   /* AI συνταγές (v6.2) — M3 outlined + filled buttons */
   .ai-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -594,7 +601,7 @@
     <div class="filters">
       <button class="chip active" data-f="all">Όλα</button>
       <button class="chip" data-f="left">Μένουν</button>
-      <button class="chip" data-f="done"><span class="msr">done</span></button>
+      <button class="chip" data-f="done" aria-label="Στο καλάθι"><span class="msr">done</span></button>
     </div>
     <div class="bulk">
       <button id="bulkUncheck" onclick="uncheckAll()"><span class="msr">undo</span>Ξετσεκάρισμα</button>
@@ -656,15 +663,15 @@
   <button id="navGymΓ" class="ng"><span class="ic">Γ</span>Ώμοι</button>
   <button id="navGymΔ" class="ng"><span class="ic">Δ</span>Πλάτη</button>
   <button id="navGymΕ" class="ng"><span class="ic">Ε</span>Οπίσθιοι</button>
-  <button id="navSwitch" class="nav-switch" title="Πρόγραμμα γυμναστηρίου"><span id="navSwitchIc" class="msr">fitness_center</span></button>
+  <button id="navSwitch" class="nav-switch" title="Πρόγραμμα γυμναστηρίου" aria-label="Πρόγραμμα γυμναστηρίου"><span id="navSwitchIc" class="msr">fitness_center</span></button>
 </nav>
 
-<button class="fab msr" id="fab" onclick="openAddSheet()" title="Προσθήκη προϊόντος" style="display:none">add</button>
+<button class="fab msr" id="fab" onclick="openAddSheet()" title="Προσθήκη προϊόντος" aria-label="Προσθήκη προϊόντος" style="display:none">add</button>
 
 <div class="sheet-bg" id="sheetBg" onclick="closeSheets()"></div>
 
 <!-- List actions sheet -->
-<div class="sheet" id="menuSheet">
+<div class="sheet" id="menuSheet" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
   <div class="grip"></div>
   <h3 id="menuTitle"></h3>
   <button class="menu-item" onclick="closeSheets(); addDietItems()"><span class="ic msr">restaurant_menu</span> Προσθήκη προγράμματος διατροφής</button>
@@ -673,6 +680,9 @@
   <button class="menu-item" onclick="closeSheets(); duplicateList()"><span class="ic msr">content_copy</span> Δημιουργία αντιγράφου</button>
   <button class="menu-item" onclick="closeSheets(); shareLink()"><span class="ic msr">share</span> Κοινοποίηση λίστας</button>
   <div class="menu-sep"></div>
+  <div class="color-label"><span class="msr">vpn_key</span><span>Δωμάτιο: <b id="roomCodeTxt"></b></span></div>
+  <button class="menu-item" onclick="closeSheets(); joinRoom()"><span class="ic msr">login</span> Σύνδεση σε άλλο δωμάτιο</button>
+  <div class="menu-sep"></div>
   <div class="color-label"><span class="msr">palette</span>Χρώμα λίστας</div>
   <div class="swatches" id="colorSwatches"></div>
   <div class="menu-sep"></div>
@@ -680,9 +690,9 @@
 </div>
 
 <!-- Template editor sheet (στάνταρ πρόγραμμα, v7.1) -->
-<div class="sheet" id="tplSheet">
+<div class="sheet" id="tplSheet" role="dialog" aria-modal="true" aria-labelledby="tplTitle">
   <div class="grip"></div>
-  <h3>Στάνταρ λίστα προγράμματος</h3>
+  <h3 id="tplTitle">Στάνταρ λίστα προγράμματος</h3>
   <div class="tpl-sub">Ό,τι αλλάξεις εδώ ισχύει για κάθε επόμενη «Προσθήκη προγράμματος» — κοινό και για τους δύο.</div>
   <button class="menu-item" onclick="openAddSheet('template')"><span class="ic msr">add</span> Προσθήκη προϊόντος στο στάνταρ</button>
   <div id="tplList"></div>
@@ -691,7 +701,7 @@
 </div>
 
 <!-- Add product sheet -->
-<div class="sheet" id="addSheet">
+<div class="sheet" id="addSheet" role="dialog" aria-modal="true" aria-labelledby="addTitle">
   <div class="grip"></div>
   <h3 id="addTitle">Προσθήκη προϊόντος</h3>
   <form onsubmit="addItem(event)">
@@ -724,7 +734,7 @@
 <div class="toast" id="toast"></div>
 
 <div class="modal-bg" id="modalBg">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <h3 id="modalTitle"></h3>
     <input type="text" id="modalInput" autocomplete="off" maxlength="60">
     <div class="row">
@@ -735,7 +745,7 @@
 </div>
 
 <div class="modal-bg" id="confirmBg">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <h3 id="confirmTitle"></h3>
     <div class="row">
       <button onclick="closeConfirm()">Άκυρο</button>
@@ -778,6 +788,10 @@ function clampQty(v) {
 }
 function cleanText(v, max) {
   return String(v == null ? '' : v).trim().slice(0, max);
+}
+/* Έγκυρος κωδικός δωματίου (ίδιο pattern με Database Rules & hash). Testable. (v8.5) */
+function validRoomCode(c) {
+  return /^[A-Za-z0-9_-]{4,20}$/.test(String(c == null ? '' : c).trim());
 }
 /* Υλικά συνταγής → items λίστας (v8.2). Dedupe με υπάρχοντα ονόματα (case-insensitive)
    και μέσα στην ίδια συνταγή. Χωρίς ts — το βάζει ο caller. */
@@ -1150,6 +1164,8 @@ function render() {
       more.className = 'more msr';
       more.textContent = 'more_vert';
       more.title = 'Επιλογές λίστας';
+      more.setAttribute('role', 'button');
+      more.setAttribute('aria-label', 'Επιλογές λίστας');
       more.onclick = (e) => { e.stopPropagation(); openMenuSheet(); };
       btn.appendChild(more);
     }
@@ -1181,7 +1197,7 @@ function render() {
   if (!list) {
     const d = document.createElement('div');
     d.className = 'empty';
-    d.innerHTML = '<div class="big msr">shopping_cart</div>Καμία λίστα ακόμα.<br>';
+    d.innerHTML = '<div class="big msr" aria-hidden="true">shopping_cart</div>Καμία λίστα ακόμα.<br>';
     const b = document.createElement('button');
     b.className = 'cta';
     b.textContent = 'Ξεκίνα με το πρόγραμμα διατροφής';
@@ -1203,13 +1219,13 @@ function render() {
   }
 
   if (total === 0) {
-    content.innerHTML = '<div class="empty"><div class="big msr">checklist</div>Η λίστα είναι άδεια.<br>Πάτα το + για προϊόν ή άνοιξε το μενού της λίστας για το πρόγραμμα.</div>';
+    content.innerHTML = '<div class="empty"><div class="big msr" aria-hidden="true">checklist</div>Η λίστα είναι άδεια.<br>Πάτα το + για προϊόν ή άνοιξε το μενού της λίστας για το πρόγραμμα.</div>';
     return;
   }
 
   const visible = items.filter(i => filter === 'all' || (filter === 'left' ? !i.done : i.done));
   if (!visible.length) {
-    content.innerHTML = '<div class="empty"><div class="big msr">' +
+    content.innerHTML = '<div class="empty"><div class="big msr" aria-hidden="true">' +
       (filter === 'left' ? 'celebration' : 'search_off') + '</div>' +
       (filter === 'left' ? 'Όλα στο καλάθι — μπράβο σας!' : 'Τίποτα εδώ ακόμα.') + '</div>';
     return;
@@ -1235,6 +1251,7 @@ function render() {
     const h = document.createElement('h2');
     const hIc = document.createElement('span');
     hIc.className = 'msr cat-ic';
+    hIc.setAttribute('aria-hidden', 'true');
     hIc.textContent = CAT_ICON[cat] || 'inventory_2';
     const hTx = document.createElement('span');
     hTx.textContent = cat;   /* πιθανό user data → textContent */
@@ -1244,6 +1261,7 @@ function render() {
     cc.textContent = catItems.filter(i => !i.done).length + '/' + catItems.length;
     const chev = document.createElement('span');
     chev.className = 'chev msr';
+    chev.setAttribute('aria-hidden', 'true');
     chev.textContent = 'expand_more';
     header.appendChild(h); header.appendChild(cc); header.appendChild(chev);
     section.appendChild(header);
@@ -1305,6 +1323,7 @@ function renderItem(listId, item) {
   minus.className = 'msr';
   minus.textContent = 'remove';
   minus.title = 'Μείωση';
+  minus.setAttribute('aria-label', 'Μείωση ποσότητας');
   minus.onclick = () => {
     const next = Math.round((qty - step) * 100) / 100;
     if (next >= step) db.ref(base + '/qty').set(next).catch(dbErr);
@@ -1313,6 +1332,7 @@ function renderItem(listId, item) {
   plus.className = 'msr';
   plus.textContent = 'add';
   plus.title = 'Αύξηση';
+  plus.setAttribute('aria-label', 'Αύξηση ποσότητας');
   plus.onclick = () => db.ref(base + '/qty').set(clampQty(qty + step)).catch(dbErr);
   btns.appendChild(minus); btns.appendChild(plus);
 
@@ -1320,6 +1340,7 @@ function renderItem(listId, item) {
   del.className = 'del msr';
   del.textContent = 'close';
   del.title = 'Διαγραφή';
+  del.setAttribute('aria-label', 'Διαγραφή προϊόντος');
   del.onclick = () => {
     /* v8.3: διαγραφή με Αναίρεση — κρατάμε αντίγραφο και το επαναφέρουμε στο ίδιο path */
     const snap = itemSnapshot(item);
@@ -1363,6 +1384,7 @@ function buildSwatches(l) {
     b.className = 'swatch msr' + (key === current ? ' sel' : '');
     b.style.background = 'linear-gradient(135deg,' + c.primary + ',' + c.light + ')';
     b.title = c.name;
+    b.setAttribute('aria-label', 'Χρώμα: ' + c.name);
     b.textContent = key === current ? 'check' : '';
     b.onclick = () => {
       db.ref('rooms/' + ROOM + '/lists/' + l.id + '/color').set(key).catch(dbErr);
@@ -1606,6 +1628,7 @@ function tplRow(it) {
   minus.className = 'msr';
   minus.textContent = 'remove';
   minus.title = 'Μείωση';
+  minus.setAttribute('aria-label', 'Μείωση ποσότητας');
   minus.onclick = () => {
     if (!guard()) return;
     const next = Math.round((qty - step) * 100) / 100;
@@ -1615,6 +1638,7 @@ function tplRow(it) {
   plus.className = 'msr';
   plus.textContent = 'add';
   plus.title = 'Αύξηση';
+  plus.setAttribute('aria-label', 'Αύξηση ποσότητας');
   plus.onclick = () => {
     if (!guard()) return;
     db.ref(tplPath() + '/' + it.id + '/qty').set(clampQty(qty + step)).catch(dbErr);
@@ -1623,6 +1647,7 @@ function tplRow(it) {
   del.className = 'del msr';
   del.textContent = 'close';
   del.title = 'Αφαίρεση από το στάνταρ';
+  del.setAttribute('aria-label', 'Αφαίρεση από το στάνταρ');
   del.onclick = () => {
     if (!guard()) return;
     db.ref(tplPath() + '/' + it.id).remove().catch(dbErr);
@@ -1700,6 +1725,16 @@ function clearChecked() {
     const updates = {};
     checked.forEach(i => { updates[i.id] = null; });
     db.ref('rooms/' + ROOM + '/lists/' + l.id + '/items').update(updates).catch(dbErr);
+  });
+}
+
+/* ---------- Δωμάτιο (v8.5) ---------- */
+function joinRoom() {
+  openModal('Σύνδεση σε δωμάτιο', 'Κωδικός δωματίου', '', code => {
+    const c = String(code).trim();
+    if (!validRoomCode(c)) { showToast('Μη έγκυρος κωδικός (4-20 λατινικά γράμματα/αριθμοί/-/_)'); return; }
+    if (c === ROOM) { showToast('Είσαι ήδη σε αυτό το δωμάτιο'); return; }
+    location.hash = 'r=' + c;   /* hashchange listener: αποθήκευση + reload */
   });
 }
 
@@ -1816,6 +1851,12 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeSheets();
 });
 
+/* v8.5: τα στατικά ligature icons (spans) είναι διακοσμητικά — να μη διαβάζονται από
+   screen readers. Τα icon-only buttons (FAB, θέμα κ.λπ.) ΔΕΝ κρύβονται — έχουν aria-label. */
+document.querySelectorAll('span.msr:not([role])').forEach(el => el.setAttribute('aria-hidden', 'true'));
+/* v8.5: κωδικός δωματίου στο μενού λίστας */
+document.getElementById('roomCodeTxt').textContent = ROOM;
+
 /* ---------- Ρύθμιση θέματος (auto / light / dark) ---------- */
 const SCHEME_META = {
   auto:  { icon: 'brightness_auto', label: 'Αυτόματο (σύστημα)' },
@@ -1832,6 +1873,7 @@ function applyScheme() {
   document.querySelectorAll('.scheme-btn').forEach(b => {
     b.textContent = m.icon;
     b.title = 'Θέμα: ' + m.label;
+    b.setAttribute('aria-label', 'Θέμα: ' + m.label);
   });
   applyTheme(themeColorKey);
   homeRender();   /* τα χρώματα του snapshot ακολουθούν το σχήμα */
@@ -2390,14 +2432,17 @@ function gOpenModal(id) {
   if (!r) return;
   const m = document.getElementById("gModal");
   // Στατικά δεδομένα συνταγών (hardcoded στον κώδικα) — όχι user input.
+  m.setAttribute('role', 'dialog');
+  m.setAttribute('aria-modal', 'true');
+  m.setAttribute('aria-label', r.n);
   m.innerHTML = `
     <h2>${r.n}</h2>
-    <div class="m-meta"><span class="msr tiny">schedule</span> ${r.t} · ποσότητες για 2 άτομα</div>
+    <div class="m-meta"><span class="msr tiny" aria-hidden="true">schedule</span> ${r.t} · ποσότητες για 2 άτομα</div>
     <h3>Υλικά</h3>
     <ul class="ing-list">${r.ing.map((x, i) => `<li><label><input type="checkbox" class="ing-chk" data-i="${i}" checked><span>${x}</span></label></li>`).join("")}</ul>
     <div class="ing-add">
       <select id="ingListSel" aria-label="Λίστα ψώνων"></select>
-      <button type="button" id="ingAddBtn" onclick="gAddIngredients('${id}')"><span class="msr">add_shopping_cart</span><span id="ingAddLabel">Στη λίστα (${r.ing.length})</span></button>
+      <button type="button" id="ingAddBtn" onclick="gAddIngredients('${id}')"><span class="msr" aria-hidden="true">add_shopping_cart</span><span id="ingAddLabel">Στη λίστα (${r.ing.length})</span></button>
     </div>
     <h3>Εκτέλεση — αναλυτικά βήματα</h3>
     <ol class="m-steps">${(Array.isArray(r.steps)?r.steps:[String(r.steps)]).map(s=>`<li>${s}</li>`).join("")}</ol>
@@ -2410,7 +2455,7 @@ function gOpenModal(id) {
     <div class="m-meta" style="margin-top:8px">* ανά δική σου μερίδα (cut)</div>
     <h3>Θες κάτι διαφορετικό;</h3>
     <div class="ai-row">
-      <button class="ai-main" onclick="gAskAi('${id}')"><span class="msr">smart_toy</span>Ρώτα το AI εδώ</button>
+      <button class="ai-main" onclick="gAskAi('${id}')"><span class="msr" aria-hidden="true">smart_toy</span>Ρώτα το AI εδώ</button>
       <a id="aiLinkGpt" target="_blank" rel="noopener">ChatGPT ↗</a>
       <a id="aiLinkClaude" target="_blank" rel="noopener">Claude ↗</a>
     </div>
@@ -2539,14 +2584,17 @@ function gSlot(i, cls, label, r) {
       <span class="tag ${cls}">${label}</span>
       <div class="meal" onclick="gOpenModal('${gState.picks[i]}')">
         <div class="meal-name">${r.n}</div>
-        <div class="meal-meta"><span class="msr tiny">schedule</span>${r.t} · ${r.kcal} kcal · ${r.p}γρ πρωτεΐνη</div>
+        <div class="meal-meta"><span class="msr tiny" aria-hidden="true">schedule</span>${r.t} · ${r.kcal} kcal · ${r.p}γρ πρωτεΐνη</div>
       </div>
-      <button class="g-swap msr" title="Άλλη συνταγή ίδιας κατηγορίας" onclick="gSwap(${i})">autorenew</button>
+      <button class="g-swap msr" title="Άλλη συνταγή ίδιας κατηγορίας" aria-label="Άλλη συνταγή ίδιας κατηγορίας" onclick="gSwap(${i})">autorenew</button>
     </div>`;
 }
 
 document.getElementById("gShuffleBtn").addEventListener("click", () => {
-  gState.picks = gFreshPicks(); gState.done = Array(14).fill(false); gSave(); gRender();
+  /* v8.5: επιβεβαίωση — ένα κατά λάθος tap χαλούσε όλη την εβδομάδα */
+  openConfirm('Νέο εβδομαδιαίο πρόγραμμα; Τα σημερινά γεύματα και τα τικ θα αντικατασταθούν.', () => {
+    gState.picks = gFreshPicks(); gState.done = Array(14).fill(false); gSave(); gRender();
+  }, 'Νέα εβδομάδα');
 });
 document.getElementById("gClearBtn").addEventListener("click", () => {
   gState.done = Array(14).fill(false); gSave(); gRender();
@@ -2561,16 +2609,16 @@ function homeRender() {
   const li = di * 2, bi = di * 2 + 1;
   const L = MEALS[gState.picks[li]], B = MEALS[gState.picks[bi]];
   homeToday.innerHTML = `
-    <h3><span class="msr">restaurant</span>Σήμερα · ${MEAL_TEMPLATE[di].day}</h3>
+    <h3><span class="msr" aria-hidden="true">restaurant</span>Σήμερα · ${MEAL_TEMPLATE[di].day}</h3>
     <div class="home-meal" onclick="gOpenModal('${gState.picks[li]}')">
       <span class="tag lunch">Μεσημέρι</span>
       <span class="hm-name${gState.done[li] ? ' hm-done' : ''}">${L.n}</span>
-      <span class="hm-meta"><span class="msr tiny">schedule</span>${L.t}</span>
+      <span class="hm-meta"><span class="msr tiny" aria-hidden="true">schedule</span>${L.t}</span>
     </div>
     <div class="home-meal" onclick="gOpenModal('${gState.picks[bi]}')">
       <span class="tag dinner">Βράδυ</span>
       <span class="hm-name${gState.done[bi] ? ' hm-done' : ''}">${B.n}</span>
-      <span class="hm-meta"><span class="msr tiny">schedule</span>${B.t}</span>
+      <span class="hm-meta"><span class="msr tiny" aria-hidden="true">schedule</span>${B.t}</span>
     </div>
     <button class="home-link" onclick="switchTab('meals')">Όλη η εβδομάδα →</button>`;
 
@@ -2650,6 +2698,7 @@ function switchTab(t) {
   document.getElementById('viewGym').classList.add('hidden');
   document.getElementById('navSwitchIc').textContent = 'fitness_center';
   document.getElementById('navSwitch').title = 'Πρόγραμμα γυμναστηρίου';
+  document.getElementById('navSwitch').setAttribute('aria-label', 'Πρόγραμμα γυμναστηρίου');
   lsSet('sm-mode', 'diet');
   Object.keys(NAV).forEach(k => {
     document.getElementById(VIEWS[k]).classList.toggle('hidden', k !== t);
@@ -2672,6 +2721,7 @@ function setMode(gym) {
   document.body.classList.add('no-fab');
   document.getElementById('navSwitchIc').textContent = 'restaurant';
   document.getElementById('navSwitch').title = 'Πίσω σε ψώνια & γεύματα';
+  document.getElementById('navSwitch').setAttribute('aria-label', 'Πίσω σε ψώνια & γεύματα');
   Object.keys(VIEWS).forEach(k => document.getElementById(VIEWS[k]).classList.add('hidden'));
   document.getElementById('viewGym').classList.remove('hidden');
   lsSet('sm-mode', 'gym');
@@ -2735,7 +2785,9 @@ function gymRender(d, model, ts) {
   body.textContent = '';
   const meta = gymEl('div', 'gym-meta');
   const btn = gymEl('button', null, null);
-  btn.appendChild(gymEl('span', 'msr', 'refresh'));
+  const rIc = gymEl('span', 'msr', 'refresh');
+  rIc.setAttribute('aria-hidden', 'true');
+  btn.appendChild(rIc);
   btn.appendChild(document.createTextNode('Ανανέωση'));
   btn.addEventListener('click', () => { gymStatus('Φόρτωση από το Google Sheet…', null); gymFetch(d); });
   meta.appendChild(btn);

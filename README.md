@@ -1,28 +1,28 @@
 # 🛒 Λίστα Σούπερ Μάρκετ
 
-Interactive εβδομαδιαία λίστα ψώνων για 2 άτομα, βασισμένη στο πρόγραμμα διατροφής Nutrimed. Single-file HTML app — δεν χρειάζεται server, βάση δεδομένων ή build step.
+Κοινή realtime λίστα ψώνων για 2 άτομα (Firebase), βασισμένη στο πρόγραμμα διατροφής Nutrimed. Single-file HTML app — χωρίς build step.
 
 ## Χρήση
 
-Άνοιξε το `index.html` σε browser (ή ως Cowork artifact `lista-psonon-stratos`). Όλα αποθηκεύονται τοπικά στη συσκευή (localStorage).
+Άνοιξε το `index.html` σε browser ή ως Cowork artifact `lista-psonon-stratos`. Το URL περιέχει room code (`#r=...`) — μοιράσου το link για κοινή λίστα realtime.
 
 ## Λειτουργίες
 
-- Checkboxes με μπάρα προόδου, φίλτρο «Μένουν», καθάρισμα τικ
-- Προσθήκη / διαγραφή / **επεξεργασία (✎)** προϊόντων — ποσότητα, σημείωση, κόστος
-- **Εκτίμηση κόστους**: σύνολο + πόσα μένουν
-- Καρτέλα **Γεύματα** με το ημερήσιο πλάνο διατροφής
-- **Backup / Import** σε αρχείο JSON
-- Versioned schema (v4) με αυτόματο migration από παλιά δεδομένα (v3)
+Πολλαπλές λίστες με χρώματα, +/− ποσότητες με μονάδες, φίλτρα, bulk καθαρισμός, import προγράμματος διατροφής (51 προϊόντα Nutrimed), κοινοποίηση με link, realtime sync μεταξύ συσκευών.
 
 ## Δομή repo
 
 | Αρχείο | Ρόλος |
 |---|---|
 | `index.html` | Η εφαρμογή (μοναδικό αρχείο κώδικα) |
-| `docs/spec.md` | **Source of truth** — προδιαγραφή λειτουργιών, schema, παραδοχές |
+| `docs/spec.md` | **Source of truth** — αρχιτεκτονική, schema, κανόνες robustness |
 | `CHANGELOG.md` | Ιστορικό εκδόσεων |
+| `tests/test.js` | Tests pure λογικής — `node tests/test.js` |
 
 ## Κανόνας συντήρησης
 
-Κάθε αλλαγή στη λειτουργικότητα: 1) ενημερώνεται το `docs/spec.md`, 2) υλοποιείται στο `index.html`, 3) γράφεται στο `CHANGELOG.md`, 4) γίνεται commit. Το deployed artifact συγχρονίζεται από το `index.html` του repo — ποτέ το αντίστροφο.
+Κάθε αλλαγή: 1) ενημερώνεται το `docs/spec.md`, 2) υλοποιείται στο `index.html`, 3) τρέχουν τα tests, 4) γράφεται στο `CHANGELOG.md`, 5) commit, 6) συγχρονίζεται το artifact από το repo — ποτέ το αντίστροφο.
+
+## Εκκρεμότητα ασφάλειας
+
+Ρύθμιση Firebase Database Rules (auth != null + validation) — βλ. `docs/spec.md` §5.

@@ -1,77 +1,70 @@
+// Tests pure λογικής της εφαρμογής (v5 Firebase). Τρέξιμο: node tests/test.js
+'use strict';
 const fs = require('fs');
-const html = fs.readFileSync(require('path').join(__dirname,'..','index.html'),'utf8');
-const script = html.match(/<script>([\s\S]*)<\/script>/)[1];
-const cut = script.indexOf('/* ---------- Render');
-const logic = script.slice(0, cut);
-const factory = new Function(logic + '\n;return {sanitizeState, clampCat, escapeHtml, fmtCost, emptyState, loadState, persist, DATA, LIMITS, getState:()=>state};');
+const path = require('path');
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
-let store = {};
-global.localStorage = {
-  getItem: k => (k in store ? store[k] : null),
-  setItem: (k,v) => { if (global.__quotaFail) throw new Error('QuotaExceeded'); store[k]=String(v); },
-  removeItem: k => { delete store[k]; }
-};
-global.document = { getElementById: () => ({ textContent:'', className:'' }) };
+// Παίρνουμε το τελευταίο (inline) script block
+const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+const script = blocks[blocks.length - 1][1];
 
-let pass=0, fail=0;
-function t(name, cond){ if(cond){pass++;} else {fail++; console.log('FAIL: '+name);} }
-function fresh(){ store={}; global.__quotaFail=false; return factory(); }
+// Κρατάμε μόνο το κομμάτι pure λογικής (πριν το Room/Firebase runtime)
+const cut = script.indexOf('/* ---------- Room');
+const logic = script
+  .slice(0, cut)
+  .replace(/'use strict';/, '')
+  .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
-let m = fresh();
-t('garbage null', JSON.stringify(m.sanitizeState(null)) === JSON.stringify(m.emptyState()));
-t('garbage array', m.sanitizeState([1,2]).custom.length === 0);
-t('garbage string', m.sanitizeState("hack").version === 4);
+const factory = new Function(logic +
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, CATEGORIES, DIET, PALETTE, CAT_EMOJI};');
+const m = factory();
 
-let s = m.sanitizeState({custom:[{uid:'x',cat:0,item:'A'.repeat(500),qty:'B'.repeat(500),note:'C'.repeat(500)}]});
-t('item trunc 80', s.custom[0].item.length === 80);
-t('qty trunc 60', s.custom[0].qty.length === 60);
-t('note trunc 120', s.custom[0].note.length === 120);
+let pass = 0, fail = 0;
+function t(name, cond) { if (cond) pass++; else { fail++; console.log('FAIL: ' + name); } }
 
-t('clampCat 99', m.clampCat(99) === m.DATA.length-1);
-t('clampCat abc', m.clampCat('abc') === m.DATA.length-1);
-t('clampCat 2', m.clampCat('2') === 2);
-t('clampCat neg', m.clampCat(-5) === m.DATA.length-1);
+// clampQty
+t('clampQty κανονικό', m.clampQty(2.345) === 2.35);
+t('clampQty min', m.clampQty(0) === 0.1);
+t('clampQty αρνητικό', m.clampQty(-5) === 0.1);
+t('clampQty max', m.clampQty(1e9) === 9999);
+t('clampQty NaN→1', m.clampQty('abc') === 1);
+t('clampQty string αριθμός', m.clampQty('3.5') === 3.5);
 
-s = m.sanitizeState({costs:{a:-1, b:99999, c:'3.456', d:'x', e:2.5}});
-t('cost neg dropped', s.costs.a === undefined);
-t('cost huge dropped', s.costs.b === undefined);
-t('cost string parsed+rounded', s.costs.c === 3.46);
-t('cost NaN dropped', s.costs.d === undefined);
-t('cost ok', s.costs.e === 2.5);
+// cleanText
+t('cleanText trim', m.cleanText('  Γάλα  ', 80) === 'Γάλα');
+t('cleanText όριο', m.cleanText('A'.repeat(500), 80).length === 80);
+t('cleanText null', m.cleanText(null, 80) === '');
+t('cleanText undefined', m.cleanText(undefined, 80) === '');
 
-s = m.sanitizeState({checked:{a:true,b:false,c:'yes'}, removed:{x:true,y:0}});
-t('checked only true', Object.keys(s.checked).length===1 && s.checked.a===true);
-t('removed only true', Object.keys(s.removed).length===1);
+// unitStep
+t('unitStep κιλά', m.unitStep('κιλά') === 0.5);
+t('unitStep λίτρα', m.unitStep('λίτρα') === 0.5);
+t('unitStep γρ', m.unitStep('γρ') === 100);
+t('unitStep τεμ', m.unitStep('τεμ') === 1);
+t('unitStep άγνωστο', m.unitStep('κάτι') === 1);
 
-t('escapeHtml', m.escapeHtml('<img src=x onerror="a">&\'') === '&lt;img src=x onerror=&quot;a&quot;&gt;&amp;&#39;');
+// formatQty
+t('formatQty τεμ×1 κρύβεται', m.formatQty(1, 'τεμ') === '');
+t('formatQty τεμ×3', m.formatQty(3, 'τεμ') === '×3');
+t('formatQty κιλά κόμμα', m.formatQty(1.5, 'κιλά') === '1,5 κιλά');
+t('formatQty γρ', m.formatQty(400, 'γρ') === '400 γρ');
 
-// Migration from v3
-store = {};
-store['lista_psonon_v3'] = JSON.stringify({'b|kreas|0':true});
-store['lista_psonon_custom_v3'] = JSON.stringify([{uid:'u1',cat:1,item:'Γάλα αμυγδάλου',qty:'1λ',note:''}]);
-store['lista_psonon_removed_v3'] = JSON.stringify({'b|gala|2':true});
-m = factory();
-t('migration checked', m.getState().checked['b|kreas|0']===true);
-t('migration custom', m.getState().custom.length===1 && m.getState().custom[0].item==='Γάλα αμυγδάλου');
-t('migration removed', m.getState().removed['b|gala|2']===true);
-t('migration wrote v4', store['lista_psonon_v4'] !== undefined);
-t('legacy keys kept', store['lista_psonon_v3'] !== undefined);
+// Δομή δεδομένων
+t('11 κατηγορίες', m.CATEGORIES.length === 11);
+t('DIET μη κενό', m.DIET.length >= 50);
+t('DIET κατηγορίες έγκυρες', m.DIET.every(d => m.CAT_EMOJI[d[3]] !== undefined));
+t('DIET ποσότητες έγκυρες', m.DIET.every(d => Number.isFinite(d[1]) && d[1] > 0));
+t('DIET ονόματα εντός ορίου', m.DIET.every(d => d[0].length <= m.LIMITS.name));
+t('PALETTE 8 χρώματα', Object.keys(m.PALETTE).length === 8);
 
-// Corrupted v4
-store = {'lista_psonon_v4': '{{{not json'};
-m = factory();
-t('corrupt v4 → empty state', m.getState().version===4 && m.getState().custom.length===0);
+// Robustness κώδικα: κάθε db write έχει catch
+const writes = [...script.matchAll(/db\.ref\([^)]*\)[\s\S]{0,200}?\.(set|update|remove)\(/g)].length;
+const catches = (script.match(/\.catch\(dbErr\)/g) || []).length;
+t('όλα τα db writes με .catch(dbErr) (' + catches + '/' + writes + ')', catches >= writes && writes > 0);
 
-// persist failure
-m = fresh(); global.__quotaFail = true;
-t('persist quota → false', m.persist() === false);
-global.__quotaFail = false;
-
-// v4 roundtrip
-m = fresh();
-m.getState().checked['b|kreas|0']=true; m.getState().costs['b|kreas|0']=12.5; m.persist();
-m = factory();
-t('v4 roundtrip', m.getState().checked['b|kreas|0']===true && m.getState().costs['b|kreas|0']===12.5);
+// Δεν υπάρχει γυμνό localStorage εκτός wrappers
+const rawLs = (script.match(/localStorage\./g) || []).length;
+t('localStorage μόνο σε lsGet/lsSet (2 χρήσεις)', rawLs === 2);
 
 console.log(`\n${pass} passed, ${fail} failed`);
-process.exit(fail?1:0);
+process.exit(fail ? 1 : 0);

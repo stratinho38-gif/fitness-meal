@@ -1,59 +1,57 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση schema: **4** · Αρχείο εφαρμογής: `index.html` · Deployed: Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v5 (Firebase realtime)** · Αρχείο εφαρμογής: `index.html` · Deployed: Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
-Εβδομαδιαία λίστα ψώνων για **2 άτομα** (Στράτος + κοπέλα), παραγόμενη από το πρόγραμμα διατροφής Nutrimed + είδη σπιτιού.
+Κοινή realtime λίστα ψώνων για **2 άτομα** (Στράτος + κοπέλα). Πολλαπλές λίστες, βασισμένη στο πρόγραμμα διατροφής Nutrimed + είδη σπιτιού.
 
-## 2. Δεδομένα
+## 2. Αρχιτεκτονική
 
-### Προεπιλεγμένα προϊόντα
-Hardcoded στο `DATA` (index.html): 11 κατηγορίες — Κρέας & Ψάρι, Αυγά & Γαλακτοκομικά, Ψωμί & Δημητριακά, Όσπρια & Κονσέρβες, Λαχανικά, Φρούτα, Ξηροί καρποί & Σπόροι, Παντοπωλείο & Βασικά, Χαρτικά & Καθαριότητα, Προσωπική φροντίδα, Δικά μου.
+- Single-file HTML app, χωρίς build step.
+- **Backend**: Firebase Realtime Database (project `supermarket-lista`, EU-west1), anonymous auth.
+- **Κοινή χρήση**: room code στο URL hash (`#r=<code>`). Όποιος έχει το link βλέπει/επεξεργάζεται τις ίδιες λίστες realtime.
+- **localStorage** (μόνο UI preferences): `sm-room`, `sm-active-<room>`, `sm-collapsed-<room>`. Όλα τα δεδομένα λιστών ζουν στο Firebase.
 
-Παραδοχές ποσοτήτων: κοινά τρόφιμα ~×2, πρωτεΐνες κλιμακωμένες πιο συγκρατημένα (η κοπέλα κανονικές μερίδες, όχι cut). Αν κάνει κι εκείνη cut → διπλασιασμός πρωτεϊνών.
-
-### Κατάσταση χρήστη — localStorage, κλειδί `lista_psonon_v4`
-
-```json
-{
-  "version": 4,
-  "checked":  { "<itemId>": true },
-  "removed":  { "<itemId>": true },
-  "custom":   [ { "uid": "…", "cat": 0, "item": "…", "qty": "…", "note": "…" } ],
-  "edits":    { "<itemId>": { "qty": "…", "note": "…" } },
-  "costs":    { "<itemId>": 3.5 }
+### Schema (Firebase)
+```
+rooms/<ROOM>/lists/<listId> = {
+  name: string, ts: number, color?: string(PALETTE key),
+  items: { <itemId>: { name, qty:number, unit, cat, note?, done:boolean, ts:number } }
 }
 ```
 
-- `itemId`: `b|<catKey>|<index>` για προεπιλεγμένα, `c|<uid>` για custom.
-- `edits`: overrides ποσότητας/σημείωσης σε προεπιλεγμένα προϊόντα.
-- `costs`: κόστος σε € (0 ≤ n < 10000, 2 δεκαδικά).
+## 3. Κανόνες robustness (v5)
 
-### Migration
-Αν λείπει το v4 κλειδί, διαβάζονται τα παλιά v3 κλειδιά (`lista_psonon_v3`, `lista_psonon_custom_v3`, `lista_psonon_removed_v3`), περνούν από sanitization και αποθηκεύονται ως v4. Τα v3 κλειδιά δεν διαγράφονται (ασφάλεια).
-
-## 3. Κανόνες robustness
-
-- **Κάθε load** (localStorage ή import) περνά από `sanitizeState()`: έλεγχος τύπων, trim, όρια μήκους, clamp κατηγορίας, έγκυρα κόστη.
-- **Κάθε save** μέσα σε try/catch — σε αποτυχία εμφανίζεται toast με προτροπή για Backup.
-- **Όλα τα user strings** περνούν από `escapeHtml()` πριν μπουν σε innerHTML (XSS).
-- **Όρια**: όνομα 80 chars, ποσότητα 60, σημείωση 120, max 300 custom προϊόντα.
-- **Validation προσθήκης**: κενό όνομα → inline μήνυμα, διπλότυπο στην ίδια κατηγορία → confirm.
-- **Import**: max 2MB, JSON parse σε try/catch, sanitization, confirm με σύνοψη πριν την αντικατάσταση.
+- **Όρια** (`LIMITS`): όνομα προϊόντος 80 chars, όνομα λίστας 60, qty 0.1–9999 (2 δεκαδικά, `clampQty`).
+- **Κάθε Firebase write** έχει `.catch(dbErr)` → toast «Δεν αποθηκεύτηκε», όχι σιωπηλή απώλεια.
+- **localStorage** πάντα μέσω `lsGet`/`lsSet` (try/catch — private mode δεν κρασάρει).
+- **XSS**: user data μπαίνουν στο DOM μόνο με `textContent`, ποτέ innerHTML.
+- **Σύνδεση**: status dot από `.info/connected`, banner σε auth/db errors.
+- Διπλότυπο προϊόν (ίδιο όνομα/κατηγορία/μονάδα) → συγχώνευση ποσοτήτων αντί για δεύτερη εγγραφή.
 
 ## 4. Λειτουργίες UI
 
-1. **Καρτέλες**: Λίστα / Γεύματα (ημερήσιο πλάνο Nutrimed, στατικό περιεχόμενο από `docs` του project).
-2. **Checkbox** → πρόοδος (μπάρα + μετρητής + % ανά κατηγορία).
-3. **Φίλτρα**: Όλα / Μένουν.
-4. **✎ Επεξεργασία** inline: ποσότητα, σημείωση, κόστος (και όνομα μόνο για custom). Enter=Αποθήκευση, Esc=Άκυρο.
-5. **× Διαγραφή**: custom → αφαιρείται οριστικά· προεπιλεγμένο → μπαίνει στα `removed` (επαναφορά με «↩︎ Επαναφορά»).
-6. **Κόστος**: σύνοψη «σύνολο / μένουν» + πόσα προϊόντα έχουν κόστος.
-7. **Backup**: κατέβασμα JSON (`lista-psonon-backup-YYYY-MM-DD.json`). **Import**: φόρτωση backup με αντικατάσταση.
-8. Καθάρισμα τικ / Επαναφορά διαγραμμένων με confirm.
+1. Πολλαπλές λίστες (tabs) με χρώμα (PALETTE), μετονομασία, αντίγραφο, διαγραφή (με confirm).
+2. Checkbox → πρόοδος στο hero· φίλτρα Όλα/Μένουν/✓· bulk ξετσεκάρισμα/καθαρισμός.
+3. Προσθήκη προϊόντος (FAB → bottom sheet): όνομα, ποσότητα+μονάδα (τεμ/κιλά/γρ/λίτρα/πακέτα/κονσέρβες/δωδεκάδες), κατηγορία.
+4. +/− ποσότητας ανά προϊόν με βήμα ανά μονάδα (`unitStep`: κιλά/λίτρα 0.5, γρ 100, αλλιώς 1).
+5. Import προγράμματος διατροφής (`DIET`, 51 προϊόντα Nutrimed) — νέα λίστα ή προσθήκη χωρίς διπλότυπα.
+6. Κοινοποίηση λίστας: share/clipboard του URL με room code.
+7. Κατηγορίες με collapse (θυμάται ανά room).
 
-## 5. Εκκρεμότητες / ιδέες
+## 5. Ασφάλεια — σημειώσεις
 
-- Προσυμπληρωμένα ενδεικτικά κόστη ανά προϊόν.
-- Sync μεταξύ συσκευών (σήμερα: μόνο ανά συσκευή, μεταφορά μέσω Backup/Import).
+- Το Firebase `apiKey` είναι public identifier (by design), ΔΕΝ είναι μυστικό.
+- Το room code είναι το μόνο access control: 9 χαρακτήρες από αλφάβητο 55 → ~2⁵² συνδυασμοί.
+- **Εκκρεμότητα**: Database Rules στο Firebase console να επιβάλλουν `auth != null` + validation δομής (μήκη strings, τύποι). Χωρίς rules, οποιοσδήποτε authenticated μπορεί να γράψει σε οποιοδήποτε room αν μαντέψει το code.
+
+## 6. Παραδοχές ποσοτήτων DIET
+
+Κοινά τρόφιμα ~×2, πρωτεΐνες κλιμακωμένες συγκρατημένα (η κοπέλα κανονικές μερίδες, όχι cut). Αν κάνει κι εκείνη cut → διπλασιασμός πρωτεϊνών.
+
+## 7. Ιστορικό αρχιτεκτονικής
+
+- v3: localStorage-only, 1 λίστα (3 κλειδιά).
+- v4: localStorage versioned schema + backup/import + κόστος (βλ. git history — αποσύρθηκε υπέρ Firebase).
+- v5: Firebase realtime multi-list (τρέχουσα).

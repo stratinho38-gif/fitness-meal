@@ -1,21 +1,25 @@
 # Changelog
 
-## v4.0.0 — 2026-08-24
+## v5.1.0 — 2026-08-24 (hardening)
 
-### Robustness
-- Ενιαίο versioned state schema (`lista_psonon_v4`) με αυτόματο migration από v3.
-- `sanitizeState()` σε κάθε load/import: type checks, όρια μήκους, clamp κατηγορίας.
-- Try/catch σε κάθε αποθήκευση με toast ειδοποίηση αποτυχίας.
-- Backup (export JSON) / Import με validation και confirm.
-- Escaping όλων των interpolations σε innerHTML (και ids/emoji).
-- Validation προσθήκης: inline errors, έλεγχος διπλότυπων, όριο 300 custom.
+- `.catch(dbErr)` σε **όλα** τα Firebase writes → toast αντί για σιωπηλή αποτυχία.
+- `clampQty`: ποσότητες πάντα 0.1–9999, 2 δεκαδικά (και στο +/−, και στη συγχώνευση διπλοτύπων).
+- `cleanText` + όρια: όνομα προϊόντος 80, όνομα λίστας 60 chars (και maxlength στα inputs).
+- `lsGet`/`lsSet` wrappers: localStorage σε try/catch (private mode safe).
+- Διόρθωση stale artifact description (ανέφερε παλιά 2-tab έκδοση).
 
-### Νέες λειτουργίες
-- ✎ inline επεξεργασία: ποσότητα, σημείωση, κόστος (+ όνομα για custom προϊόντα).
-- Εκτίμηση κόστους: σύνολο + υπόλοιπο στη μπάρα προόδου.
-- Καρτέλα «Γεύματα» με το ημερήσιο πλάνο Nutrimed.
+## v5.0.0 — 2026-08-24 (Firebase realtime — έγινε σε προηγούμενο session)
 
-## v3 — Αύγουστος 2026 (αρχική έκδοση ως Cowork artifact)
-- Λίστα με κατηγορίες, checkboxes, πρόοδος, φίλτρο «Μένουν».
-- Προσθήκη/διαγραφή προϊόντων, επαναφορά διαγραμμένων.
-- Αποθήκευση σε 3 ξεχωριστά localStorage κλειδιά.
+- Πλήρης μετάβαση σε Firebase RTDB + anonymous auth, room codes στο URL.
+- Πολλαπλές λίστες με χρώματα, μετονομασία, αντίγραφο, διαγραφή.
+- +/− ποσότητες με μονάδες, συγχώνευση διπλοτύπων.
+- Import προγράμματος διατροφής Nutrimed (51 προϊόντα).
+- Κοινοποίηση λίστας με link, realtime sync, status indicator.
+
+## v4.0.0 — 2026-08-24 (localStorage — αποσύρθηκε, βλ. git history)
+
+- Versioned localStorage schema + migration, sanitization, backup/import JSON, inline edit, κόστος, καρτέλα γευμάτων. Αντικαταστάθηκε από τη v5 (Firebase) που είχε γίνει παράλληλα.
+
+## v3 — Αύγουστος 2026 (αρχική έκδοση)
+
+- Μία λίστα, checkboxes, πρόοδος, φίλτρο, προσθήκη/διαγραφή, 3 localStorage κλειδιά.

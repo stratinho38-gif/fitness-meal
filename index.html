@@ -1,685 +1,1080 @@
 <!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Lista Psonon Stratos",
+  "schemaVersion": 1,
+  "description": "Κοινή realtime λίστα ψώνων (Firebase) για 2 άτομα: πολλαπλές λίστες με χρώματα, +/− ποσότητες με μονάδες, import προγράμματος διατροφής Nutrimed, κοινοποίηση με link. Source of truth: repo lista-psonon."
+}
+</script>
 <html lang="el">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Λίστα Σούπερ Μάρκετ — Στράτος & κοπέλα</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#15803d">
+<title>🛒 Λίστα Σούπερ Μάρκετ</title>
 <style>
-:root { color-scheme: light; }
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: #f6f7f9;
-  color: #1c2530;
-  line-height: 1.5;
-}
-.wrap { max-width: 820px; margin: 0 auto; padding: 18px 16px 60px; }
-header h1 { font-size: 22px; margin: 4px 0 2px; }
-header p { margin: 0; color: #5b6675; font-size: 13px; }
+  :root {
+    color-scheme: light;
+    /* Material 3 inspired palette (green) */
+    --primary: #15803d;
+    --primary-light: #16a34a;
+    --on-primary: #ffffff;
+    --primary-container: #dcfce7;
+    --on-primary-container: #14532d;
+    --surface: #fbfdf9;
+    --surface-container: #ffffff;
+    --surface-variant: #f0f3ee;
+    --outline: #e2e6df;
+    --text: #1a201c;
+    --muted: #67716a;
+    --danger: #ba1a1a;
+    --elev1: 0 1px 2px rgba(0,0,0,.05), 0 1px 3px rgba(0,0,0,.08);
+    --elev2: 0 2px 6px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --elev3: 0 8px 24px rgba(0,0,0,.18);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body {
+    font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--surface);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  button { font-family: inherit; }
+  .app { max-width: 680px; margin: 0 auto; padding: 12px 14px 110px; }
 
-.tabs { display:flex; gap:8px; margin-top:14px; }
-.tabs button { flex:1; padding:9px 12px; font-size:14px; }
-.tabs button.active { background:#1c2530; color:#fff; border-color:#1c2530; }
+  /* ---------- Hero ---------- */
+  .hero {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff; border-radius: 22px; padding: 16px 18px; margin-bottom: 14px;
+    box-shadow: var(--elev2);
+  }
+  .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .hero h1 { font-size: 19px; margin: 0; font-weight: 600; letter-spacing: .2px; }
+  .hero-actions { display: flex; gap: 8px; align-items: center; }
+  .status-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.4); }
+  .status-dot.on { background: #a7f3d0; box-shadow: 0 0 6px #a7f3d0; }
+  .hero .subtitle { font-size: 12.5px; opacity: .85; margin-top: 3px; }
+  .hero .progress-label { font-size: 12.5px; opacity: .92; margin: 12px 0 5px; display: flex; justify-content: space-between; }
+  .hero .progress-bar { height: 8px; background: rgba(255,255,255,.25); border-radius: 5px; overflow: hidden; }
+  .hero .progress-fill { height: 100%; background: #fff; border-radius: 5px; transition: width .3s ease; }
 
-.bar {
-  position: sticky; top: 0; z-index: 5;
-  background: #f6f7f9; padding: 12px 0 10px; margin-top: 12px;
-}
-.progress-track { background: #e4e8ee; border-radius: 999px; height: 12px; overflow: hidden; }
-.progress-fill { background: linear-gradient(90deg,#2fa06a,#37b877); height: 100%; width: 0%; transition: width .25s ease; }
-.progress-meta { display:flex; justify-content: space-between; align-items:center; margin-top:8px; gap:10px; flex-wrap: wrap; }
-.progress-meta span { font-size: 13px; color:#5b6675; font-weight:600; }
-.cost-meta { font-size:12.5px; color:#5b6675; margin-top:4px; }
-.actions { display:flex; gap:8px; flex-wrap: wrap; }
-button {
-  font: inherit; font-size: 13px; font-weight: 600;
-  border: 1px solid #d3d9e0; background: #fff; color:#2b3644;
-  padding: 6px 12px; border-radius: 8px; cursor: pointer;
-}
-button:hover { background: #eef1f5; }
-button.active { background: #1c2530; color:#fff; border-color:#1c2530; }
+  .banner {
+    background: #fef3c7; border: 1px solid #fcd34d; color: #92400e;
+    padding: 10px 14px; border-radius: 12px; font-size: 14px; margin-bottom: 12px; display: none;
+  }
+  .banner.show { display: block; }
 
-.add {
-  background:#fff; border:1px solid #e6e9ee; border-radius:14px;
-  padding:14px 16px; margin-top:14px;
-}
-.add h3 { margin:0 0 10px; font-size:14px; display:flex; align-items:center; gap:8px; }
-.add .row { display:flex; gap:8px; flex-wrap:wrap; }
-.add input, .add select, li.editing input {
-  font: inherit; font-size:14px; padding:9px 11px;
-  border:1px solid #d3d9e0; border-radius:9px; background:#fff; color:#1c2530;
-}
-.add input#nItem { flex:1 1 200px; }
-.add input#nQty { flex:0 1 120px; }
-.add select#nCat { flex:1 1 160px; }
-.add input#nNote { flex:1 1 100%; }
-.add button.addBtn { background:#2fa06a; color:#fff; border-color:#2fa06a; flex:0 0 auto; }
-.add button.addBtn:hover { background:#278a5a; }
-.field-err { color:#c0392b; font-size:12px; margin-top:6px; display:none; }
+  /* ---------- List tabs ---------- */
+  .lists-bar { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 10px; scrollbar-width: none; }
+  .lists-bar::-webkit-scrollbar { display: none; }
+  .list-tab {
+    flex: 0 0 auto; padding: 10px 16px; border-radius: 999px; border: none;
+    background: var(--surface-variant); cursor: pointer; font-size: 14px; white-space: nowrap;
+    display: flex; align-items: center; gap: 7px; color: var(--text);
+  }
+  .list-tab.active {
+    background: var(--primary); color: #fff; font-weight: 600; box-shadow: var(--elev1);
+  }
+  .list-tab .count {
+    font-size: 11.5px; background: rgba(0,0,0,.08); border-radius: 999px; padding: 1px 7px;
+  }
+  .list-tab.active .count { background: rgba(255,255,255,.22); }
+  .list-tab.active .more {
+    font-size: 16px; font-weight: 700; margin: -4px -8px -4px 0; padding: 6px 9px;
+    border-radius: 999px; background: rgba(255,255,255,.18); line-height: 1;
+  }
+  .list-tab.active .more:active { background: rgba(255,255,255,.35); }
+  .new-list-btn {
+    flex: 0 0 auto; padding: 10px 16px; border-radius: 999px; border: 1.5px dashed #b9c2ba;
+    background: transparent; cursor: pointer; font-size: 14px; color: var(--muted); white-space: nowrap;
+  }
 
-.cat { background:#fff; border:1px solid #e6e9ee; border-radius: 14px; margin-top: 14px; overflow: hidden; }
-.cat > h2 {
-  margin:0; font-size: 15px; padding: 13px 16px;
-  display:flex; align-items:center; gap:10px; cursor: pointer; user-select:none;
-}
-.cat > h2 .emoji { font-size: 18px; }
-.cat > h2 .count { margin-left:auto; font-size: 12px; color:#8a94a2; font-weight:600; }
-ul { list-style:none; margin:0; padding: 0 0 6px; }
-li {
-  display:flex; align-items:flex-start; gap:12px;
-  padding: 10px 16px; border-top: 1px solid #f0f2f5;
-}
-li label { flex:1; cursor:pointer; }
-li .item { font-weight:600; font-size:14.5px; }
-li .qty { color:#2fa06a; font-weight:700; font-size:13px; margin-left:6px; }
-li .cost { color:#8a6d1f; font-weight:700; font-size:12.5px; margin-left:6px; }
-li .note { display:block; color:#7a8494; font-size:12px; margin-top:2px; }
-li .mine { display:inline-block; background:#eaf6ef; color:#2fa06a; font-size:10px; font-weight:700; padding:1px 6px; border-radius:6px; margin-left:6px; vertical-align:middle; }
-input[type=checkbox] { width:22px; height:22px; margin-top:1px; accent-color:#2fa06a; flex:0 0 auto; cursor:pointer; }
-li.done label .item { text-decoration: line-through; color:#a6adb8; }
-li.done label .qty { color:#a6adb8; }
-.del, .edit { border:0; background:transparent; color:#c2c8d0; font-size:18px; padding:0 4px; cursor:pointer; line-height:1.3; flex:0 0 auto; }
-.del { font-size:20px; }
-.del:hover { color:#e0645a; background:transparent; }
-.edit:hover { color:#2f6ea0; background:transparent; }
-li.editing { flex-direction:column; align-items:stretch; gap:8px; background:#f8fafc; }
-li.editing .erow { display:flex; gap:8px; flex-wrap:wrap; }
-li.editing input { flex:1 1 120px; font-size:13px; padding:7px 9px; }
-li.editing .erow.btns { justify-content:flex-end; }
-li.editing button.save { background:#2fa06a; color:#fff; border-color:#2fa06a; }
-.hidden { display:none !important; }
-.empty { padding:16px; color:#9aa3b0; font-size:13px; text-align:center; }
+  /* ---------- Filters + bulk row ---------- */
+  .list-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .filters { display: flex; gap: 6px; }
+  .chip {
+    padding: 7px 14px; border-radius: 9px; border: 1px solid var(--outline);
+    background: var(--surface-container); cursor: pointer; font-size: 13px; color: var(--muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .chip.active {
+    background: var(--primary-container); color: var(--on-primary-container);
+    border-color: transparent; font-weight: 600;
+  }
+  .bulk { display: flex; gap: 6px; }
+  .bulk button {
+    padding: 7px 12px; border-radius: 9px; border: none; background: transparent;
+    cursor: pointer; font-size: 13px; color: var(--primary); font-weight: 600;
+  }
+  .bulk button:hover { background: var(--primary-container); }
+  .bulk button:disabled { color: #b6bfb8; cursor: default; background: transparent; }
 
-.meals { margin-top:14px; }
-.meal { background:#fff; border:1px solid #e6e9ee; border-radius:14px; margin-top:12px; padding:13px 16px; }
-.meal h3 { margin:0 0 6px; font-size:14.5px; display:flex; gap:8px; align-items:center; }
-.meal .time { margin-left:auto; font-size:12px; color:#8a94a2; font-weight:600; }
-.meal ul { padding:0; }
-.meal li { border:0; padding:3px 0; font-size:13.5px; display:list-item; list-style:none; color:#3a4553; }
-.meal li strong { color:#1c2530; }
+  /* ---------- Categories & items ---------- */
+  .category { margin-bottom: 12px; }
+  .cat-header {
+    display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;
+    padding: 14px 16px; margin-bottom: 8px;
+    background: var(--primary-container); border-radius: 16px; box-shadow: var(--elev1);
+    min-height: 48px; transition: background .2s, box-shadow .2s;
+  }
+  .cat-header:active { transform: scale(.99); }
+  .cat-header h2 {
+    font-size: 14.5px; letter-spacing: .02em;
+    color: var(--on-primary-container); margin: 0; flex: 1; font-weight: 700;
+    transition: color .2s;
+  }
+  .cat-header .cat-count {
+    font-size: 12.5px; color: #fff; background: var(--primary);
+    padding: 3px 10px; border-radius: 999px; font-weight: 700; transition: background .2s, color .2s;
+  }
+  .cat-header .chev { color: var(--on-primary-container); font-size: 12px; transition: transform .2s, color .2s; }
+  /* Collapsed: neutral, flat — clearly different from expanded */
+  .category.collapsed .cat-header {
+    background: var(--surface-variant); box-shadow: none; border-radius: 12px;
+  }
+  .category.collapsed .cat-header h2 { color: var(--muted); font-weight: 600; }
+  .category.collapsed .cat-count { background: #d8ded6; color: #4b554d; }
+  .category.collapsed .chev { color: #9aa39c; }
+  .category.collapsed .chev { transform: rotate(-90deg); }
+  .category.collapsed .items { display: none; }
 
-.tips { background:#fff8e8; border:1px solid #f2e2b8; border-radius:14px; margin-top:16px; padding:14px 16px; }
-.tips h3 { margin:0 0 6px; font-size:14px; }
-.tips ul { padding-left:0; }
-.tips li { border:0; padding:4px 0; font-size:13px; color:#5b5033; align-items:center; }
-footer { text-align:center; color:#9aa3b0; font-size:11.5px; margin-top:22px; }
+  .items {
+    background: var(--surface-container); border-radius: 16px; overflow: hidden;
+    box-shadow: var(--elev1);
+  }
+  .item {
+    display: flex; align-items: center; gap: 11px; padding: 12px 14px;
+    border-bottom: 1px solid var(--surface-variant);
+  }
+  .item:last-child { border-bottom: none; }
+  .item input[type="checkbox"] {
+    width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0;
+  }
+  .item .body { flex: 1; min-width: 0; }
+  .item .name { font-size: 15px; word-break: break-word; display: block; }
+  .item .note { font-size: 12px; color: var(--muted); display: block; margin-top: 1px; }
+  .item.done .name, .item.done .note { text-decoration: line-through; color: #a9b2ab; }
+  .item .qty {
+    font-size: 12.5px; color: var(--on-primary-container); background: var(--primary-container);
+    padding: 3px 9px; border-radius: 999px; font-weight: 700; flex-shrink: 0; white-space: nowrap;
+  }
+  .item.done .qty { background: var(--surface-variant); color: #a9b2ab; }
+  .item .btns { display: flex; gap: 4px; flex-shrink: 0; }
+  .item .btns button {
+    width: 30px; height: 30px; border: none; background: var(--surface-variant);
+    border-radius: 999px; cursor: pointer; font-size: 15px; line-height: 1; color: #556058;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .item .btns button:active { transform: scale(.92); }
+  .item .btns .del { color: #9aa39c; font-size: 13px; }
+  .item .btns .del:hover { color: var(--danger); background: #fde8e8; }
 
-#toast {
-  position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
-  background:#1c2530; color:#fff; padding:10px 16px; border-radius:10px;
-  font-size:13px; opacity:0; pointer-events:none; transition:opacity .3s; z-index:99;
-  max-width:90vw; text-align:center;
-}
-#toast.show { opacity:1; }
-#toast.err { background:#b3382e; }
+  .empty { text-align: center; color: var(--muted); padding: 44px 16px; font-size: 15px; }
+  .empty .big { font-size: 46px; margin-bottom: 8px; }
+  .empty .cta {
+    margin-top: 16px; padding: 12px 22px; border-radius: 999px; border: none;
+    background: var(--primary); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+    box-shadow: var(--elev2);
+  }
+
+  /* ---------- Tips ---------- */
+  .tips { background: #fffbeb; border-radius: 16px; margin-top: 18px; padding: 4px 16px 6px; box-shadow: var(--elev1); }
+  .tips summary { cursor: pointer; font-size: 14px; font-weight: 700; color: #92400e; padding: 11px 0; list-style: none; }
+  .tips summary::-webkit-details-marker { display: none; }
+  .tips ul { margin: 0 0 10px; padding-left: 4px; list-style: none; }
+  .tips li { font-size: 13px; color: #78591f; padding: 4px 0; }
+
+  /* ---------- FAB ---------- */
+  .fab {
+    position: fixed; right: 18px; bottom: 22px; width: 58px; height: 58px;
+    border-radius: 18px; border: none; background: var(--primary); color: #fff;
+    font-size: 28px; cursor: pointer; box-shadow: var(--elev3); z-index: 5;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .fab:active { transform: scale(.94); }
+
+  /* ---------- Bottom sheet ---------- */
+  .sheet-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 10;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .sheet-bg.open { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 11;
+    background: var(--surface-container); border-radius: 24px 24px 0 0;
+    padding: 8px 18px calc(18px + env(safe-area-inset-bottom));
+    max-width: 680px; margin: 0 auto; box-shadow: var(--elev3);
+    transform: translateY(105%); transition: transform .25s cubic-bezier(.2,.9,.3,1);
+    max-height: 80vh; overflow-y: auto;
+  }
+  .sheet.open { transform: translateY(0); }
+  .sheet .grip { width: 36px; height: 4px; border-radius: 2px; background: #d5dbd4; margin: 6px auto 12px; }
+  .sheet h3 { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+
+  .menu-item {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    padding: 15px 10px; border: none; background: transparent; cursor: pointer;
+    font-size: 15.5px; border-radius: 12px; text-align: left; color: var(--text);
+  }
+  .menu-item:hover { background: var(--surface-variant); }
+  .menu-item .ic { font-size: 19px; width: 26px; text-align: center; }
+  .menu-item.danger { color: var(--danger); }
+  .menu-sep { height: 1px; background: var(--surface-variant); margin: 4px 0; }
+
+  .color-label { font-size: 12.5px; color: var(--muted); font-weight: 600; margin: 10px 10px 8px; }
+  .swatches { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 10px 12px; }
+  .swatch {
+    width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+    outline: 3px solid transparent; outline-offset: 2px;
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px;
+  }
+  .swatch:active { transform: scale(.9); }
+  .swatch.sel { outline-color: var(--text); }
+
+  /* Add form (inside sheet) */
+  .sheet .field { margin-bottom: 12px; }
+  .sheet label { display: block; font-size: 12.5px; color: var(--muted); margin: 0 0 5px 4px; font-weight: 600; }
+  .sheet input, .sheet select {
+    width: 100%; padding: 13px 12px; border: 1px solid var(--outline); border-radius: 12px;
+    font-size: 16px; background: var(--surface); color: var(--text);
+  }
+  .sheet input:focus, .sheet select:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: transparent; background: #fff; }
+  .sheet .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sheet .submit {
+    width: 100%; padding: 15px; border-radius: 999px; border: none; margin-top: 4px;
+    background: var(--primary); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
+    box-shadow: var(--elev1);
+  }
+  .sheet .submit:active { transform: scale(.98); }
+
+  .toast {
+    position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%);
+    background: #1a201c; color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 30;
+    max-width: 90vw; text-align: center; box-shadow: var(--elev2);
+  }
+  .toast.show { opacity: 1; }
+
+  /* ---------- Dialogs ---------- */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none;
+    align-items: center; justify-content: center; padding: 16px; z-index: 20;
+  }
+  .modal-bg.open { display: flex; }
+  .modal { background: #fff; border-radius: 24px; padding: 22px; width: 100%; max-width: 360px; box-shadow: var(--elev3); }
+  .modal h3 { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+  .modal input { width: 100%; padding: 13px; border: 1px solid var(--outline); border-radius: 12px; font-size: 16px; margin-bottom: 16px; }
+  .modal input:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+  .modal .row { display: flex; gap: 6px; justify-content: flex-end; }
+  .modal .row button { padding: 10px 18px; border-radius: 999px; cursor: pointer; font-size: 14px; font-weight: 600; border: none; background: transparent; color: var(--primary); }
+  .modal .row .primary { background: var(--primary); color: #fff; }
+  .modal .row .danger-btn { background: var(--danger); color: #fff; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>🛒 Λίστα Σούπερ Μάρκετ</h1>
-    <p>Για <strong>2 άτομα</strong> · φαγητό βάσει προγράμματος διατροφής + είδη σπιτιού · 1 εβδομάδα</p>
-  </header>
-
-  <div class="tabs">
-    <button id="tabList" class="active">🛒 Λίστα</button>
-    <button id="tabMeals">🍽️ Γεύματα</button>
-  </div>
-
-  <div id="viewList">
-    <div class="add">
-      <h3>➕ Πρόσθεσε δικό σου προϊόν</h3>
-      <div class="row">
-        <input id="nItem" type="text" maxlength="80" placeholder="Προϊόν (π.χ. Γάλα)">
-        <input id="nQty" type="text" maxlength="60" placeholder="Ποσότητα">
-        <select id="nCat"></select>
-        <button class="addBtn" id="addBtn">Προσθήκη</button>
+<div class="app">
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <h1 id="heroTitle">🛒 Τα ψώνια μας</h1>
+        <div class="subtitle" id="heroSubtitle" style="display:none">Λίστα Σούπερ Μάρκετ</div>
       </div>
-      <div class="row" style="margin-top:8px;">
-        <input id="nNote" type="text" maxlength="120" placeholder="Σημείωση (προαιρετικό)">
+      <div class="hero-actions">
+        <span class="status-dot" id="statusDot" title="Κατάσταση σύνδεσης"></span>
       </div>
-      <div class="field-err" id="addErr"></div>
     </div>
-
-    <div class="bar">
-      <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
-      <div class="progress-meta">
-        <span id="counter">0 / 0 στο καλάθι</span>
-        <div class="actions">
-          <button id="fAll" class="active">Όλα</button>
-          <button id="fLeft">Μένουν</button>
-          <button id="reset">Καθάρισμα τικ</button>
-          <button id="restore">↩︎ Επαναφορά</button>
-          <button id="exportBtn">⬇︎ Backup</button>
-          <button id="importBtn">⬆︎ Import</button>
-          <input type="file" id="importFile" accept="application/json,.json" class="hidden">
-        </div>
-      </div>
-      <div class="cost-meta" id="costMeta"></div>
-    </div>
-
-    <div id="list"></div>
-
-    <div class="tips">
-      <h3>⚡ Λίγος χρόνος μαγειρέματος — έξυπνες κινήσεις</h3>
-      <ul>
-        <li>🔥 Ψήσε ~1,5 κιλό κοτόπουλο μαζί (meal prep) και μοίρασέ το σε γεύματα της εβδομάδας.</li>
-        <li>🥫 Κράτα πάντα κονσέρβα τόνο & όσπρια έτοιμα για μέρες χωρίς χρόνο.</li>
-        <li>🥚 Βραστά αυγά για 3 μέρες μαζί — έτοιμη πρωτεΐνη για πρωινό/σνακ.</li>
-        <li>🥗 Πλύνε & κόψε λαχανικά σαλάτας από την αρχή της εβδομάδας.</li>
-        <li>🍚 Μαγείρεψε ρύζι/κινόα σε μεγάλη ποσότητα και κράτα στο ψυγείο.</li>
-      </ul>
+    <div id="heroProgress" style="display:none">
+      <div class="progress-label"><span>Στο καλάθι</span><span id="progressText"></span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
   </div>
 
-  <div id="viewMeals" class="meals hidden">
-    <div class="meal"><h3>🌅 Πρωινό <span class="time">8:00–8:15</span></h3><ul>
-      <li><strong>2×/εβδ (μετά έντονη άσκηση):</strong> γιαούρτι 2% + βρώμη + φρούτο/σταφίδες</li>
-      <li><strong>2×/εβδ:</strong> κεφίρ 1,5% + αυγό + 100γρ cottage + 2 φρυγανιές ολικής</li>
-      <li><strong>Μέρες ρεπό:</strong> 2 φρυγανιές + ταχίνι + μπανάνα/φρούτο</li>
-    </ul></div>
-    <div class="meal"><h3>🍎 Δεκατιανό <span class="time">11:30</span></h3><ul>
-      <li>Φρούτο + καρύδια <strong>ή</strong> 2 φρούτα <strong>ή</strong> 250ml κεφίρ</li>
-    </ul></div>
-    <div class="meal"><h3>🍗 Κυρίως γεύμα <span class="time">14:00–14:30</span></h3><ul>
-      <li><strong>1×:</strong> ψάρι (350γρ)</li>
-      <li><strong>1×:</strong> όσπρια (+κατίκι, +παξιμάδια) ή μαυρομάτικα + αυγό</li>
-      <li><strong>1×:</strong> κοτόπουλο ψητό 180–200γρ + ρύζι/πατάτα</li>
-      <li><strong>2×:</strong> λαδερό (μπριάμ/μπάμιες/αρακάς/σπανακόρυζο) + ανθότυρο/κατίκι (ή 2η φορά ψάρι)</li>
-      <li><strong>1×:</strong> κοτόπουλο μαγειρεμένο 1,5 φλ.</li>
-      <li><strong>1×:</strong> μοσχάρι 150γρ / σνίτσελ / συκώτι</li>
-    </ul></div>
-    <div class="meal"><h3>🥜 Σνακ <span class="time">16:30–17:00</span></h3><ul>
-      <li>Φρούτο + φουντούκια/καρύδια <strong>ή</strong> 2 φρούτα <strong>ή</strong> κεφίρ</li>
-    </ul></div>
-    <div class="meal"><h3>🌙 Βραδινό</h3><ul>
-      <li><strong>2×/εβδ (μετά άσκηση):</strong> σαλάτα + 150γρ κοτόπουλο στήθος + φρούτο/παξιμάδια</li>
-      <li><strong>1×:</strong> ομελέτα (3 ασπράδια + 1 αυγό) + λαχανικά + κατίκι + ψωμί</li>
-      <li><strong>1×:</strong> τόνος σε νερό + σαλάτα + καλαμπόκι/κινόα</li>
-      <li><strong>Μέρες ρεπό:</strong> κατίκι + σαλάτα + παξιμάδια ή γιαούρτι + λιναρόσπορος + βρώμη ή τοστ</li>
-    </ul></div>
-    <div class="meal"><h3>😴 Προ ύπνου</h3><ul>
-      <li>Γιαούρτι 2% <strong>ή</strong> κεφίρ <strong>ή</strong> φρυγανιά + τυρί μειωμένων λιπαρών</li>
-    </ul></div>
-    <div class="meal"><h3>ℹ️ Γενικά</h3><ul>
-      <li>Λάδι: 1 κ.σ. ανά γεύμα · Σαλάτα σχεδόν σε κάθε γεύμα</li>
-      <li>Πηγή: πλάνο Nutrimed</li>
-    </ul></div>
+  <div class="banner" id="banner"></div>
+
+  <div class="lists-bar" id="listsBar"></div>
+
+  <div class="list-controls" id="listControls" style="display:none">
+    <div class="filters">
+      <button class="chip active" data-f="all">Όλα</button>
+      <button class="chip" data-f="left">Μένουν</button>
+      <button class="chip" data-f="done">✓</button>
+    </div>
+    <div class="bulk">
+      <button id="bulkUncheck" onclick="uncheckAll()">↺ Ξετσεκάρισμα</button>
+      <button id="bulkClear" onclick="clearChecked()">🧹 Καθαρισμός</button>
+    </div>
   </div>
 
-  <footer>Κάθε προϊόν επεξεργάζεται με ✎ και διαγράφεται με ×. Πρόοδος, αλλαγές & δικά σου προϊόντα αποθηκεύονται σε αυτή τη συσκευή — κάνε «Backup» τακτικά.</footer>
+  <div id="content"><div class="empty"><div class="big">⏳</div>Σύνδεση…</div></div>
+
+  <details class="tips" id="tipsBox" style="display:none">
+    <summary>⚡ Λίγος χρόνος μαγειρέματος — έξυπνες κινήσεις</summary>
+    <ul>
+      <li>🔥 Ψήσε ~1,5 κιλό κοτόπουλο μαζί (meal prep) και μοίρασέ το σε γεύματα της εβδομάδας.</li>
+      <li>🥫 Κράτα πάντα κονσέρβα τόνο & όσπρια έτοιμα για μέρες χωρίς χρόνο.</li>
+      <li>🥚 Βραστά αυγά για 3 μέρες μαζί — έτοιμη πρωτεΐνη για πρωινό/σνακ.</li>
+      <li>🥗 Πλύνε & κόψε λαχανικά σαλάτας από την αρχή της εβδομάδας.</li>
+      <li>🍚 Μαγείρεψε ρύζι/κινόα σε μεγάλη ποσότητα και κράτα στο ψυγείο.</li>
+    </ul>
+  </details>
 </div>
-<div id="toast"></div>
 
+<button class="fab" id="fab" onclick="openAddSheet()" title="Προσθήκη προϊόντος" style="display:none">＋</button>
+
+<div class="sheet-bg" id="sheetBg" onclick="closeSheets()"></div>
+
+<!-- List actions sheet -->
+<div class="sheet" id="menuSheet">
+  <div class="grip"></div>
+  <h3 id="menuTitle"></h3>
+  <button class="menu-item" onclick="closeSheets(); addDietItems()"><span class="ic">🥗</span> Προσθήκη προγράμματος διατροφής</button>
+  <button class="menu-item" onclick="closeSheets(); renameList()"><span class="ic">✏️</span> Μετονομασία</button>
+  <button class="menu-item" onclick="closeSheets(); duplicateList()"><span class="ic">📄</span> Δημιουργία αντιγράφου</button>
+  <button class="menu-item" onclick="closeSheets(); shareLink()"><span class="ic">🔗</span> Κοινοποίηση λίστας</button>
+  <div class="menu-sep"></div>
+  <div class="color-label">🎨 Χρώμα λίστας</div>
+  <div class="swatches" id="colorSwatches"></div>
+  <div class="menu-sep"></div>
+  <button class="menu-item danger" onclick="closeSheets(); deleteList()"><span class="ic">🗑</span> Διαγραφή λίστας</button>
+</div>
+
+<!-- Add product sheet -->
+<div class="sheet" id="addSheet">
+  <div class="grip"></div>
+  <h3>Προσθήκη προϊόντος</h3>
+  <form onsubmit="addItem(event)">
+    <div class="field">
+      <label for="itemName">Προϊόν</label>
+      <input type="text" id="itemName" placeholder="π.χ. Κοτόπουλο" autocomplete="off" maxlength="80" required>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="itemQty">Ποσότητα</label>
+        <input type="number" id="itemQty" min="0.1" max="9999" step="any" value="1" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label for="itemUnit">Μονάδα</label>
+        <select id="itemUnit"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="itemCat">Κατηγορία</label>
+      <select id="itemCat"></select>
+    </div>
+    <button type="submit" class="submit">Προσθήκη στη λίστα</button>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle"></h3>
+    <input type="text" id="modalInput" autocomplete="off" maxlength="60">
+    <div class="row">
+      <button onclick="closeModal()">Άκυρο</button>
+      <button class="primary" id="modalOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="confirmBg">
+  <div class="modal">
+    <h3 id="confirmTitle"></h3>
+    <div class="row">
+      <button onclick="closeConfirm()">Άκυρο</button>
+      <button class="danger-btn" id="confirmOk">Διαγραφή</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script>
-"use strict";
+'use strict';
+
 /* ============================================================
-   Λίστα Σούπερ Μάρκετ — v4
-   Source of truth: docs/spec.md στο repo.
-   State: ενιαίο versioned schema σε localStorage (STORE_KEY).
+   Λίστα Σούπερ Μάρκετ — Firebase realtime (v5)
+   Source of truth: docs/spec.md στο repo lista-psonon.
    ============================================================ */
 
-const DATA = [
-  { key:"kreas", cat:"Κρέας & Ψάρι", emoji:"🍗", items:[
-    { item:"Στήθος κοτόπουλο (φιλέτο)", qty:"~1,8 κιλά", note:"Ψητό/μαγειρεμένο μεσημέρι + βραδινά μετά την προπόνηση"},
-    { item:"Φρέσκο ψάρι (τσιπούρα/λαβράκι κ.λπ.)", qty:"~1,2 κιλό", note:"Μεσημεριανό + πιθανή 2η φορά αντί για λαδερό"},
-    { item:"Μοσχάρι (μπριζόλα/σνίτσελ) ή συκώτι", qty:"~350-400 γρ", note:"1 φορά/εβδομάδα κυρίως γεύμα"},
-    { item:"Τόνος σε νερό (κονσέρβα)", qty:"2 κονσέρβες", note:"Βραδινό"},
-  ]},
-  { key:"gala", cat:"Αυγά & Γαλακτοκομικά", emoji:"🥚", items:[
-    { item:"Αυγά", qty:"2 δωδεκάδες", note:"Πρωινό, όσπρια, ομελέτα"},
-    { item:"Γιαούρτι 2%", qty:"~1,8 κιλό", note:"Πρωινό, βραδινό ρεπό, προ ύπνου"},
-    { item:"Κεφίρ 1,5%", qty:"~2,5-3 λίτρα", note:"Πρωινό, σνακ, προ ύπνου"},
-    { item:"Cottage cheese", qty:"~400 γρ", note:"Πρωινό (100γρ ανά μερίδα)"},
-    { item:"Κατίκι Δομοκού", qty:"~800 γρ - 1 κιλό", note:"Όσπρια, λαδερό, ομελέτα, βραδινά, τοστ"},
-    { item:"Ανθότυρο (12% λιπαρά)", qty:"~350 γρ", note:"Λαδερό γεύμα"},
-    { item:"Τυρί με μειωμένα λιπαρά (φέτες)", qty:"2 πακέτα", note:"Προ ύπνου & τοστ"},
-    { item:"Γάλα", qty:"2 λίτρα", note:"Καφές / γενική χρήση"},
-  ]},
-  { key:"psomi", cat:"Ψωμί & Δημητριακά", emoji:"🍞", items:[
-    { item:"Παξιμαδάκια ολικής άλεσης", qty:"2-3 πακέτα", note:"Πολλαπλά γεύματα"},
-    { item:"Ψωμί ολικής άλεσης", qty:"2 φραντζόλες", note:"Ψάρι, όσπρια, ομελέτα, τοστ"},
-    { item:"Φρυγανιές ολικής άλεσης", qty:"2 πακέτα", note:"Πρωινά"},
-    { item:"Βρώμη", qty:"1 πακέτο", note:"Πρωινό & βραδινό ρεπό"},
-    { item:"Ρύζι", qty:"1 κιλό", note:"Συνοδευτικό μεσημεριανών"},
-    { item:"Κινόα", qty:"1 πακέτο", note:"Εναλλακτική ρυζιού / βραδινό"},
-  ]},
-  { key:"ospria", cat:"Όσπρια & Κονσέρβες", emoji:"🫘", items:[
-    { item:"Όσπρια (φακές/γίγαντες/φάβα)", qty:"1-2 πακέτα", note:"Κυρίως γεύμα"},
-    { item:"Μαυρομάτικα φασόλια", qty:"1 πακέτο/κονσέρβα", note:"Εναλλακτική οσπρίων"},
-    { item:"Καλαμπόκι (κονσέρβα)", qty:"2 κονσέρβες", note:"Βραδινό με τόνο"},
-    { item:"Αρακάς (κατεψυγμένος)", qty:"1 σακούλα", note:"Λαδερό"},
-  ]},
-  { key:"laxanika", cat:"Λαχανικά", emoji:"🥦", items:[
-    { item:"Μαρούλι / πράσινη σαλάτα / χόρτα", qty:"2 μαρούλια + χόρτα", note:"Σαλάτα σχεδόν κάθε γεύμα"},
-    { item:"Ντομάτες", qty:"~1,5-2 κιλά", note:"Σαλάτες, αγγουροντομάτα, ομελέτα"},
-    { item:"Αγγούρια", qty:"6-7 τεμ.", note:"Σαλάτες"},
-    { item:"Πιπεριές (κόκκινες/πράσινες)", qty:"8-10 τεμ.", note:"Σαλάτες, ομελέτα, όσπρια"},
-    { item:"Καρότα", qty:"1 σακούλα", note:"Σαλάτες"},
-    { item:"Κρεμμύδια", qty:"~1 κιλό", note:"Μαγειρευτά & λαδερά"},
-    { item:"Σκόρδο", qty:"1-2 κεφάλια", note:"Μαγείρεμα"},
-    { item:"Κολοκυθάκια", qty:"6-7 τεμ.", note:"Ομελέτα, μπριάμ"},
-    { item:"Μελιτζάνες / πατάτες για μπριάμ", qty:"κατ' επιλογή", note:"Λαδερό μπριάμ"},
-    { item:"Μπάμιες (φρέσκες/κατεψυγμένες)", qty:"1 συσκ.", note:"Λαδερό"},
-    { item:"Σπανάκι", qty:"1 συσκ.", note:"Σπανακόρυζο"},
-    { item:"Μανιτάρια", qty:"2 συσκ.", note:"Ομελέτα"},
-    { item:"Πατάτες", qty:"~2 κιλά", note:"Συνοδευτικό σε πολλά γεύματα"},
-  ]},
-  { key:"frouta", cat:"Φρούτα", emoji:"🍎", items:[
-    { item:"Μπανάνες", qty:"10-12 τεμ.", note:"Πρωινό & σνακ"},
-    { item:"Μήλα / πορτοκάλια / εποχής", qty:"~4 κιλά", note:"2-3 φρούτα/άτομο/ημέρα"},
-  ]},
-  { key:"ksiroi", cat:"Ξηροί καρποί & Σπόροι", emoji:"🥜", items:[
-    { item:"Καρύδια", qty:"1 μεγάλο πακέτο", note:"Σνακ & βραδινό ρεπό"},
-    { item:"Φουντούκια", qty:"1 πακέτο", note:"Απογευματινό σνακ"},
-    { item:"Ταχίνι ολικής άλεσης", qty:"1 βαζάκι", note:"Πρωινό ρεπό"},
-    { item:"Σταφίδες", qty:"1 πακέτο", note:"Πρωινό & σαλάτα με μοσχάρι"},
-    { item:"Λιναρόσπορος", qty:"1 πακέτο", note:"Βραδινό ρεπό"},
-    { item:"Μείγμα σπόρων (σπόρια)", qty:"1 πακέτο", note:"Σαλάτα με μοσχάρι"},
-  ]},
-  { key:"pantopoleio", cat:"Παντοπωλείο & Βασικά", emoji:"🧂", items:[
-    { item:"Ελαιόλαδο", qty:"1 φιάλη", note:"1 κ.σ ανά γεύμα — βασικό"},
-    { item:"Μουστάρδα", qty:"1 βαζάκι", note:"Κοτόπουλο μαγειρεμένο"},
-    { item:"Λεμόνια", qty:"7-8 τεμ.", note:"Ψάρι, κοτόπουλο, σαλάτες"},
-    { item:"Αλάτι", qty:"", note:""},
-    { item:"Πιπέρι / μπαχαρικά", qty:"", note:"Ρίγανη, πάπρικα, κύμινο κ.λπ."},
-    { item:"Ζάχαρη / γλυκαντικό", qty:"", note:""},
-    { item:"Πελτές / σάλτσα ντομάτας", qty:"1-2 τεμ.", note:"Μαγειρευτά"},
-    { item:"Ξύδι / βαλσάμικο", qty:"1 φιάλη", note:"Σαλάτες"},
-    { item:"Μακαρόνια", qty:"1-2 πακέτα", note:""},
-    { item:"Μέλι", qty:"1 βαζάκι", note:""},
-    { item:"Καφές", qty:"", note:""},
-    { item:"Τσάι", qty:"", note:""},
-    { item:"Νερό εμφιαλωμένο", qty:"κατ' επιλογή", note:""},
-  ]},
-  { key:"xartika", cat:"Χαρτικά & Καθαριότητα", emoji:"🧻", items:[
-    { item:"Χαρτί υγείας", qty:"1 πακέτο", note:""},
-    { item:"Χαρτί κουζίνας", qty:"", note:""},
-    { item:"Χαρτοπετσέτες", qty:"", note:""},
-    { item:"Υγρό πιάτων", qty:"", note:""},
-    { item:"Απορρυπαντικό πλυντηρίου ρούχων", qty:"", note:""},
-    { item:"Μαλακτικό ρούχων", qty:"", note:""},
-    { item:"Καθαριστικό γενικής χρήσης", qty:"", note:""},
-    { item:"Χλωρίνη", qty:"", note:""},
-    { item:"Σακούλες σκουπιδιών", qty:"", note:""},
-    { item:"Σφουγγάρια / πανάκια", qty:"", note:""},
-    { item:"Αλουμινόχαρτο / μεμβράνη", qty:"", note:""},
-  ]},
-  { key:"frontida", cat:"Προσωπική φροντίδα", emoji:"🧴", items:[
-    { item:"Οδοντόκρεμα", qty:"", note:""},
-    { item:"Σαμπουάν", qty:"", note:""},
-    { item:"Αφρόλουτρο / σαπούνι", qty:"", note:""},
-    { item:"Αποσμητικό", qty:"", note:""},
-    { item:"Ξυραφάκια / αφρός ξυρίσματος", qty:"", note:""},
-    { item:"Χαρτομάντηλα", qty:"", note:""},
-  ]},
-  { key:"mine", cat:"➕ Δικά μου", emoji:"🧺", items:[] },
+/* ---------- Firebase ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyDw5l3pEVoBeNzb7EGLE8W_vIYaNhu6XFI",
+  authDomain: "supermarket-lista.firebaseapp.com",
+  databaseURL: "https://supermarket-lista-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "supermarket-lista",
+  storageBucket: "supermarket-lista.firebasestorage.app",
+  messagingSenderId: "389201263228",
+  appId: "1:389201263228:web:00a37b357f20cc5c15a7f9"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ---------- Όρια & validation ---------- */
+const LIMITS = { name: 80, listName: 60, note: 120, qtyMin: 0.1, qtyMax: 9999 };
+
+function clampQty(v) {
+  const n = parseFloat(v);
+  if (!Number.isFinite(n)) return 1;
+  return Math.min(LIMITS.qtyMax, Math.max(LIMITS.qtyMin, Math.round(n * 100) / 100));
+}
+function cleanText(v, max) {
+  return String(v == null ? '' : v).trim().slice(0, max);
+}
+/* Κάθε αποτυχημένο write στη βάση → toast, όχι σιωπηλή απώλεια. */
+function dbErr(err) {
+  console.error('DB write failed:', err);
+  showToast('⚠️ Δεν αποθηκεύτηκε — έλεγξε τη σύνδεση');
+}
+
+/* ---------- Categories & units ---------- */
+const CATEGORIES = [
+  ['🍗', 'Κρέας & Ψάρι'],
+  ['🥚', 'Αυγά & Γαλακτοκομικά'],
+  ['🍞', 'Ψωμί & Δημητριακά'],
+  ['🫘', 'Όσπρια & Κονσέρβες'],
+  ['🥦', 'Λαχανικά'],
+  ['🍎', 'Φρούτα'],
+  ['🥜', 'Ξηροί καρποί & Σπόροι'],
+  ['🧂', 'Παντοπωλείο & Βασικά'],
+  ['🧻', 'Χαρτικά & Καθαριότητα'],
+  ['🧴', 'Προσωπική φροντίδα'],
+  ['📦', 'Άλλα'],
+];
+const CAT_EMOJI = Object.fromEntries(CATEGORIES.map(([e, c]) => [c, e]));
+
+/* ---------- Χρώματα λίστας (Material tones) ---------- */
+const PALETTE = {
+  green:  { name: 'Πράσινο',  primary: '#15803d', light: '#22a54f', container: '#dcfce7', on: '#14532d' },
+  blue:   { name: 'Μπλε',     primary: '#1d4ed8', light: '#3b82f6', container: '#dbeafe', on: '#1e3a8a' },
+  teal:   { name: 'Πετρόλ',   primary: '#0f766e', light: '#14b8a6', container: '#ccfbf1', on: '#134e4a' },
+  purple: { name: 'Μωβ',      primary: '#7c3aed', light: '#a78bfa', container: '#ede9fe', on: '#4c1d95' },
+  pink:   { name: 'Ροζ',      primary: '#db2777', light: '#f472b6', container: '#fce7f3', on: '#831843' },
+  orange: { name: 'Πορτοκαλί',primary: '#ea580c', light: '#fb923c', container: '#ffedd5', on: '#7c2d12' },
+  red:    { name: 'Κόκκινο',  primary: '#dc2626', light: '#f87171', container: '#fee2e2', on: '#7f1d1d' },
+  slate:  { name: 'Γκρι',     primary: '#475569', light: '#94a3b8', container: '#e2e8f0', on: '#1e293b' },
+};
+function applyTheme(colorKey) {
+  const c = PALETTE[colorKey] || PALETTE.green;
+  const r = document.documentElement.style;
+  r.setProperty('--primary', c.primary);
+  r.setProperty('--primary-light', c.light);
+  r.setProperty('--primary-container', c.container);
+  r.setProperty('--on-primary-container', c.on);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = c.primary;
+}
+
+const UNITS = ['τεμ', 'κιλά', 'γρ', 'λίτρα', 'πακέτα', 'κονσέρβες', 'δωδεκάδες'];
+function unitStep(unit) {
+  if (unit === 'κιλά' || unit === 'λίτρα') return 0.5;
+  if (unit === 'γρ') return 100;
+  return 1;
+}
+function formatQty(qty, unit) {
+  const n = ('' + qty).replace('.', ',');
+  if (unit === 'τεμ') return qty === 1 ? '' : '×' + n;
+  return n + ' ' + unit;
+}
+
+/* ---------- Πρόγραμμα διατροφής (Nutrimed, 2 άτομα/εβδομάδα) ---------- */
+const DIET = [
+  ['Στήθος κοτόπουλο (φιλέτο)', 1.8, 'κιλά', 'Κρέας & Ψάρι', 'Μεσημέρι + βραδινά μετά την προπόνηση'],
+  ['Φρέσκο ψάρι (τσιπούρα/λαβράκι)', 1.2, 'κιλά', 'Κρέας & Ψάρι', 'Μεσημεριανό (350γρ/μερίδα)'],
+  ['Μοσχάρι (μπριζόλα/σνίτσελ) ή συκώτι', 400, 'γρ', 'Κρέας & Ψάρι', '1 φορά/εβδομάδα κυρίως γεύμα'],
+  ['Τόνος σε νερό', 2, 'κονσέρβες', 'Κρέας & Ψάρι', 'Βραδινό με σαλάτα + καλαμπόκι/κινόα'],
+  ['Αυγά', 2, 'δωδεκάδες', 'Αυγά & Γαλακτοκομικά', 'Πρωινό, όσπρια, ομελέτα'],
+  ['Γιαούρτι 2%', 1.8, 'κιλά', 'Αυγά & Γαλακτοκομικά', 'Πρωινό, βραδινό ρεπό, προ ύπνου'],
+  ['Κεφίρ 1,5%', 3, 'λίτρα', 'Αυγά & Γαλακτοκομικά', 'Πρωινό, σνακ, προ ύπνου'],
+  ['Cottage cheese', 400, 'γρ', 'Αυγά & Γαλακτοκομικά', 'Πρωινό (100γρ ανά μερίδα)'],
+  ['Κατίκι Δομοκού', 1, 'κιλά', 'Αυγά & Γαλακτοκομικά', 'Όσπρια, λαδερό, ομελέτα, βραδινά'],
+  ['Ανθότυρο 12%', 350, 'γρ', 'Αυγά & Γαλακτοκομικά', 'Λαδερό γεύμα'],
+  ['Τυρί μειωμένων λιπαρών (φέτες)', 2, 'πακέτα', 'Αυγά & Γαλακτοκομικά', 'Προ ύπνου & τοστ'],
+  ['Γάλα', 2, 'λίτρα', 'Αυγά & Γαλακτοκομικά', 'Καφές / γενική χρήση'],
+  ['Παξιμαδάκια ολικής', 2, 'πακέτα', 'Ψωμί & Δημητριακά', 'Πολλαπλά γεύματα'],
+  ['Ψωμί ολικής άλεσης', 2, 'τεμ', 'Ψωμί & Δημητριακά', 'Ψάρι, όσπρια, ομελέτα, τοστ'],
+  ['Φρυγανιές ολικής', 2, 'πακέτα', 'Ψωμί & Δημητριακά', 'Πρωινά'],
+  ['Βρώμη', 1, 'πακέτα', 'Ψωμί & Δημητριακά', 'Πρωινό & βραδινό ρεπό'],
+  ['Ρύζι', 1, 'κιλά', 'Ψωμί & Δημητριακά', 'Συνοδευτικό μεσημεριανών'],
+  ['Κινόα', 1, 'πακέτα', 'Ψωμί & Δημητριακά', 'Εναλλακτική ρυζιού / βραδινό'],
+  ['Όσπρια (φακές/γίγαντες/φάβα)', 2, 'πακέτα', 'Όσπρια & Κονσέρβες', 'Κυρίως γεύμα 1×/εβδ'],
+  ['Μαυρομάτικα φασόλια', 1, 'πακέτα', 'Όσπρια & Κονσέρβες', 'Εναλλακτική οσπρίων + αυγό'],
+  ['Καλαμπόκι', 2, 'κονσέρβες', 'Όσπρια & Κονσέρβες', 'Βραδινό με τόνο'],
+  ['Αρακάς (κατεψυγμένος)', 1, 'τεμ', 'Όσπρια & Κονσέρβες', 'Λαδερό'],
+  ['Μαρούλι / πράσινη σαλάτα / χόρτα', 2, 'τεμ', 'Λαχανικά', 'Σαλάτα σχεδόν κάθε γεύμα'],
+  ['Ντομάτες', 2, 'κιλά', 'Λαχανικά', 'Σαλάτες, ομελέτα'],
+  ['Αγγούρια', 6, 'τεμ', 'Λαχανικά', 'Σαλάτες'],
+  ['Πιπεριές', 8, 'τεμ', 'Λαχανικά', 'Σαλάτες, ομελέτα, όσπρια'],
+  ['Καρότα', 1, 'τεμ', 'Λαχανικά', 'Σαλάτες (σακούλα)'],
+  ['Κρεμμύδια', 1, 'κιλά', 'Λαχανικά', 'Μαγειρευτά & λαδερά'],
+  ['Σκόρδο', 2, 'τεμ', 'Λαχανικά', 'Μαγείρεμα'],
+  ['Κολοκυθάκια', 6, 'τεμ', 'Λαχανικά', 'Ομελέτα, μπριάμ'],
+  ['Μελιτζάνες', 4, 'τεμ', 'Λαχανικά', 'Μπριάμ'],
+  ['Μπάμιες', 1, 'τεμ', 'Λαχανικά', 'Λαδερό (συσκευασία)'],
+  ['Σπανάκι', 1, 'τεμ', 'Λαχανικά', 'Σπανακόρυζο'],
+  ['Μανιτάρια', 2, 'τεμ', 'Λαχανικά', 'Ομελέτα (συσκευασίες)'],
+  ['Πατάτες', 2, 'κιλά', 'Λαχανικά', 'Συνοδευτικό σε πολλά γεύματα'],
+  ['Μπανάνες', 12, 'τεμ', 'Φρούτα', 'Πρωινό & σνακ'],
+  ['Μήλα / πορτοκάλια / εποχής', 4, 'κιλά', 'Φρούτα', '2-3 φρούτα/άτομο/ημέρα'],
+  ['Καρύδια', 1, 'πακέτα', 'Ξηροί καρποί & Σπόροι', 'Σνακ & βραδινό ρεπό'],
+  ['Φουντούκια', 1, 'πακέτα', 'Ξηροί καρποί & Σπόροι', 'Απογευματινό σνακ'],
+  ['Ταχίνι ολικής', 1, 'τεμ', 'Ξηροί καρποί & Σπόροι', 'Πρωινό ρεπό'],
+  ['Σταφίδες', 1, 'πακέτα', 'Ξηροί καρποί & Σπόροι', 'Πρωινό & σαλάτα με μοσχάρι'],
+  ['Λιναρόσπορος', 1, 'πακέτα', 'Ξηροί καρποί & Σπόροι', 'Βραδινό ρεπό'],
+  ['Μείγμα σπόρων', 1, 'πακέτα', 'Ξηροί καρποί & Σπόροι', 'Σαλάτα με μοσχάρι'],
+  ['Ελαιόλαδο', 1, 'τεμ', 'Παντοπωλείο & Βασικά', '1 κ.σ. ανά γεύμα — βασικό'],
+  ['Μουστάρδα', 1, 'τεμ', 'Παντοπωλείο & Βασικά', 'Κοτόπουλο μαγειρεμένο'],
+  ['Λεμόνια', 8, 'τεμ', 'Παντοπωλείο & Βασικά', 'Ψάρι, κοτόπουλο, σαλάτες'],
+  ['Πελτές / σάλτσα ντομάτας', 2, 'τεμ', 'Παντοπωλείο & Βασικά', 'Μαγειρευτά'],
+  ['Ξύδι / βαλσάμικο', 1, 'τεμ', 'Παντοπωλείο & Βασικά', 'Σαλάτες'],
+  ['Μακαρόνια', 2, 'πακέτα', 'Παντοπωλείο & Βασικά', ''],
+  ['Μέλι', 1, 'τεμ', 'Παντοπωλείο & Βασικά', ''],
 ];
 
-/* ---------- State (versioned, single key) ---------- */
-const STORE_KEY = "lista_psonon_v4";
-const SCHEMA_VERSION = 4;
-const LEGACY = { checked:"lista_psonon_v3", custom:"lista_psonon_custom_v3", removed:"lista_psonon_removed_v3" };
-const LIMITS = { item:80, qty:60, note:120, maxCustom:300 };
-
-function emptyState(){
-  return { version:SCHEMA_VERSION, checked:{}, removed:{}, custom:[], edits:{}, costs:{} };
+/* ---------- Room ---------- */
+function getRoom() {
+  const m = location.hash.match(/r=([A-Za-z0-9_-]{4,})/);
+  if (m) return m[1];
+  const saved = lsGet('sm-room');
+  if (saved) { location.hash = 'r=' + saved; return saved; }
+  const code = Array.from(crypto.getRandomValues(new Uint8Array(9)))
+    .map(b => 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'[b % 55]).join('');
+  location.hash = 'r=' + code;
+  return code;
 }
+const ROOM = getRoom();
+/* localStorage μπορεί να μην είναι διαθέσιμο (private mode) — ποτέ crash. */
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+lsSet('sm-room', ROOM);
+const roomRef = db.ref('rooms/' + ROOM + '/lists');
 
-function isPlainObject(v){ return v !== null && typeof v === "object" && !Array.isArray(v); }
+/* ---------- State ---------- */
+let lists = {};
+let activeId = lsGet('sm-active-' + ROOM) || null;
+let ready = false;
+let filter = 'all';
+let collapsed = {};
+try { collapsed = JSON.parse(lsGet('sm-collapsed-' + ROOM) || '{}') || {}; } catch (e) { collapsed = {}; }
 
-/* Καθαρίζει/επικυρώνει οτιδήποτε φορτώνεται (localStorage ή import). */
-function sanitizeState(raw){
-  const s = emptyState();
-  if (!isPlainObject(raw)) return s;
-  if (isPlainObject(raw.checked)) for (const k in raw.checked) if (raw.checked[k] === true) s.checked[String(k)] = true;
-  if (isPlainObject(raw.removed)) for (const k in raw.removed) if (raw.removed[k] === true) s.removed[String(k)] = true;
-  if (Array.isArray(raw.custom)) {
-    s.custom = raw.custom
-      .filter(c => isPlainObject(c) && typeof c.item === "string" && c.item.trim().length > 0)
-      .slice(0, LIMITS.maxCustom)
-      .map(c => ({
-        uid: typeof c.uid === "string" && c.uid ? c.uid : genUid(),
-        cat: clampCat(c.cat),
-        item: String(c.item).trim().slice(0, LIMITS.item),
-        qty: typeof c.qty === "string" ? c.qty.trim().slice(0, LIMITS.qty) : "",
-        note: typeof c.note === "string" ? c.note.trim().slice(0, LIMITS.note) : "",
-      }));
-  }
-  if (isPlainObject(raw.edits)) {
-    for (const k in raw.edits) {
-      const e = raw.edits[k];
-      if (!isPlainObject(e)) continue;
-      const out = {};
-      if (typeof e.qty === "string") out.qty = e.qty.trim().slice(0, LIMITS.qty);
-      if (typeof e.note === "string") out.note = e.note.trim().slice(0, LIMITS.note);
-      if (Object.keys(out).length) s.edits[String(k)] = out;
-    }
-  }
-  if (isPlainObject(raw.costs)) {
-    for (const k in raw.costs) {
-      const n = Number(raw.costs[k]);
-      if (Number.isFinite(n) && n >= 0 && n < 10000) s.costs[String(k)] = Math.round(n * 100) / 100;
-    }
-  }
-  return s;
+function listArray() {
+  return Object.entries(lists)
+    .map(([id, l]) => ({ id, ...l }))
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0));
 }
-
-function clampCat(v){
-  const n = parseInt(v, 10);
-  return Number.isInteger(n) && n >= 0 && n < DATA.length ? n : DATA.length - 1;
+function itemArray(l) {
+  return Object.entries(l.items || {})
+    .map(([id, i]) => ({ id, ...i }))
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0));
 }
-function genUid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
-
-function loadState(){
-  // 1) v4
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (raw) return sanitizeState(JSON.parse(raw));
-  } catch (e) { console.warn("v4 load failed", e); }
-  // 2) migration από v3 (τρία ξεχωριστά κλειδιά)
-  const migrated = emptyState();
-  let hadLegacy = false;
-  try { const c = JSON.parse(localStorage.getItem(LEGACY.checked) || "null"); if (isPlainObject(c)) { migrated.checked = c; hadLegacy = true; } } catch(e){}
-  try { const c = JSON.parse(localStorage.getItem(LEGACY.custom) || "null"); if (Array.isArray(c)) { migrated.custom = c; hadLegacy = true; } } catch(e){}
-  try { const c = JSON.parse(localStorage.getItem(LEGACY.removed) || "null"); if (isPlainObject(c)) { migrated.removed = c; hadLegacy = true; } } catch(e){}
-  const s = sanitizeState(migrated);
-  if (hadLegacy) { persist(s); toast("Τα δεδομένα σου μεταφέρθηκαν στη νέα έκδοση ✅"); }
-  return s;
+function getActive() {
+  if (activeId && lists[activeId]) return { id: activeId, ...lists[activeId] };
+  const arr = listArray();
+  if (arr.length) { activeId = arr[0].id; return arr[0]; }
+  return null;
 }
+function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-let state = loadState();
-let filter = "all";
-let editingId = null;
-
-function persist(s){
-  try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(s || state));
-    return true;
-  } catch (e) {
-    console.error("save failed", e);
-    toast("⚠️ Η αποθήκευση απέτυχε — κάνε Backup για να μη χαθούν αλλαγές.", true);
-    return false;
-  }
-}
-
-/* ---------- Helpers ---------- */
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function toast(msg, isErr){
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "show" + (isErr ? " err" : "");
-  clearTimeout(toast._tm);
-  toast._tm = setTimeout(()=>{ t.className = ""; }, 3500);
-}
-function fmtCost(n){ return "€" + n.toFixed(2).replace(".", ","); }
-
-function baseId(ck, ii){ return "b|" + ck + "|" + ii; }
-function customId(uid){ return "c|" + uid; }
-
-function itemsForCat(ci){
-  const ck = DATA[ci].key;
-  const base = DATA[ci].items
-    .map((it, ii) => {
-      const id = baseId(ck, ii);
-      const ed = state.edits[id] || {};
-      return { item: it.item, qty: ed.qty !== undefined ? ed.qty : it.qty, note: ed.note !== undefined ? ed.note : it.note, id, custom:false };
-    })
-    .filter(it => !state.removed[it.id]);
-  const mine = state.custom.filter(c => c.cat === ci)
-    .map(c => ({ item:c.item, qty:c.qty || "", note:c.note || "", id:customId(c.uid), custom:true, uid:c.uid }));
-  return base.concat(mine);
-}
-
-function allItems(){
-  const out = [];
-  DATA.forEach((_, ci) => itemsForCat(ci).forEach(it => out.push(it)));
-  return out;
-}
-
-/* ---------- Render ---------- */
-const listEl = document.getElementById("list");
-
-const sel = document.getElementById("nCat");
-DATA.forEach((c, ci) => {
-  const o = document.createElement("option");
-  o.value = ci; o.textContent = c.cat.replace("➕ ", "");
-  sel.appendChild(o);
+/* ---------- Auth + listeners ---------- */
+firebase.auth().signInAnonymously().catch(err => {
+  showBanner('Σφάλμα σύνδεσης: ' + err.message);
 });
-sel.value = DATA.length - 1;
-
-function render(){
-  listEl.textContent = "";
-  DATA.forEach((cat, ci) => {
-    const items = itemsForCat(ci);
-    if (items.length === 0) return;
-    const total = items.length;
-    const done = items.filter(it => state.checked[it.id]).length;
-    const box = document.createElement("div");
-    box.className = "cat";
-    const h = document.createElement("h2");
-    h.innerHTML = `<span class="emoji">${escapeHtml(cat.emoji)}</span> ${escapeHtml(cat.cat.replace("➕ ",""))} <span class="count">${done}/${total}</span>`;
-    const ul = document.createElement("ul");
-    items.forEach((it) => {
-      const isDone = !!state.checked[it.id];
-      if (filter === "left" && isDone) return;
-      const li = (editingId === it.id) ? renderEditRow(it) : renderRow(it, isDone);
-      ul.appendChild(li);
-    });
-    if (filter === "left" && ul.children.length === 0) return;
-    h.addEventListener("click", () => ul.classList.toggle("hidden"));
-    box.appendChild(h); box.appendChild(ul);
-    listEl.appendChild(box);
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) return;
+  roomRef.on('value', snap => {
+    lists = snap.val() || {};
+    ready = true;
+    render();
+  }, err => showBanner('Σφάλμα βάσης: ' + err.message));
+  db.ref('.info/connected').on('value', snap => {
+    document.getElementById('statusDot').classList.toggle('on', !!snap.val());
   });
-  if (!listEl.children.length){
-    listEl.innerHTML = `<div class="cat"><div class="empty">Η λίστα είναι άδεια. Πρόσθεσε προϊόντα ή πάτησε «Επαναφορά».</div></div>`;
+});
+
+/* ---------- Rendering ---------- */
+function render() {
+  if (!ready) return;
+  const bar = document.getElementById('listsBar');
+  bar.innerHTML = '';
+  listArray().forEach(l => {
+    const items = itemArray(l);
+    const remaining = items.filter(i => !i.done).length;
+    const isActive = l.id === activeId;
+    const btn = document.createElement('button');
+    btn.className = 'list-tab' + (isActive ? ' active' : '');
+    btn.onclick = () => {
+      if (isActive) { openMenuSheet(); return; }   // tap active tab → list menu
+      activeId = l.id;
+      lsSet('sm-active-' + ROOM, activeId);
+      render();
+    };
+    if (!isActive) {
+      const dot = document.createElement('span');
+      dot.style.cssText = 'width:10px;height:10px;border-radius:50%;flex-shrink:0;background:' +
+        (PALETTE[l.color] || PALETTE.green).primary + ';';
+      btn.appendChild(dot);
+    }
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = l.name;
+    btn.appendChild(nameSpan);
+    if (items.length) {
+      const c = document.createElement('span');
+      c.className = 'count';
+      c.textContent = remaining;
+      btn.appendChild(c);
+    }
+    if (isActive) {
+      const more = document.createElement('span');
+      more.className = 'more';
+      more.textContent = '⋮';
+      more.title = 'Επιλογές λίστας';
+      more.onclick = (e) => { e.stopPropagation(); openMenuSheet(); };
+      btn.appendChild(more);
+    }
+    bar.appendChild(btn);
+  });
+  const add = document.createElement('button');
+  add.className = 'new-list-btn';
+  add.textContent = '+ Νέα λίστα';
+  add.onclick = createList;
+  bar.appendChild(add);
+
+  const list = getActive();
+  const items = list ? itemArray(list) : [];
+  const done = items.filter(i => i.done).length;
+
+  applyTheme(list && list.color);
+  document.getElementById('heroTitle').textContent = list ? '🛒 ' + list.name : '🛒 Τα ψώνια μας';
+  document.getElementById('heroSubtitle').style.display = list ? 'block' : 'none';
+
+  document.getElementById('fab').style.display = list ? 'flex' : 'none';
+  document.getElementById('tipsBox').style.display = list ? 'block' : 'none';
+  document.getElementById('listControls').style.display = list && items.length ? 'flex' : 'none';
+  document.getElementById('bulkUncheck').disabled = done === 0;
+  document.getElementById('bulkClear').disabled = done === 0;
+
+  const content = document.getElementById('content');
+  content.innerHTML = '';
+
+  if (!list) {
+    const d = document.createElement('div');
+    d.className = 'empty';
+    d.innerHTML = '<div class="big">🛒</div>Καμία λίστα ακόμα.<br>';
+    const b = document.createElement('button');
+    b.className = 'cta';
+    b.textContent = '🥗 Ξεκίνα με το πρόγραμμα διατροφής';
+    b.onclick = startWithDiet;
+    d.appendChild(b);
+    content.appendChild(d);
+    document.getElementById('heroProgress').style.display = 'none';
+    return;
   }
-  updateProgress();
+
+  const total = items.length;
+  const hp = document.getElementById('heroProgress');
+  if (total > 0) {
+    hp.style.display = 'block';
+    document.getElementById('progressText').textContent = `${done} / ${total}`;
+    document.getElementById('progressFill').style.width = (100 * done / total) + '%';
+  } else {
+    hp.style.display = 'none';
+  }
+
+  if (total === 0) {
+    content.innerHTML = '<div class="empty"><div class="big">📝</div>Η λίστα είναι άδεια.<br>Πάτα το ＋ για προϊόν ή άνοιξε το μενού της λίστας για το 🥗 πρόγραμμα.</div>';
+    return;
+  }
+
+  const visible = items.filter(i => filter === 'all' || (filter === 'left' ? !i.done : i.done));
+  if (!visible.length) {
+    content.innerHTML = '<div class="empty"><div class="big">✨</div>' +
+      (filter === 'left' ? 'Όλα στο καλάθι — μπράβο σας!' : 'Τίποτα εδώ ακόμα.') + '</div>';
+    return;
+  }
+
+  const knownCats = CATEGORIES.map(c => c[1]);
+  const extraCats = [...new Set(visible.map(i => i.cat).filter(c => !knownCats.includes(c)))];
+  [...knownCats, ...extraCats].forEach(cat => {
+    const catItems = visible.filter(i => i.cat === cat);
+    if (!catItems.length) return;
+    catItems.sort((a, b) => (a.done - b.done) || ((a.ts || 0) - (b.ts || 0)));
+
+    const section = document.createElement('div');
+    section.className = 'category' + (collapsed[cat] ? ' collapsed' : '');
+
+    const header = document.createElement('div');
+    header.className = 'cat-header';
+    header.onclick = () => {
+      collapsed[cat] = !collapsed[cat];
+      lsSet('sm-collapsed-' + ROOM, JSON.stringify(collapsed));
+      section.classList.toggle('collapsed');
+    };
+    const h = document.createElement('h2');
+    h.textContent = (CAT_EMOJI[cat] || '📦') + ' ' + cat;
+    const cc = document.createElement('span');
+    cc.className = 'cat-count';
+    cc.textContent = catItems.filter(i => !i.done).length + '/' + catItems.length;
+    const chev = document.createElement('span');
+    chev.className = 'chev';
+    chev.textContent = '▼';
+    header.appendChild(h); header.appendChild(cc); header.appendChild(chev);
+    section.appendChild(header);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'items';
+    catItems.forEach(item => wrap.appendChild(renderItem(list.id, item)));
+    section.appendChild(wrap);
+    content.appendChild(section);
+  });
 }
 
-function renderRow(it, isDone){
-  const li = document.createElement("li");
-  if (isDone) li.className = "done";
-  const cost = state.costs[it.id];
-  const qtyHtml = it.qty ? `<span class="qty">${escapeHtml(it.qty)}</span>` : "";
-  const costHtml = cost !== undefined ? `<span class="cost">${escapeHtml(fmtCost(cost))}</span>` : "";
-  const noteHtml = it.note ? `<span class="note">${escapeHtml(it.note)}</span>` : "";
-  const mineTag = it.custom ? `<span class="mine">δικό μου</span>` : "";
-  const safeId = escapeHtml(it.id);
-  li.innerHTML = `
-    <input type="checkbox" ${isDone ? "checked" : ""} id="cb_${safeId}">
-    <label for="cb_${safeId}">
-      <span class="item">${escapeHtml(it.item)}${qtyHtml}${costHtml}${mineTag}</span>
-      ${noteHtml}
-    </label>
-    <button class="edit" title="Επεξεργασία">✎</button>
-    <button class="del" title="Διαγραφή">×</button>`;
-  li.querySelector("input").addEventListener("change", (e) => {
-    if (e.target.checked) state.checked[it.id] = true; else delete state.checked[it.id];
-    persist(); render();
-  });
-  li.querySelector(".edit").addEventListener("click", () => { editingId = it.id; render(); });
-  li.querySelector(".del").addEventListener("click", () => {
-    if (it.custom) {
-      state.custom = state.custom.filter(c => c.uid !== it.uid);
-    } else {
-      state.removed[it.id] = true;
-    }
-    delete state.checked[it.id];
-    delete state.costs[it.id];
-    delete state.edits[it.id];
-    persist(); render();
-  });
-  return li;
+function renderItem(listId, item) {
+  const base = 'rooms/' + ROOM + '/lists/' + listId + '/items/' + item.id;
+  const unit = item.unit || 'τεμ';
+  const qty = item.qty || 1;
+  const div = document.createElement('div');
+  div.className = 'item' + (item.done ? ' done' : '');
+
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.checked = !!item.done;
+  cb.onchange = () => db.ref(base + '/done').set(cb.checked).catch(dbErr);
+  div.appendChild(cb);
+
+  const body = document.createElement('div');
+  body.className = 'body';
+  const name = document.createElement('span');
+  name.className = 'name';
+  name.textContent = item.name;
+  body.appendChild(name);
+  if (item.note) {
+    const note = document.createElement('span');
+    note.className = 'note';
+    note.textContent = item.note;
+    body.appendChild(note);
+  }
+  div.appendChild(body);
+
+  const qtyLabel = formatQty(qty, unit);
+  if (qtyLabel) {
+    const q = document.createElement('span');
+    q.className = 'qty';
+    q.textContent = qtyLabel;
+    div.appendChild(q);
+  }
+
+  const btns = document.createElement('span');
+  btns.className = 'btns';
+
+  const step = unitStep(unit);
+  const minus = document.createElement('button');
+  minus.textContent = '−';
+  minus.title = 'Μείωση';
+  minus.onclick = () => {
+    const next = Math.round((qty - step) * 100) / 100;
+    if (next >= step) db.ref(base + '/qty').set(next).catch(dbErr);
+  };
+  const plus = document.createElement('button');
+  plus.textContent = '+';
+  plus.title = 'Αύξηση';
+  plus.onclick = () => db.ref(base + '/qty').set(clampQty(qty + step)).catch(dbErr);
+  btns.appendChild(minus); btns.appendChild(plus);
+
+  const del = document.createElement('button');
+  del.className = 'del';
+  del.textContent = '✕';
+  del.title = 'Διαγραφή';
+  del.onclick = () => db.ref(base).remove().catch(dbErr);
+  btns.appendChild(del);
+
+  div.appendChild(btns);
+  return div;
 }
 
-function renderEditRow(it){
-  const li = document.createElement("li");
-  li.className = "editing";
-  const cost = state.costs[it.id];
-  li.innerHTML = `
-    <div class="erow">
-      <input type="text" class="eName" maxlength="${LIMITS.item}" placeholder="Προϊόν" ${it.custom ? "" : "disabled"}>
-      <input type="text" class="eQty" maxlength="${LIMITS.qty}" placeholder="Ποσότητα">
-    </div>
-    <div class="erow">
-      <input type="text" class="eNote" maxlength="${LIMITS.note}" placeholder="Σημείωση">
-      <input type="number" class="eCost" min="0" max="9999" step="0.1" placeholder="Κόστος €">
-    </div>
-    <div class="erow btns">
-      <button class="cancel">Άκυρο</button>
-      <button class="save">Αποθήκευση</button>
-    </div>`;
-  li.querySelector(".eName").value = it.item;
-  li.querySelector(".eQty").value = it.qty;
-  li.querySelector(".eNote").value = it.note;
-  li.querySelector(".eCost").value = cost !== undefined ? cost : "";
-  li.querySelector(".cancel").addEventListener("click", () => { editingId = null; render(); });
-  li.querySelector(".save").addEventListener("click", () => {
-    const qty = li.querySelector(".eQty").value.trim().slice(0, LIMITS.qty);
-    const note = li.querySelector(".eNote").value.trim().slice(0, LIMITS.note);
-    const costRaw = li.querySelector(".eCost").value.trim();
-    if (it.custom) {
-      const name = li.querySelector(".eName").value.trim().slice(0, LIMITS.item);
-      if (!name) { toast("Το όνομα προϊόντος δεν μπορεί να είναι κενό.", true); return; }
-      const c = state.custom.find(c => c.uid === it.uid);
-      if (c) { c.item = name; c.qty = qty; c.note = note; }
-    } else {
-      state.edits[it.id] = { qty, note };
-    }
-    if (costRaw === "") {
-      delete state.costs[it.id];
-    } else {
-      const n = Number(costRaw.replace(",", "."));
-      if (!Number.isFinite(n) || n < 0 || n >= 10000) { toast("Μη έγκυρο κόστος.", true); return; }
-      state.costs[it.id] = Math.round(n * 100) / 100;
-    }
-    editingId = null;
-    persist(); render();
-  });
-  li.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") li.querySelector(".save").click();
-    if (e.key === "Escape") li.querySelector(".cancel").click();
-  });
-  return li;
+/* ---------- Filters ---------- */
+document.querySelectorAll('.filters .chip').forEach(b => {
+  b.onclick = () => {
+    filter = b.dataset.f;
+    document.querySelectorAll('.filters .chip').forEach(x => x.classList.toggle('active', x === b));
+    render();
+  };
+});
+
+/* ---------- Sheets ---------- */
+function openMenuSheet() {
+  const l = getActive(); if (!l) return;
+  document.getElementById('menuTitle').textContent = '📝 ' + l.name;
+  buildSwatches(l);
+  document.getElementById('sheetBg').classList.add('open');
+  document.getElementById('menuSheet').classList.add('open');
 }
 
-function updateProgress(){
-  let total = 0, done = 0, costTotal = 0, costLeft = 0, costCount = 0;
-  allItems().forEach(it => {
-    total++;
-    const isDone = !!state.checked[it.id];
-    if (isDone) done++;
-    const c = state.costs[it.id];
-    if (c !== undefined) {
-      costTotal += c; costCount++;
-      if (!isDone) costLeft += c;
-    }
+function buildSwatches(l) {
+  const wrap = document.getElementById('colorSwatches');
+  wrap.innerHTML = '';
+  const current = l.color || 'green';
+  Object.entries(PALETTE).forEach(([key, c]) => {
+    const b = document.createElement('button');
+    b.className = 'swatch' + (key === current ? ' sel' : '');
+    b.style.background = 'linear-gradient(135deg,' + c.primary + ',' + c.light + ')';
+    b.title = c.name;
+    b.textContent = key === current ? '✓' : '';
+    b.onclick = () => {
+      db.ref('rooms/' + ROOM + '/lists/' + l.id + '/color').set(key).catch(dbErr);
+      applyTheme(key);
+      wrap.querySelectorAll('.swatch').forEach(x => { x.classList.remove('sel'); x.textContent = ''; });
+      b.classList.add('sel');
+      b.textContent = '✓';
+    };
+    wrap.appendChild(b);
   });
-  const pct = total ? Math.round(done / total * 100) : 0;
-  document.getElementById("fill").style.width = pct + "%";
-  document.getElementById("counter").textContent = `${done} / ${total} στο καλάθι (${pct}%)`;
-  const cm = document.getElementById("costMeta");
-  cm.textContent = costCount
-    ? `💶 Εκτίμηση: ${fmtCost(costTotal)} σύνολο · ${fmtCost(costLeft)} μένουν (${costCount}/${total} προϊόντα με κόστος)`
-    : "💶 Βάλε κόστος στα προϊόντα (✎) για εκτίμηση συνόλου.";
 }
-
-/* ---------- Add ---------- */
-document.getElementById("addBtn").addEventListener("click", addItem);
-["nItem","nQty","nNote"].forEach(id => document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") addItem(); }));
-
-function showAddErr(msg){
-  const el = document.getElementById("addErr");
-  el.textContent = msg; el.style.display = msg ? "block" : "none";
+function openAddSheet() {
+  document.getElementById('sheetBg').classList.add('open');
+  document.getElementById('addSheet').classList.add('open');
+  setTimeout(() => document.getElementById('itemName').focus(), 250);
 }
-
-function addItem(){
-  showAddErr("");
-  const nameEl = document.getElementById("nItem");
-  const name = nameEl.value.trim().slice(0, LIMITS.item);
-  if (!name) { showAddErr("Γράψε όνομα προϊόντος."); nameEl.focus(); return; }
-  if (state.custom.length >= LIMITS.maxCustom) { showAddErr("Έφτασες το όριο προϊόντων — διάγραψε κάποια πρώτα."); return; }
-  const qty = document.getElementById("nQty").value.trim().slice(0, LIMITS.qty);
-  const note = document.getElementById("nNote").value.trim().slice(0, LIMITS.note);
-  const cat = clampCat(document.getElementById("nCat").value);
-  const dup = itemsForCat(cat).some(it => it.item.toLowerCase() === name.toLowerCase());
-  if (dup && !confirm(`«${name}» υπάρχει ήδη στην κατηγορία. Να προστεθεί ξανά;`)) return;
-  state.custom.push({ uid: genUid(), cat, item: name, qty, note });
-  if (!persist()) return;
-  ["nItem","nQty","nNote"].forEach(id => document.getElementById(id).value = "");
-  nameEl.focus();
-  render();
+function closeSheets() {
+  document.getElementById('sheetBg').classList.remove('open');
+  document.getElementById('menuSheet').classList.remove('open');
+  document.getElementById('addSheet').classList.remove('open');
 }
 
 /* ---------- Actions ---------- */
-document.getElementById("reset").addEventListener("click", () => {
-  if (confirm("Να καθαρίσω όλα τα τικ; (τα προϊόντα μένουν)")) { state.checked = {}; persist(); render(); }
-});
-document.getElementById("restore").addEventListener("click", () => {
-  if (confirm("Να επαναφέρω όλα τα προεπιλεγμένα προϊόντα που διέγραψες;")) { state.removed = {}; persist(); render(); }
-});
-document.getElementById("fAll").addEventListener("click", (e) => { filter = "all"; setActive(e.target); render(); });
-document.getElementById("fLeft").addEventListener("click", (e) => { filter = "left"; setActive(e.target); render(); });
-function setActive(btn){ ["fAll","fLeft"].forEach(id => document.getElementById(id).classList.remove("active")); btn.classList.add("active"); }
+function addItem(e) {
+  e.preventDefault();
+  const list = getActive(); if (!list) return;
+  const nameEl = document.getElementById('itemName');
+  const name = cleanText(nameEl.value, LIMITS.name);
+  if (!name) return;
+  const qty = clampQty(document.getElementById('itemQty').value);
+  const unit = document.getElementById('itemUnit').value;
+  const cat = document.getElementById('itemCat').value;
 
-/* ---------- Backup / Import ---------- */
-document.getElementById("exportBtn").addEventListener("click", () => {
-  try {
-    const payload = { app: "lista-psonon", exportedAt: new Date().toISOString(), state };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "lista-psonon-backup-" + new Date().toISOString().slice(0,10) + ".json";
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    toast("Το backup κατέβηκε ✅");
-  } catch (e) {
-    console.error(e); toast("Το backup απέτυχε.", true);
+  const existing = itemArray(list).find(i =>
+    i.cat === cat && i.name.toLowerCase() === name.toLowerCase() && (i.unit || 'τεμ') === unit);
+  const listBase = 'rooms/' + ROOM + '/lists/' + list.id + '/items/';
+  if (existing) {
+    db.ref(listBase + existing.id).update({ qty: clampQty((existing.qty || 1) + qty), done: false }).catch(dbErr);
+  } else {
+    db.ref(listBase + newId()).set({ name, qty, unit, cat, done: false, ts: Date.now() }).catch(dbErr);
   }
-});
-
-document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
-document.getElementById("importFile").addEventListener("change", (e) => {
-  const file = e.target.files && e.target.files[0];
-  e.target.value = "";
-  if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { toast("Το αρχείο είναι πολύ μεγάλο.", true); return; }
-  const reader = new FileReader();
-  reader.onerror = () => toast("Δεν διαβάστηκε το αρχείο.", true);
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(reader.result);
-      const rawState = isPlainObject(parsed) && isPlainObject(parsed.state) ? parsed.state : parsed;
-      const next = sanitizeState(rawState);
-      const info = `${next.custom.length} δικά σου προϊόντα, ${Object.keys(next.checked).length} τικ, ${Object.keys(next.costs).length} κόστη`;
-      if (!confirm(`Να αντικατασταθεί η τρέχουσα κατάσταση με το backup;\n(${info})`)) return;
-      state = next;
-      editingId = null;
-      persist(); render();
-      toast("Το backup φορτώθηκε ✅");
-    } catch (err) {
-      console.error(err); toast("Μη έγκυρο αρχείο backup.", true);
-    }
-  };
-  reader.readAsText(file);
-});
-
-/* ---------- Tabs ---------- */
-const tabList = document.getElementById("tabList");
-const tabMeals = document.getElementById("tabMeals");
-tabList.addEventListener("click", () => switchTab("list"));
-tabMeals.addEventListener("click", () => switchTab("meals"));
-function switchTab(t){
-  const isList = t === "list";
-  document.getElementById("viewList").classList.toggle("hidden", !isList);
-  document.getElementById("viewMeals").classList.toggle("hidden", isList);
-  tabList.classList.toggle("active", isList);
-  tabMeals.classList.toggle("active", !isList);
+  nameEl.value = '';
+  document.getElementById('itemQty').value = '1';
+  closeSheets();
+  showToast(`«${name}» προστέθηκε ✔`);
 }
 
-render();
+function dietPayload() {
+  const items = {};
+  DIET.forEach(([name, qty, unit, cat, note], idx) => {
+    const it = { name, qty, unit, cat, done: false, ts: Date.now() + idx };
+    if (note) it.note = note;
+    items[newId() + idx] = it;
+  });
+  return items;
+}
+
+function startWithDiet() {
+  const id = newId();
+  db.ref('rooms/' + ROOM + '/lists/' + id)
+    .set({ name: 'Εβδομαδιαία', ts: Date.now(), items: dietPayload() })
+    .then(() => showToast('Έτοιμη η λίστα από το πρόγραμμα διατροφής 🥗'))
+    .catch(dbErr);
+  activeId = id;
+  lsSet('sm-active-' + ROOM, id);
+}
+
+function addDietItems() {
+  const l = getActive(); if (!l) return;
+  const existing = itemArray(l);
+  const updates = {};
+  let added = 0;
+  DIET.forEach(([name, qty, unit, cat, note], idx) => {
+    const dup = existing.find(i => i.name.toLowerCase() === name.toLowerCase());
+    if (!dup) {
+      const it = { name, qty, unit, cat, done: false, ts: Date.now() + idx };
+      if (note) it.note = note;
+      updates[newId() + idx] = it;
+      added++;
+    }
+  });
+  if (added) {
+    db.ref('rooms/' + ROOM + '/lists/' + l.id + '/items').update(updates)
+      .then(() => showToast(`Προστέθηκαν ${added} προϊόντα από το πρόγραμμα 🥗`))
+      .catch(dbErr);
+  } else {
+    showToast('Όλα τα προϊόντα του προγράμματος υπάρχουν ήδη ✔');
+  }
+}
+
+function createList() {
+  openModal('Νέα λίστα', 'π.χ. BBQ Σαββάτου', '', name => {
+    const id = newId();
+    db.ref('rooms/' + ROOM + '/lists/' + id)
+      .set({ name: cleanText(name, LIMITS.listName), ts: Date.now() }).catch(dbErr);
+    activeId = id;
+    lsSet('sm-active-' + ROOM, id);
+  });
+}
+
+function renameList() {
+  const l = getActive(); if (!l) return;
+  openModal('Μετονομασία λίστας', '', l.name, name => {
+    db.ref('rooms/' + ROOM + '/lists/' + l.id + '/name')
+      .set(cleanText(name, LIMITS.listName)).catch(dbErr);
+  });
+}
+
+function duplicateList() {
+  const l = getActive(); if (!l) return;
+  const id = newId();
+  const items = {};
+  itemArray(l).forEach(i => {
+    const it = { name: i.name, qty: i.qty || 1, unit: i.unit || 'τεμ', cat: i.cat, done: false, ts: i.ts || Date.now() };
+    if (i.note) it.note = i.note;
+    items[newId()] = it;
+  });
+  const copyData = { name: cleanText(l.name + ' (αντίγραφο)', LIMITS.listName), ts: Date.now(), items };
+  if (l.color) copyData.color = l.color;
+  db.ref('rooms/' + ROOM + '/lists/' + id).set(copyData)
+    .then(() => showToast('Δημιουργήθηκε αντίγραφο 📄'))
+    .catch(dbErr);
+  activeId = id;
+  lsSet('sm-active-' + ROOM, id);
+}
+
+function deleteList() {
+  const l = getActive(); if (!l) return;
+  openConfirm(`Διαγραφή της λίστας «${l.name}»;`, () => {
+    db.ref('rooms/' + ROOM + '/lists/' + l.id).remove().catch(dbErr);
+    activeId = null;
+  });
+}
+
+function uncheckAll() {
+  const l = getActive(); if (!l) return;
+  const updates = {};
+  itemArray(l).forEach(i => { updates[i.id + '/done'] = false; });
+  if (Object.keys(updates).length)
+    db.ref('rooms/' + ROOM + '/lists/' + l.id + '/items').update(updates).catch(dbErr);
+}
+
+function clearChecked() {
+  const l = getActive(); if (!l) return;
+  const checked = itemArray(l).filter(i => i.done);
+  if (!checked.length) return;
+  openConfirm(`Αφαίρεση ${checked.length} τσεκαρισμένων προϊόντων;`, () => {
+    const updates = {};
+    checked.forEach(i => { updates[i.id] = null; });
+    db.ref('rooms/' + ROOM + '/lists/' + l.id + '/items').update(updates).catch(dbErr);
+  });
+}
+
+/* ---------- Share ---------- */
+function shareLink() {
+  const url = location.href;
+  const done = () => showToast('Ο σύνδεσμος αντιγράφηκε! Στείλ’ τον για κοινή λίστα 🛒');
+  if (navigator.share) {
+    navigator.share({ title: 'Λίστα Σούπερ Μάρκετ', url }).catch(() => {});
+  } else if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(done).catch(() => prompt('Αντίγραψε τον σύνδεσμο:', url));
+  } else {
+    prompt('Αντίγραψε τον σύνδεσμο:', url);
+  }
+}
+
+/* ---------- UI helpers ---------- */
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+function showBanner(msg) {
+  const b = document.getElementById('banner');
+  b.textContent = msg;
+  b.classList.add('show');
+}
+
+let modalCb = null;
+function openModal(title, placeholder, value, cb) {
+  document.getElementById('modalTitle').textContent = title;
+  const input = document.getElementById('modalInput');
+  input.placeholder = placeholder;
+  input.value = value;
+  modalCb = cb;
+  document.getElementById('modalBg').classList.add('open');
+  setTimeout(() => input.focus(), 50);
+}
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('open');
+  modalCb = null;
+}
+document.getElementById('modalOk').onclick = () => {
+  const v = document.getElementById('modalInput').value.trim();
+  if (v && modalCb) { const cb = modalCb; closeModal(); cb(v); }
+};
+document.getElementById('modalInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('modalOk').click(); }
+  if (e.key === 'Escape') closeModal();
+});
+document.getElementById('modalBg').addEventListener('click', e => {
+  if (e.target.id === 'modalBg') closeModal();
+});
+
+let confirmCb = null;
+function openConfirm(title, cb) {
+  document.getElementById('confirmTitle').textContent = title;
+  confirmCb = cb;
+  document.getElementById('confirmBg').classList.add('open');
+}
+function closeConfirm() {
+  document.getElementById('confirmBg').classList.remove('open');
+  confirmCb = null;
+}
+document.getElementById('confirmOk').onclick = () => {
+  if (confirmCb) { const cb = confirmCb; closeConfirm(); cb(); }
+};
+document.getElementById('confirmBg').addEventListener('click', e => {
+  if (e.target.id === 'confirmBg') closeConfirm();
+});
+
+/* ---------- Init ---------- */
+const catSel = document.getElementById('itemCat');
+CATEGORIES.forEach(([emoji, cat]) => {
+  const o = document.createElement('option');
+  o.value = cat;
+  o.textContent = emoji + ' ' + cat;
+  catSel.appendChild(o);
+});
+const unitSel = document.getElementById('itemUnit');
+UNITS.forEach(u => {
+  const o = document.createElement('option');
+  o.value = u;
+  o.textContent = u;
+  unitSel.appendChild(o);
+});
+unitSel.addEventListener('change', () => {
+  const step = unitStep(unitSel.value);
+  const q = document.getElementById('itemQty');
+  q.step = step;
+  q.min = step;
+  q.value = step === 100 ? 500 : 1;
+});
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSheets();
+});
+window.addEventListener('hashchange', () => {
+  const m = location.hash.match(/r=([A-Za-z0-9_-]{4,})/);
+  if (m && m[1] !== ROOM) { lsSet('sm-room', m[1]); location.reload(); }
+});
 </script>
 </body>
 </html>

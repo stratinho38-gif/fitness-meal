@@ -271,12 +271,40 @@
   .modal .row .primary { background: var(--primary); color: #fff; }
   .modal .row .danger-btn { background: var(--danger); color: #fff; }
 
-  /* ---------- Top tabs (Λίστα / Γεύματα) ---------- */
+  /* ---------- Bottom nav (Αρχική / Λίστα / Γεύματα) ---------- */
   .hidden { display: none !important; }
-  .top-tabs { display: flex; gap: 6px; background: var(--surface-variant); padding: 5px; border-radius: 14px; margin-bottom: 12px; }
-  .top-tabs button { flex: 1; border: none; background: transparent; color: var(--muted); font-size: 14.5px; font-weight: 700; padding: 10px; border-radius: 10px; cursor: pointer; }
-  .top-tabs button.on { background: #fff; color: var(--text); box-shadow: var(--elev1); }
-  body.meals-mode .fab { display: none !important; }
+  .bottom-nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 8;
+    background: var(--surface-container); border-top: 1px solid var(--surface-variant);
+    display: flex; padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 12px rgba(0,0,0,.07);
+  }
+  .bottom-nav button {
+    flex: 1; border: none; background: none; padding: 8px 4px 9px;
+    font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .bottom-nav button .ic { font-size: 21px; line-height: 1.2; }
+  .bottom-nav button.on { color: var(--primary); }
+  .bottom-nav button:active { transform: scale(.95); }
+  .fab { bottom: 84px; }
+  body.no-fab .fab { display: none !important; }
+
+  /* ---------- Αρχική ---------- */
+  #viewHome .home-card { background: var(--surface-container); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: var(--elev1); }
+  #viewHome .home-card h3 { margin: 0 0 10px; font-size: 15px; }
+  #viewHome .home-meal { display: flex; align-items: center; gap: 10px; padding: 9px 0; cursor: pointer; }
+  #viewHome .home-meal + .home-meal { border-top: 1px dashed var(--surface-variant); }
+  #viewHome .tag { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 99px; width: 72px; text-align: center; flex-shrink: 0; }
+  #viewHome .tag.lunch { background: #f8efe2; color: #b9762a; }
+  #viewHome .tag.dinner { background: #e9edf8; color: #4a5f9e; }
+  #viewHome .hm-name { flex: 1; font-size: 14px; font-weight: 600; min-width: 0; }
+  #viewHome .hm-done { text-decoration: line-through; color: var(--muted); font-weight: 400; }
+  #viewHome .hm-meta { font-size: 11.5px; color: var(--muted); flex-shrink: 0; }
+  #viewHome .home-link { margin-top: 10px; border: none; background: var(--primary-container); color: var(--on-primary-container); font-weight: 700; font-size: 13px; padding: 9px 14px; border-radius: 999px; cursor: pointer; }
+  #viewHome .hp-bar { height: 8px; background: var(--surface-variant); border-radius: 99px; overflow: hidden; }
+  #viewHome .hp-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; transition: width .3s; }
+  #viewHome .hp-txt { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
 
   /* ---------- Γεύματα ---------- */
   #viewMeals { --lunch:#b9762a; --lunch-soft:#f8efe2; --dinner:#4a5f9e; --dinner-soft:#e9edf8; }
@@ -320,9 +348,17 @@
 </head>
 <body>
 <div class="app">
-  <div class="top-tabs">
-    <button id="tabShop" class="on">🛒 Λίστα</button>
-    <button id="tabMeals">🍽️ Γεύματα</button>
+  <div id="viewHome" class="hidden">
+    <div class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>👋 Καλώς ήρθατε!</h1>
+          <div class="subtitle" style="display:block">Ψώνια & γεύματα για 2 άτομα · πρόγραμμα Nutrimed</div>
+        </div>
+      </div>
+    </div>
+    <div class="home-card" id="homeToday"></div>
+    <div class="home-card" id="homeShop"></div>
   </div>
 
   <div id="viewShop">
@@ -384,11 +420,18 @@
       💡 <b>Meal prep:</b> Κυριακή διπλή δόση από όσπρια ή κοτόπουλο κατσαρόλας = 3-4 έτοιμα μεσημέρια. Ψητό στήθος σε batch καλύπτει τις κοτοσαλάτες.<br>
       Το 🔄 αλλάζει τη συνταγή με άλλη ίδιας κατηγορίας (η εβδομαδιαία δομή Nutrimed δεν χαλάει).
     </div>
-    <div class="g-overlay" id="gOverlay">
-      <div class="g-modal" id="gModal"></div>
-    </div>
   </div><!-- /viewMeals -->
 </div>
+
+<div class="g-overlay" id="gOverlay">
+  <div class="g-modal" id="gModal"></div>
+</div>
+
+<nav class="bottom-nav">
+  <button id="navHome"><span class="ic">🏠</span>Αρχική</button>
+  <button id="navShop"><span class="ic">🛒</span>Λίστα</button>
+  <button id="navMeals"><span class="ic">🍽️</span>Γεύματα</button>
+</nav>
 
 <button class="fab" id="fab" onclick="openAddSheet()" title="Προσθήκη προϊόντος" style="display:none">＋</button>
 
@@ -658,6 +701,7 @@ firebase.auth().onAuthStateChanged(user => {
     lists = snap.val() || {};
     ready = true;
     render();
+    homeRender();
   }, err => showBanner('Σφάλμα βάσης: ' + err.message));
   db.ref('.info/connected').on('value', snap => {
     document.getElementById('statusDot').classList.toggle('on', !!snap.val());
@@ -1358,6 +1402,7 @@ function gRender() {
   const done = gState.done.filter(Boolean).length;
   document.getElementById("gBarFill").style.width = (done/14*100) + "%";
   document.getElementById("gPctTxt").textContent = done + "/14 γεύματα";
+  homeRender();
 }
 function gSlot(i, cls, label, r) {
   return `
@@ -1379,23 +1424,62 @@ document.getElementById("gClearBtn").addEventListener("click", () => {
   gState.done = Array(14).fill(false); gSave(); gRender();
 });
 
-/* ---------- Εναλλαγή καρτελών ---------- */
-const tabShop = document.getElementById('tabShop');
-const tabMeals = document.getElementById('tabMeals');
-function switchTab(t) {
-  const shop = t === 'shop';
-  document.getElementById('viewShop').classList.toggle('hidden', !shop);
-  document.getElementById('viewMeals').classList.toggle('hidden', shop);
-  tabShop.classList.toggle('on', shop);
-  tabMeals.classList.toggle('on', !shop);
-  document.body.classList.toggle('meals-mode', !shop);
-  lsSet('sm-tab', t);
+/* ---------- Αρχική ---------- */
+function homeRender() {
+  const homeToday = document.getElementById('homeToday');
+  if (!homeToday) return;
+  // Σημερινά γεύματα (0 = Δευτέρα)
+  const di = (new Date().getDay() + 6) % 7;
+  const li = di * 2, bi = di * 2 + 1;
+  const L = MEALS[gState.picks[li]], B = MEALS[gState.picks[bi]];
+  homeToday.innerHTML = `
+    <h3>🍽️ Σήμερα · ${MEAL_TEMPLATE[di].day}</h3>
+    <div class="home-meal" onclick="gOpenModal('${gState.picks[li]}')">
+      <span class="tag lunch">Μεσημέρι</span>
+      <span class="hm-name${gState.done[li] ? ' hm-done' : ''}">${L.n}</span>
+      <span class="hm-meta">⏱ ${L.t}</span>
+    </div>
+    <div class="home-meal" onclick="gOpenModal('${gState.picks[bi]}')">
+      <span class="tag dinner">Βράδυ</span>
+      <span class="hm-name${gState.done[bi] ? ' hm-done' : ''}">${B.n}</span>
+      <span class="hm-meta">⏱ ${B.t}</span>
+    </div>
+    <button class="home-link" onclick="switchTab('meals')">Όλη η εβδομάδα →</button>`;
+  // Πρόοδος λίστας ψώνων
+  const list = getActive();
+  const items = list ? itemArray(list) : [];
+  const done = items.filter(i => i.done).length;
+  const pct = items.length ? Math.round(done / items.length * 100) : 0;
+  document.getElementById('homeShop').innerHTML = `
+    <h3>🛒 ${list ? escapeForHome(list.name) : 'Λίστα ψώνων'}</h3>
+    ${items.length ? `
+    <div class="hp-bar"><i style="width:${pct}%"></i></div>
+    <div class="hp-txt">${done} / ${items.length} στο καλάθι (${pct}%)</div>` : `
+    <div class="hp-txt">${ready ? 'Δεν υπάρχει ακόμα λίστα — ξεκίνα με το πρόγραμμα διατροφής.' : 'Σύνδεση…'}</div>`}
+    <button class="home-link" onclick="switchTab('shop')">Άνοιξε τη λίστα →</button>`;
 }
-tabShop.addEventListener('click', () => switchTab('shop'));
-tabMeals.addEventListener('click', () => switchTab('meals'));
-if (lsGet('sm-tab') === 'meals') switchTab('meals');
+// Το όνομα λίστας είναι user input → escaping πριν μπει σε innerHTML
+function escapeForHome(s) {
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---------- Bottom nav ---------- */
+const NAV = { home: 'navHome', shop: 'navShop', meals: 'navMeals' };
+const VIEWS = { home: 'viewHome', shop: 'viewShop', meals: 'viewMeals' };
+function switchTab(t) {
+  if (!NAV[t]) t = 'home';
+  Object.keys(NAV).forEach(k => {
+    document.getElementById(VIEWS[k]).classList.toggle('hidden', k !== t);
+    document.getElementById(NAV[k]).classList.toggle('on', k === t);
+  });
+  document.body.classList.toggle('no-fab', t !== 'shop');
+  lsSet('sm-tab', t);
+  if (t === 'home') homeRender();
+}
+Object.keys(NAV).forEach(k => document.getElementById(NAV[k]).addEventListener('click', () => switchTab(k)));
 
 gRender();
+switchTab(lsGet('sm-tab') || 'home');
 </script>
 </body>
 </html>

@@ -1,14 +1,16 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v6 (Firebase realtime + καρτέλα Γευμάτων)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v6.1 (bottom nav + Αρχική)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
-Εφαρμογή 2 καρτελών για **2 άτομα** (Στράτος + κοπέλα): 🛒 κοινή realtime λίστα ψώνων + 🍽️ εβδομαδιαίο πρόγραμμα γευμάτων. Βασισμένη στο πρόγραμμα διατροφής Nutrimed + είδη σπιτιού.
+Εφαρμογή 3 καρτελών για **2 άτομα** (Στράτος + κοπέλα): 🏠 Αρχική + 🛒 κοινή realtime λίστα ψώνων + 🍽️ εβδομαδιαίο πρόγραμμα γευμάτων. Βασισμένη στο πρόγραμμα διατροφής Nutrimed + είδη σπιτιού.
 
 ## 2. Αρχιτεκτονική
 
-- Single-file HTML app, χωρίς build step. Δύο καρτέλες (top tabs): `viewShop` / `viewMeals`.
+- Single-file HTML app, χωρίς build step. **Bottom navigation** (mobile-style, fixed): `viewHome` / `viewShop` / `viewMeals`. Προεπιλογή: Αρχική· η τελευταία καρτέλα θυμάται (`sm-tab`).
+- **Αρχική**: σημερινά γεύματα (βάσει ημέρας εβδομάδας, κλικ → modal συνταγής) + πρόοδος ενεργής λίστας ψώνων + συντομεύσεις. Ανανεώνεται σε κάθε αλλαγή δεδομένων (Firebase update ή τικ γεύματος). Το όνομα λίστας (user input) περνά από escaping πριν μπει σε innerHTML.
+- Το FAB (+ προϊόν) εμφανίζεται μόνο στην καρτέλα Λίστα. Το modal συνταγής (gOverlay) ζει εκτός καρτελών ώστε να ανοίγει και από την Αρχική.
 - **Backend (λίστα)**: Firebase Realtime Database (project `supermarket-lista`, EU-west1), anonymous auth.
 - **Κοινή χρήση**: room code στο URL hash (`#r=<code>`). Όποιος έχει το link βλέπει/επεξεργάζεται τις ίδιες λίστες realtime.
 - **localStorage** (UI preferences + γεύματα): `sm-room`, `sm-active-<room>`, `sm-collapsed-<room>`, `sm-tab`, `programma-gevmaton-stratos` (picks/done γευμάτων, ανά συσκευή). Όλα τα δεδομένα λιστών ψώνων ζουν στο Firebase.

@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, CATEGORIES, DIET, PALETTE, CAT_EMOJI};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, CATEGORIES, DIET, PALETTE, CAT_EMOJI, dietDefaults, dietItems};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -56,6 +56,25 @@ t('DIET κατηγορίες έγκυρες', m.DIET.every(d => m.CAT_EMOJI[d[3]
 t('DIET ποσότητες έγκυρες', m.DIET.every(d => Number.isFinite(d[1]) && d[1] > 0));
 t('DIET ονόματα εντός ορίου', m.DIET.every(d => d[0].length <= m.LIMITS.name));
 t('PALETTE 8 χρώματα', Object.keys(m.PALETTE).length === 8);
+
+// Παραμετροποιήσιμο στάνταρ (v7.1): dietDefaults + dietItems
+t('dietDefaults ίδιο μήκος με DIET', m.dietDefaults().length === m.DIET.length);
+t('dietDefaults πλήρη πεδία', m.dietDefaults().every(i =>
+  typeof i.name === 'string' && i.name && Number.isFinite(i.qty) && i.unit && i.cat && Number.isFinite(i.ts)));
+t('dietDefaults κρατά note μόνο όταν υπάρχει', m.dietDefaults().every(i => !('note' in i) || i.note));
+t('dietItems(null) → defaults', m.dietItems(null).length === m.DIET.length);
+t('dietItems({}) → defaults', m.dietItems({}).length === m.DIET.length);
+t('dietItems(undefined) → defaults', m.dietItems(undefined).length === m.DIET.length);
+const customTpl = {
+  b: { name: 'Ρύζι', qty: 2, unit: 'κιλά', cat: 'Ψωμί & Δημητριακά', ts: 5 },
+  a: { name: 'Γάλα', qty: 1, unit: 'λίτρα', cat: 'Αυγά & Γαλακτοκομικά', ts: 1 },
+  bad: { qty: 3 },
+};
+const customArr = m.dietItems(customTpl);
+t('dietItems(custom) → μόνο έγκυρα entries', customArr.length === 2);
+t('dietItems(custom) → ταξινόμηση κατά ts', customArr[0].name === 'Γάλα' && customArr[1].name === 'Ρύζι');
+t('dietItems(custom) → κρατά τα ids', customArr[0].id === 'a' && customArr[1].id === 'b');
+t('dietItems(μόνο άκυρα) → defaults', m.dietItems({ x: { qty: 1 } }).length === m.DIET.length);
 
 // buildAiPrompt (AI συνταγές v6.2)
 const rec = { n: 'Φακές με κατίκι', ing: ['1,5 φλ φακές', '60γρ κατίκι'], kcal: 520, p: 30 };

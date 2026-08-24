@@ -1,6 +1,6 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v7.0 (Material 3 UI)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v7.1 (Παραμετροποιήσιμο στάνταρ)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
@@ -41,12 +41,24 @@
 - Γραμματοσειρά **Roboto** από Google Fonts (400/500/700, `display=swap`) με system fallback.
 - Σκληροκωδικοποιημένα χρώματα (banner, tips, lunch/dinner tags, toast, modals) αντικαταστάθηκαν από tokens με dark variants (`--warn-*`, `--lunch*`, `--dinner*`, `--inverse-surface` κ.λπ.).
 
+### Παραμετροποιήσιμο στάνταρ πρόγραμμα (v7.1)
+
+- Το «πρόγραμμα διατροφής» (import) δεν είναι πλέον κλειδωμένο στο hardcoded `DIET`: υπάρχει **custom template** στο Firebase (`rooms/<ROOM>/dietTemplate`), **κοινό για το ζευγάρι** (realtime).
+- Pure functions (testable, πριν το Room block): `dietDefaults()` (το DIET ως αντικείμενα) και `dietItems(custom)` (custom αν υπάρχει και είναι έγκυρο/μη κενό, αλλιώς defaults).
+- Κάθε import (`startWithDiet`, `addDietItems`) περνά από `dietItems(dietTemplate)` — άρα σέβεται τις αλλαγές.
+- **Οθόνη επεξεργασίας** (bottom sheet `tplSheet`, από το μενού λίστας «⚙️ Επεξεργασία στάνταρ λίστας»):
+  - Στο πρώτο άνοιγμα, αν δεν υπάρχει custom template, το default υλοποιείται (materialize) στο Firebase ώστε κάθε γραμμή να έχει id για edits.
+  - Ανά προϊόν: +/− ποσότητας (βήμα `unitStep`, clamp), διαγραφή. Προσθήκη νέου προϊόντος μέσω του υπάρχοντος addSheet σε **template mode** (`openAddSheet('template')`) — με συγχώνευση διπλοτύπων.
+  - «↺ Επαναφορά στο αρχικό πρόγραμμα» (με confirm): διαγράφει το `dietTemplate` → ισχύει ξανά το hardcoded DIET.
+- Όλα τα user strings στο sheet με `textContent`. Όλα τα writes με `.catch(dbErr)`.
+
 ### Schema (Firebase)
 ```
 rooms/<ROOM>/lists/<listId> = {
   name: string, ts: number, color?: string(PALETTE key),
   items: { <itemId>: { name, qty:number, unit, cat, note?, done:boolean, ts:number } }
 }
+rooms/<ROOM>/dietTemplate/<itemId> = { name, qty:number, unit, cat, note?, ts:number }   // v7.1, προαιρετικό
 ```
 
 ## 3. Κανόνες robustness (v5)
@@ -73,6 +85,7 @@ rooms/<ROOM>/lists/<listId> = {
 - Το Firebase `apiKey` είναι public identifier (by design), ΔΕΝ είναι μυστικό.
 - Το room code είναι το μόνο access control: 9 χαρακτήρες από αλφάβητο 55 → ~2⁵² συνδυασμοί.
 - **Database Rules (ενεργά από 24/08/2026)**: `auth != null` για read/write στα rooms, room code pattern `[A-Za-z0-9_-]{4,20}`, validation δομής με τα ίδια όρια του κώδικα (name≤80, listName≤60, note≤120, qty 0.1–9999, `$other: false` σε άγνωστα πεδία).
+- **v7.1**: τα rules πρέπει να επιτρέπουν και το node `dietTemplate` κάτω από κάθε room (ίδια validation με τα items, χωρίς `done`). Χωρίς αυτό, η επεξεργασία στάνταρ αποτυγχάνει με toast «Δεν αποθηκεύτηκε».
 
 ## 6. Παραδοχές ποσοτήτων DIET
 

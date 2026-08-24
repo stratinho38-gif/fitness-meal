@@ -3,7 +3,7 @@
 {
   "name": "Lista Psonon Stratos",
   "schemaVersion": 1,
-  "description": "2 καρτέλες: (1) κοινή realtime λίστα ψώνων (Firebase) για 2 άτομα — πολλαπλές λίστες, +/− ποσότητες, import Nutrimed, κοινοποίηση με link· (2) εβδομαδιαίο πρόγραμμα γευμάτων με 33 συνταγές cut, swap, τικ και modal υλικών/μακροθρεπτικών. Source of truth: repo lista-psonon."
+  "description": "2 καρτέλες: (1) κοινή realtime λίστα ψώνων (Firebase) για 2 άτομα — πολλαπλές λίστες, +/− ποσότητες, import Nutrimed με παραμετροποιήσιμο στάνταρ, κοινοποίηση με link· (2) εβδομαδιαίο πρόγραμμα γευμάτων με 33 συνταγές cut, swap, τικ και modal υλικών/μακροθρεπτικών. Source of truth: repo lista-psonon."
 }
 </script>
 <html lang="el">
@@ -274,6 +274,8 @@
   .menu-sep { height: 1px; background: var(--surface-variant); margin: 4px 0; }
 
   .color-label { font-size: 12.5px; color: var(--muted); font-weight: 600; margin: 10px 10px 8px; }
+  .tpl-sub { font-size: 12.5px; color: var(--muted); margin: -6px 4px 10px; line-height: 1.45; }
+  #tplList .items { margin-bottom: 4px; }
   .swatches { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 10px 12px; }
   .swatch {
     width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
@@ -503,6 +505,7 @@
   <div class="grip"></div>
   <h3 id="menuTitle"></h3>
   <button class="menu-item" onclick="closeSheets(); addDietItems()"><span class="ic">🥗</span> Προσθήκη προγράμματος διατροφής</button>
+  <button class="menu-item" onclick="closeSheets(); openTemplateSheet()"><span class="ic">⚙️</span> Επεξεργασία στάνταρ λίστας</button>
   <button class="menu-item" onclick="closeSheets(); renameList()"><span class="ic">✏️</span> Μετονομασία</button>
   <button class="menu-item" onclick="closeSheets(); duplicateList()"><span class="ic">📄</span> Δημιουργία αντιγράφου</button>
   <button class="menu-item" onclick="closeSheets(); shareLink()"><span class="ic">🔗</span> Κοινοποίηση λίστας</button>
@@ -511,6 +514,17 @@
   <div class="swatches" id="colorSwatches"></div>
   <div class="menu-sep"></div>
   <button class="menu-item danger" onclick="closeSheets(); deleteList()"><span class="ic">🗑</span> Διαγραφή λίστας</button>
+</div>
+
+<!-- Template editor sheet (στάνταρ πρόγραμμα, v7.1) -->
+<div class="sheet" id="tplSheet">
+  <div class="grip"></div>
+  <h3>⚙️ Στάνταρ λίστα προγράμματος</h3>
+  <div class="tpl-sub">Ό,τι αλλάξεις εδώ ισχύει για κάθε επόμενο «🥗 Προσθήκη προγράμματος» — κοινό και για τους δύο.</div>
+  <button class="menu-item" onclick="openAddSheet('template')"><span class="ic">＋</span> Προσθήκη προϊόντος στο στάνταρ</button>
+  <div id="tplList"></div>
+  <div class="menu-sep"></div>
+  <button class="menu-item danger" onclick="resetTemplate()"><span class="ic">↺</span> Επαναφορά στο αρχικό πρόγραμμα</button>
 </div>
 
 <!-- Add product sheet -->
@@ -737,6 +751,27 @@ const DIET = [
   ['Μέλι', 1, 'τεμ', 'Παντοπωλείο & Βασικά', ''],
 ];
 
+/* Pure: το DIET ως αντικείμενα προϊόντων (default στάνταρ). Testable. */
+function dietDefaults() {
+  return DIET.map(([name, qty, unit, cat, note], idx) => {
+    const it = { name, qty, unit, cat, ts: idx };
+    if (note) it.note = note;
+    return it;
+  });
+}
+/* Pure: τα προϊόντα του στάνταρ προγράμματος — custom template αν υπάρχει
+   (μη κενό, με έγκυρα entries), αλλιώς τα defaults. Testable. */
+function dietItems(custom) {
+  if (custom && typeof custom === 'object') {
+    const arr = Object.entries(custom)
+      .map(([id, i]) => Object.assign({ id }, i))
+      .filter(i => typeof i.name === 'string' && i.name)
+      .sort((a, b) => (a.ts || 0) - (b.ts || 0));
+    if (arr.length) return arr;
+  }
+  return dietDefaults();
+}
+
 /* ---------- Room ---------- */
 function getRoom() {
   const m = location.hash.match(/r=([A-Za-z0-9_-]{4,})/);
@@ -757,6 +792,7 @@ const roomRef = db.ref('rooms/' + ROOM + '/lists');
 
 /* ---------- State ---------- */
 let lists = {};
+let dietTemplate = null;   /* custom στάνταρ πρόγραμμα (Firebase, κοινό) — null = default DIET */
 let activeId = lsGet('sm-active-' + ROOM) || null;
 let ready = false;
 let filter = 'all';
@@ -793,6 +829,10 @@ firebase.auth().onAuthStateChanged(user => {
     render();
     homeRender();
   }, err => showBanner('Σφάλμα βάσης: ' + err.message));
+  db.ref('rooms/' + ROOM + '/dietTemplate').on('value', snap => {
+    dietTemplate = snap.val();
+    if (document.getElementById('tplSheet').classList.contains('open')) tplRender();
+  }, err => console.warn('dietTemplate read failed:', err));
   db.ref('.info/connected').on('value', snap => {
     document.getElementById('statusDot').classList.toggle('on', !!snap.val());
   });
@@ -1036,7 +1076,9 @@ function buildSwatches(l) {
     wrap.appendChild(b);
   });
 }
-function openAddSheet() {
+let addTarget = 'list';   /* 'list' = ενεργή λίστα, 'template' = στάνταρ πρόγραμμα */
+function openAddSheet(target) {
+  addTarget = target === 'template' ? 'template' : 'list';
   document.getElementById('sheetBg').classList.add('open');
   document.getElementById('addSheet').classList.add('open');
   setTimeout(() => document.getElementById('itemName').focus(), 250);
@@ -1045,12 +1087,13 @@ function closeSheets() {
   document.getElementById('sheetBg').classList.remove('open');
   document.getElementById('menuSheet').classList.remove('open');
   document.getElementById('addSheet').classList.remove('open');
+  document.getElementById('tplSheet').classList.remove('open');
+  addTarget = 'list';
 }
 
 /* ---------- Actions ---------- */
 function addItem(e) {
   e.preventDefault();
-  const list = getActive(); if (!list) return;
   const nameEl = document.getElementById('itemName');
   const name = cleanText(nameEl.value, LIMITS.name);
   if (!name) return;
@@ -1058,6 +1101,23 @@ function addItem(e) {
   const unit = document.getElementById('itemUnit').value;
   const cat = document.getElementById('itemCat').value;
 
+  if (addTarget === 'template') {
+    /* Προσθήκη στο στάνταρ πρόγραμμα (με συγχώνευση διπλοτύπων) */
+    const dup = dietItems(dietTemplate).filter(i => i.id).find(i =>
+      i.cat === cat && i.name.toLowerCase() === name.toLowerCase() && (i.unit || 'τεμ') === unit);
+    if (dup) {
+      db.ref(tplPath() + '/' + dup.id).update({ qty: clampQty((dup.qty || 1) + qty) }).catch(dbErr);
+    } else {
+      db.ref(tplPath() + '/' + newId()).set({ name, qty, unit, cat, ts: Date.now() }).catch(dbErr);
+    }
+    nameEl.value = '';
+    document.getElementById('itemQty').value = '1';
+    document.getElementById('addSheet').classList.remove('open');   /* το tplSheet μένει ανοιχτό */
+    showToast(`«${name}» μπήκε στο στάνταρ ✔`);
+    return;
+  }
+
+  const list = getActive(); if (!list) return;
   const existing = itemArray(list).find(i =>
     i.cat === cat && i.name.toLowerCase() === name.toLowerCase() && (i.unit || 'τεμ') === unit);
   const listBase = 'rooms/' + ROOM + '/lists/' + list.id + '/items/';
@@ -1074,9 +1134,12 @@ function addItem(e) {
 
 function dietPayload() {
   const items = {};
-  DIET.forEach(([name, qty, unit, cat, note], idx) => {
-    const it = { name, qty, unit, cat, done: false, ts: Date.now() + idx };
-    if (note) it.note = note;
+  dietItems(dietTemplate).forEach((src, idx) => {
+    const it = {
+      name: cleanText(src.name, LIMITS.name), qty: clampQty(src.qty),
+      unit: src.unit || 'τεμ', cat: src.cat || 'Άλλα', done: false, ts: Date.now() + idx
+    };
+    if (src.note) it.note = cleanText(src.note, LIMITS.note);
     items[newId() + idx] = it;
   });
   return items;
@@ -1097,11 +1160,15 @@ function addDietItems() {
   const existing = itemArray(l);
   const updates = {};
   let added = 0;
-  DIET.forEach(([name, qty, unit, cat, note], idx) => {
+  dietItems(dietTemplate).forEach((src, idx) => {
+    const name = cleanText(src.name, LIMITS.name);
     const dup = existing.find(i => i.name.toLowerCase() === name.toLowerCase());
     if (!dup) {
-      const it = { name, qty, unit, cat, done: false, ts: Date.now() + idx };
-      if (note) it.note = note;
+      const it = {
+        name, qty: clampQty(src.qty), unit: src.unit || 'τεμ',
+        cat: src.cat || 'Άλλα', done: false, ts: Date.now() + idx
+      };
+      if (src.note) it.note = cleanText(src.note, LIMITS.note);
       updates[newId() + idx] = it;
       added++;
     }
@@ -1113,6 +1180,111 @@ function addDietItems() {
   } else {
     showToast('Όλα τα προϊόντα του προγράμματος υπάρχουν ήδη ✔');
   }
+}
+
+/* ---------- Στάνταρ πρόγραμμα: επεξεργασία (v7.1) ---------- */
+function tplPath() { return 'rooms/' + ROOM + '/dietTemplate'; }
+
+/* Πρώτο άνοιγμα χωρίς custom template → υλοποίηση των defaults στο Firebase,
+   ώστε κάθε γραμμή να έχει id και να επιδέχεται edits. */
+function openTemplateSheet() {
+  if (!dietTemplate || !Object.keys(dietTemplate).length) {
+    const items = {};
+    dietDefaults().forEach((src, idx) => {
+      const it = { name: src.name, qty: src.qty, unit: src.unit, cat: src.cat, ts: Date.now() + idx };
+      if (src.note) it.note = src.note;
+      items[newId() + idx] = it;
+    });
+    db.ref(tplPath()).set(items).catch(dbErr);
+  }
+  tplRender();
+  document.getElementById('sheetBg').classList.add('open');
+  document.getElementById('tplSheet').classList.add('open');
+}
+
+function tplRender() {
+  const wrap = document.getElementById('tplList');
+  wrap.innerHTML = '';
+  const arr = dietItems(dietTemplate);
+  const knownCats = CATEGORIES.map(c => c[1]);
+  const extraCats = [...new Set(arr.map(i => i.cat).filter(c => !knownCats.includes(c)))];
+  [...knownCats, ...extraCats].forEach(cat => {
+    const catItems = arr.filter(i => i.cat === cat);
+    if (!catItems.length) return;
+    const label = document.createElement('div');
+    label.className = 'color-label';
+    label.textContent = (CAT_EMOJI[cat] || '📦') + ' ' + cat;   /* user data → textContent */
+    wrap.appendChild(label);
+    const box = document.createElement('div');
+    box.className = 'items';
+    catItems.forEach(it => box.appendChild(tplRow(it)));
+    wrap.appendChild(box);
+  });
+}
+
+function tplRow(it) {
+  const unit = it.unit || 'τεμ';
+  const qty = it.qty || 1;
+  const div = document.createElement('div');
+  div.className = 'item';
+
+  const body = document.createElement('div');
+  body.className = 'body';
+  const name = document.createElement('span');
+  name.className = 'name';
+  name.textContent = it.name;
+  body.appendChild(name);
+  if (it.note) {
+    const note = document.createElement('span');
+    note.className = 'note';
+    note.textContent = it.note;
+    body.appendChild(note);
+  }
+  div.appendChild(body);
+
+  const q = document.createElement('span');
+  q.className = 'qty';
+  q.textContent = formatQty(qty, unit) || '×1';
+  div.appendChild(q);
+
+  const btns = document.createElement('span');
+  btns.className = 'btns';
+  const step = unitStep(unit);
+  const guard = () => { if (!it.id) { showToast('⏳ Μισό λεπτό — συγχρονίζεται…'); return false; } return true; };
+  const minus = document.createElement('button');
+  minus.textContent = '−';
+  minus.title = 'Μείωση';
+  minus.onclick = () => {
+    if (!guard()) return;
+    const next = Math.round((qty - step) * 100) / 100;
+    if (next >= step) db.ref(tplPath() + '/' + it.id + '/qty').set(next).catch(dbErr);
+  };
+  const plus = document.createElement('button');
+  plus.textContent = '+';
+  plus.title = 'Αύξηση';
+  plus.onclick = () => {
+    if (!guard()) return;
+    db.ref(tplPath() + '/' + it.id + '/qty').set(clampQty(qty + step)).catch(dbErr);
+  };
+  const del = document.createElement('button');
+  del.className = 'del';
+  del.textContent = '✕';
+  del.title = 'Αφαίρεση από το στάνταρ';
+  del.onclick = () => {
+    if (!guard()) return;
+    db.ref(tplPath() + '/' + it.id).remove().catch(dbErr);
+  };
+  btns.appendChild(minus); btns.appendChild(plus); btns.appendChild(del);
+  div.appendChild(btns);
+  return div;
+}
+
+function resetTemplate() {
+  openConfirm('Επαναφορά του στάνταρ στο αρχικό πρόγραμμα Nutrimed;', () => {
+    db.ref(tplPath()).remove()
+      .then(() => showToast('Επαναφορά στο αρχικό πρόγραμμα ↺'))
+      .catch(dbErr);
+  }, 'Επαναφορά');
 }
 
 function createList() {
@@ -1233,8 +1405,9 @@ document.getElementById('modalBg').addEventListener('click', e => {
 });
 
 let confirmCb = null;
-function openConfirm(title, cb) {
+function openConfirm(title, cb, okLabel) {
   document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmOk').textContent = okLabel || 'Διαγραφή';
   confirmCb = cb;
   document.getElementById('confirmBg').classList.add('open');
 }

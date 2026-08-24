@@ -1,5 +1,14 @@
 # Changelog
 
+## v7.1.0 — 2026-08-24 (Παραμετροποιήσιμο στάνταρ πρόγραμμα)
+
+- Το στάνταρ πρόγραμμα διατροφής (import) είναι πλέον **επεξεργάσιμο**: νέο node `rooms/<ROOM>/dietTemplate` στο Firebase, **κοινό για το ζευγάρι** (realtime).
+- Νέα οθόνη «⚙️ Επεξεργασία στάνταρ λίστας» (μενού λίστας): +/− ποσότητες, αφαίρεση προϊόντων, προσθήκη νέων (μέσω του addSheet σε template mode, με συγχώνευση διπλοτύπων), «↺ Επαναφορά στο αρχικό πρόγραμμα» με confirm.
+- Στο πρώτο άνοιγμα της επεξεργασίας το default DIET υλοποιείται στο Firebase· η επαναφορά το διαγράφει και ισχύει ξανά το hardcoded.
+- Κάθε import (νέα λίστα ή προσθήκη σε υπάρχουσα) χρησιμοποιεί πλέον το custom στάνταρ αν υπάρχει.
+- Νέες pure functions `dietDefaults()` / `dietItems(custom)` + 10 νέα tests (61/61).
+- ⚠️ Απαιτεί ενημέρωση Firebase Database Rules για το `dietTemplate` (βλ. spec §5).
+
 ## v7.0.0 — 2026-08-24 (Material 3 UI)
 
 - Όλο το UI σε **Material Design 3**: design tokens σε CSS variables, M3 components (hero card, filter chips, FAB, navigation bar με pill indicator, bottom sheets/dialogs radius 28, snackbar, outlined text fields).

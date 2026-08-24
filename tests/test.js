@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, CATEGORIES, DIET, PALETTE, CAT_EMOJI};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, CATEGORIES, DIET, PALETTE, CAT_EMOJI};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -56,6 +56,21 @@ t('DIET κατηγορίες έγκυρες', m.DIET.every(d => m.CAT_EMOJI[d[3]
 t('DIET ποσότητες έγκυρες', m.DIET.every(d => Number.isFinite(d[1]) && d[1] > 0));
 t('DIET ονόματα εντός ορίου', m.DIET.every(d => d[0].length <= m.LIMITS.name));
 t('PALETTE 8 χρώματα', Object.keys(m.PALETTE).length === 8);
+
+// buildAiPrompt (AI συνταγές v6.2)
+const rec = { n: 'Φακές με κατίκι', ing: ['1,5 φλ φακές', '60γρ κατίκι'], kcal: 520, p: 30 };
+const prompt = m.buildAiPrompt(rec);
+t('buildAiPrompt περιέχει όνομα', prompt.includes('Φακές με κατίκι'));
+t('buildAiPrompt περιέχει υλικά', prompt.includes('1,5 φλ φακές'));
+t('buildAiPrompt για 2 άτομα', prompt.includes('2 άτομα'));
+t('buildAiPrompt περιέχει kcal', prompt.includes('520'));
+t('buildAiPrompt εντός ορίου function (1200)', prompt.length > 50 && prompt.length <= 1200);
+t('buildAiPrompt χωρίς kcal', m.buildAiPrompt({ n: 'Τεστ', ing: ['α'] }).includes('Τεστ'));
+t('buildAiPrompt null → κενό', m.buildAiPrompt(null) === '');
+t('buildAiPrompt χωρίς όνομα → κενό', m.buildAiPrompt({}) === '');
+
+// Η απάντηση του AI (untrusted) πρέπει να μπαίνει στο DOM μόνο με textContent
+t('AI answer μόνο με textContent', /box\.textContent =/.test(script) && !/aiBox[^\n]*innerHTML/.test(script));
 
 // Robustness κώδικα: κάθε db write έχει catch
 const writes = [...script.matchAll(/db\.ref\([^)]*\)[\s\S]{0,200}?\.(set|update|remove)\(/g)].length;

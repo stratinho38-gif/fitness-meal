@@ -344,6 +344,12 @@
   .g-modal .macros b { display: block; font-size: 15px; }
   .g-modal .macros span { font-size: 10.5px; color: var(--muted); }
   .g-modal .g-close { margin-top: 16px; width: 100%; padding: 12px; border-radius: 999px; border: none; background: var(--primary); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
+  /* AI συνταγές (v6.2) */
+  .ai-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .ai-row button, .ai-row a { flex: 1; min-width: 110px; padding: 10px 8px; border-radius: 999px; border: 1.5px solid var(--primary); background: #fff; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
+  .ai-row button.ai-main { background: var(--primary); color: #fff; }
+  .ai-box { margin-top: 10px; background: var(--primary-container); border-radius: 12px; padding: 12px; font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; display: none; }
+  .ai-box.show { display: block; }
 </style>
 </head>
 <body>
@@ -591,6 +597,17 @@ function formatQty(qty, unit) {
   const n = ('' + qty).replace('.', ',');
   if (unit === 'τεμ') return qty === 1 ? '' : '×' + n;
   return n + ' ' + unit;
+}
+
+/* ---------- AI συνταγές (v6.2): έτοιμο prompt από στατικά δεδομένα συνταγής ---------- */
+function buildAiPrompt(r) {
+  if (!r || !r.n) return '';
+  const ing = Array.isArray(r.ing) ? r.ing.join(', ') : '';
+  return 'Είμαι σε πρόγραμμα διατροφής cut (τύπου Nutrimed) και μαγειρεύω για 2 άτομα. ' +
+    'Πρότεινέ μου μια παραλλαγή ή παρόμοια υγιεινή συνταγή με βάση το «' + r.n + '»' +
+    (ing ? ' (υλικά: ' + ing + ')' : '') +
+    (r.kcal ? ', με στόχο περίπου ' + r.kcal + ' kcal και ' + (r.p || '?') + 'γρ πρωτεΐνη ανά μερίδα' : '') +
+    '. Θέλω: υλικά με ποσότητες για 2 άτομα, απλά βήματα εκτέλεσης, και εκτίμηση kcal/πρωτεΐνης/υδατανθράκων/λιπών ανά μερίδα. Απάντησε στα ελληνικά, σύντομα.';
 }
 
 /* ---------- Πρόγραμμα διατροφής (Nutrimed, 2 άτομα/εβδομάδα) ---------- */
@@ -1380,8 +1397,45 @@ function gOpenModal(id) {
       <div><b>${r.f}γρ</b><span>Λίπη</span></div>
     </div>
     <div class="m-meta" style="margin-top:8px">* ανά δική σου μερίδα (cut)</div>
+    <h3>Θες κάτι διαφορετικό;</h3>
+    <div class="ai-row">
+      <button class="ai-main" onclick="gAskAi('${id}')">🤖 Ρώτα το AI εδώ</button>
+      <a id="aiLinkGpt" target="_blank" rel="noopener">ChatGPT ↗</a>
+      <a id="aiLinkClaude" target="_blank" rel="noopener">Claude ↗</a>
+    </div>
+    <div class="ai-box" id="aiBox"></div>
     <button class="g-close" onclick="gCloseModal()">Κλείσιμο</button>`;
+  // Prefill links: το prompt φτιάχνεται από στατικά δεδομένα συνταγής (όχι user input)
+  const q = encodeURIComponent(buildAiPrompt(r));
+  document.getElementById('aiLinkGpt').href = 'https://chatgpt.com/?q=' + q;
+  document.getElementById('aiLinkClaude').href = 'https://claude.ai/new?q=' + q;
   document.getElementById("gOverlay").classList.add("open");
+}
+
+/* In-app AI μέσω Netlify function. Η απάντηση είναι untrusted → ΜΟΝΟ textContent. */
+let aiBusy = false;
+function gAskAi(id) {
+  const r = MEALS[id];
+  const box = document.getElementById('aiBox');
+  if (!r || !box || aiBusy) return;
+  aiBusy = true;
+  box.classList.add('show');
+  box.textContent = '🤖 Σκέφτομαι… (5-10 δευτερόλεπτα)';
+  fetch('/.netlify/functions/recipe-ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ q: buildAiPrompt(r) })
+  })
+    .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(data => {
+      box.textContent = (data && typeof data.text === 'string' && data.text.trim())
+        ? data.text.trim().slice(0, 4000)
+        : 'Δεν ήρθε απάντηση — δοκίμασε τα κουμπιά ChatGPT/Claude από πάνω.';
+    })
+    .catch(() => {
+      box.textContent = '⚠️ Το AI εδώ δουλεύει μόνο στο lista-supemarket.netlify.app (και αφού στηθεί το κλειδί). Χρησιμοποίησε τα κουμπιά ChatGPT ή Claude — ανοίγουν με έτοιμη ερώτηση.';
+    })
+    .finally(() => { aiBusy = false; });
 }
 function gCloseModal() { document.getElementById("gOverlay").classList.remove("open"); }
 document.getElementById("gOverlay").addEventListener("click", e => { if (e.target.id === "gOverlay") gCloseModal(); });

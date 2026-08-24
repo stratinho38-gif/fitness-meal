@@ -1,6 +1,6 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v6.1 (bottom nav + Αρχική)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v6.2 (AI συνταγές)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
@@ -21,6 +21,15 @@
 - Εβδομαδιαία δομή Nutrimed (`MEAL_TEMPLATE`): μεσημέρι 1×όσπρια, 1×κοτ. ψητό, 2×λαδερό, 1×ψάρι, 1×κοτ. μαγειρεμένο, 1×κρέας · βράδυ 2×μετά προπόνηση, 1×ομελέτα, 1×τόνος, 3×ρεπό.
 - 🎲 Νέα εβδομάδα (τυχαία, χωρίς επανάληψη μέσα στην ίδια κατηγορία), 🔄 swap ανά γεύμα, τικ ολοκλήρωσης με μπάρα, modal συνταγής.
 - Τα δεδομένα συνταγών είναι στατικά (hardcoded) — όχι user input.
+
+### AI συνταγές (v6.2)
+
+- Στο modal συνταγής, ενότητα **«Θες κάτι διαφορετικό;»** με 3 επιλογές:
+  1. **🤖 Ρώτα το AI εδώ** — καλεί τη Netlify function `/.netlify/functions/recipe-ai` (POST `{q}`) και δείχνει την απάντηση μέσα στο modal. Δουλεύει **μόνο** στο Netlify deploy· στο Cowork artifact/αλλού η κλήση αποτυγχάνει και εμφανίζεται φιλικό μήνυμα που παραπέμπει στα εξωτερικά κουμπιά.
+  2. **ChatGPT ↗** / **Claude ↗** — ανοίγουν νέα καρτέλα με **έτοιμο prompt** (prefill μέσω `?q=`), χωρίς κανένα κλειδί.
+- Pure function `buildAiPrompt(r)`: φτιάχνει το ελληνικό prompt από τα στατικά δεδομένα της συνταγής (όνομα, υλικά, kcal, πρωτεΐνη) — ζητά παραλλαγή/παρόμοια συνταγή cut κατά Nutrimed για 2 άτομα. Testable (πριν το Room block).
+- **Netlify function** `netlify/functions/recipe-ai.js`: κλειδί ΜΟΝΟ από env var `ANTHROPIC_API_KEY` (Netlify → Environment variables, ποτέ στον κώδικα/repo). POST only, όριο input 1200 chars, `max_tokens` περιορισμένο (κόστος), δεν κάνει log το περιεχόμενο. Μοντέλο: Claude Haiku.
+- **Ασφάλεια**: η απάντηση του AI είναι untrusted εξωτερικό περιεχόμενο → μπαίνει στο DOM ΜΟΝΟ με `textContent`, ποτέ innerHTML.
 
 ### Schema (Firebase)
 ```

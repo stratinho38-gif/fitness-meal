@@ -1,5 +1,14 @@
 # Changelog
 
+## v6.2.0 — 2026-08-24 (AI συνταγές)
+
+- Στο modal συνταγής: ενότητα **«Θες κάτι διαφορετικό;»** με 3 επιλογές:
+  - **🤖 Ρώτα το AI εδώ** — απάντηση μέσα στην εφαρμογή μέσω Netlify function (μόνο στο Netlify site, χρειάζεται κλειδί `ANTHROPIC_API_KEY` στα env vars).
+  - **ChatGPT ↗ / Claude ↗** — ανοίγουν με έτοιμη ερώτηση βασισμένη στη συνταγή (υλικά, kcal, πρωτεΐνη, 2 άτομα, cut Nutrimed). Δουλεύουν παντού, χωρίς κλειδιά.
+- Νέα pure function `buildAiPrompt` + 9 νέα tests (44/44).
+- Νέο αρχείο `netlify/functions/recipe-ai.js`: POST only, όριο input 1200 chars, κλειδί μόνο από env var, χωρίς logging περιεχομένου.
+- Ασφάλεια: η απάντηση του AI μπαίνει στο DOM μόνο με `textContent` (untrusted περιεχόμενο).
+
 ## v6.1.0 — 2026-08-24 (bottom nav + Αρχική)
 
 - **Bottom navigation** 3 καρτελών (🏠 Αρχική / 🛒 Λίστα / 🍽️ Γεύματα) αντί για top tabs — mobile app αίσθηση, με safe-area για iPhone.

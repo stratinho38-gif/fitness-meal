@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -132,12 +132,15 @@ const gFactory = new Function('lsGet', 'lsSet', script.slice(gStart, gEnd) +
 const g = gFactory(() => null, () => {});
 
 const keys = Object.keys(g.MEALS);
-t('MEALS ≥ 30 συνταγές', keys.length >= 30);
+t('MEALS = 150 συνταγές', keys.length === 150);
+// v8: 15 συνταγές σε κάθε κατηγορία
+t('15 συνταγές ανά κατηγορία', Object.values(g.mealsByCat).every(a => a.length === 15) && Object.keys(g.mealsByCat).length === 10);
 t('MEALS πλήρη πεδία', keys.every(k => {
   const r = g.MEALS[k];
   return typeof r.n === 'string' && r.n && typeof r.cat === 'string' &&
     Number.isFinite(r.kcal) && Number.isFinite(r.p) && Number.isFinite(r.c) && Number.isFinite(r.f) &&
-    Array.isArray(r.ing) && r.ing.length > 0 && typeof r.steps === 'string' && r.steps;
+    Array.isArray(r.ing) && r.ing.length > 0 &&
+    Array.isArray(r.steps) && r.steps.length >= 3 && r.steps.every(s => typeof s === 'string' && s.length > 10);
 }));
 t('MEAL_TEMPLATE 7 μέρες', g.MEAL_TEMPLATE.length === 7);
 t('template κατηγορίες υπαρκτές', g.MEAL_TEMPLATE.every(d =>
@@ -155,6 +158,44 @@ for (let run = 0; run < 20; run++) {
   if (new Set(laderos).size !== laderos.length) { t('λαδερά χωρίς επανάληψη', false); break; }
   if (run === 19) t('λαδερά χωρίς επανάληψη (20 δοκιμές)', true);
 }
+
+// Γυμναστήριο (v7.3): parsing gviz JSON από Google Sheet
+const gvizSample = '/*O_o*/\ngoogle.visualization.Query.setResponse(' + JSON.stringify({
+  version: '0.6', status: 'ok',
+  table: {
+    cols: [
+      { label: 'Ημέρα Α — ΣΤΗΘΟΣ + ΠΛΑΤΗ ΣΕ ΕΛΛΕΙΜΜΑ: κράτα τα ίδια κιλά. Άσκηση' },
+      { label: 'Σετ' }, { label: 'Επαναλήψεις' }, { label: 'RIR' }, { label: 'Ξεκούραση' }, { label: 'Εκτέλεση' },
+      { label: 'Εβδ 1 — Κιλά' }, { label: 'Εβδ 1 — Επαν.' }, { label: 'Εβδ 2 — Κιλά' }, { label: 'Εβδ 2 — Επαν.' }
+    ],
+    rows: [
+      { c: [{ v: 'Πιέσεις πάγκου' }, { v: 4 }, { v: '6-8' }, { v: '2 → 1' }, { v: '150 δευτ.' }, { v: 'Το βασικό lift' }, { v: 80 }, null, { v: '82,5' }, { v: '8' }] },
+      { c: [{ v: 'Κωπηλατική' }, { v: 4 }, { v: '8-10' }, { v: '2' }, { v: '150 δευτ.' }, { v: '' }, null, null, null, null] },
+      { c: [{ v: 'ΣΥΝΟΛΟ ΣΕΤ ΠΡΟΠΟΝΗΣΗΣ' }, { v: 23 }, null, null, null, null, null, null, null, null] },
+      { c: [{ v: 'Σημείωση footer χωρίς σετ' }, null, null, null, null, null, null, null, null, null] },
+      { c: [null, { v: 5 }] }
+    ]
+  }
+}) + ');';
+const gymTable = m.gymParseGviz(gvizSample);
+t('gymParseGviz: έγκυρο δείγμα', gymTable !== null && Array.isArray(gymTable.rows));
+t('gymParseGviz: σκουπίδια → null', m.gymParseGviz('<html>login</html>') === null);
+t('gymParseGviz: κενό → null', m.gymParseGviz('') === null);
+t('gymParseGviz: status error → null', m.gymParseGviz('setResponse({"status":"error"});') === null);
+const gymModel = m.gymDayModel(gymTable);
+t('gymDayModel: 2 ασκήσεις (φιλτράρει ΣΥΝΟΛΟ/σημειώσεις)', gymModel.exercises.length === 2);
+t('gymDayModel: σύνολο σετ', gymModel.total === 23);
+t('gymDayModel: τίτλος ημέρας', gymModel.title === 'Ημέρα Α — ΣΤΗΘΟΣ + ΠΛΑΤΗ');
+t('gymDayModel: σημείωση ημέρας', gymModel.note.startsWith('ΣΕ ΕΛΛΕΙΜΜΑ'));
+t('gymDayModel: πεδία άσκησης', gymModel.exercises[0].sets === 4 && gymModel.exercises[0].reps === '6-8' && gymModel.exercises[0].rir === '2 → 1');
+t('gymLastKg: τελευταία εβδομάδα με τιμή', gymModel.exercises[0].last.kg === 82.5 && gymModel.exercises[0].last.week === 2);
+t('gymLastKg: χωρίς καταχώρηση → null', gymModel.exercises[1].last === null);
+t('gymDayModel: null → null', m.gymDayModel(null) === null);
+t('gymDayModel: χωρίς ασκήσεις → null', m.gymDayModel({ cols: [], rows: [] }) === null);
+t('gymHeaderParts: χωρίς σημείωση', m.gymHeaderParts('Ημέρα Β — ΠΟΔΙΑ Άσκηση').title === 'Ημέρα Β — ΠΟΔΙΑ');
+t('gymFormatKg: δεκαδικά με κόμμα', m.gymFormatKg(82.5) === '82,5');
+t('gymFormatKg: ακέραιο', m.gymFormatKg(80) === '80');
+t('GYM_DAYS: 5 ημέρες', m.GYM_DAYS.length === 5);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

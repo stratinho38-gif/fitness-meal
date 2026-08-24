@@ -1,6 +1,6 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v6.2 (AI συνταγές)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v7.0 (Material 3 UI)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
@@ -30,6 +30,16 @@
 - Pure function `buildAiPrompt(r)`: φτιάχνει το ελληνικό prompt από τα στατικά δεδομένα της συνταγής (όνομα, υλικά, kcal, πρωτεΐνη) — ζητά παραλλαγή/παρόμοια συνταγή cut κατά Nutrimed για 2 άτομα. Testable (πριν το Room block).
 - **Netlify function** `netlify/functions/recipe-ai.js`: κλειδί ΜΟΝΟ από env var `ANTHROPIC_API_KEY` (Netlify → Environment variables, ποτέ στον κώδικα/repo). POST only, όριο input 1200 chars, `max_tokens` περιορισμένο (κόστος), δεν κάνει log το περιεχόμενο. Μοντέλο: Claude Haiku.
 - **Ασφάλεια**: η απάντηση του AI είναι untrusted εξωτερικό περιεχόμενο → μπαίνει στο DOM ΜΟΝΟ με `textContent`, ποτέ innerHTML.
+
+### Material 3 UI (v7)
+
+- Όλο το UI ακολουθεί **Material Design 3** (Material You): design tokens σε CSS variables, χρωματική παλέτα ίδια με πριν (πράσινο default + 8 χρώματα λίστας PALETTE).
+- **Dark mode αυτόματο** μέσω `prefers-color-scheme`: πλήρες σετ dark tokens στο CSS (`@media (prefers-color-scheme: dark)`) + `color-scheme: light dark`.
+- Κάθε χρώμα του PALETTE έχει **light και dark variant** (`dark: {primary, onPrimary, light, container, on}`). Pure function `themeTokens(colorKey, isDark)` επιστρέφει το σωστό σετ — testable (πριν το Room block).
+- `applyTheme(colorKey)` γράφει τα primary tokens inline στο `:root` βάσει σχήματος· listener σε `matchMedia('(prefers-color-scheme: dark)')` κάνει re-apply όταν αλλάζει το σύστημα (runtime/Init section, όχι στο pure block).
+- M3 components: top hero card (radius 24), filter chips (radius 8, selected = primary-container), FAB 56px radius 16 σε primary-container, navigation bar με pill indicator στο ενεργό tab, bottom sheets radius 28 (surface-container-high), dialogs radius 28, filled/outlined/text buttons (pill), snackbar σε inverse-surface, outlined text fields.
+- Γραμματοσειρά **Roboto** από Google Fonts (400/500/700, `display=swap`) με system fallback.
+- Σκληροκωδικοποιημένα χρώματα (banner, tips, lunch/dinner tags, toast, modals) αντικαταστάθηκαν από tokens με dark variants (`--warn-*`, `--lunch*`, `--dinner*`, `--inverse-surface` κ.λπ.).
 
 ### Schema (Firebase)
 ```

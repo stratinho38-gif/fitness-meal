@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, CATEGORIES, DIET, PALETTE, CAT_EMOJI};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, CATEGORIES, DIET, PALETTE, CAT_EMOJI};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -68,6 +68,18 @@ t('buildAiPrompt εντός ορίου function (1200)', prompt.length > 50 && p
 t('buildAiPrompt χωρίς kcal', m.buildAiPrompt({ n: 'Τεστ', ing: ['α'] }).includes('Τεστ'));
 t('buildAiPrompt null → κενό', m.buildAiPrompt(null) === '');
 t('buildAiPrompt χωρίς όνομα → κενό', m.buildAiPrompt({}) === '');
+
+// themeTokens (Material 3 light/dark, v7)
+const TOKEN_KEYS = ['primary', 'onPrimary', 'light', 'container', 'on'];
+t('themeTokens light green', m.themeTokens('green', false).primary === '#15803d');
+t('themeTokens light onPrimary λευκό', m.themeTokens('green', false).onPrimary === '#ffffff');
+t('themeTokens dark green', m.themeTokens('green', true).primary === '#4ade80');
+t('themeTokens άγνωστο χρώμα → green', m.themeTokens('nope', true).primary === '#4ade80');
+t('themeTokens undefined → green light', m.themeTokens(undefined, false).primary === '#15803d');
+t('PALETTE: όλα με πλήρες dark variant', Object.values(m.PALETTE).every(c =>
+  c.dark && TOKEN_KEYS.every(k => typeof c.dark[k] === 'string' && /^#[0-9a-f]{6}$/i.test(c.dark[k]))));
+t('themeTokens: πλήρη πεδία και στα δύο σχήματα', Object.keys(m.PALETTE).every(key =>
+  TOKEN_KEYS.every(k => m.themeTokens(key, false)[k] && m.themeTokens(key, true)[k])));
 
 // Η απάντηση του AI (untrusted) πρέπει να μπαίνει στο DOM μόνο με textContent
 t('AI answer μόνο με textContent', /box\.textContent =/.test(script) && !/aiBox[^\n]*innerHTML/.test(script));

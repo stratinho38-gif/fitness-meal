@@ -12,25 +12,74 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#15803d">
 <title>🛒 Λίστα Σούπερ Μάρκετ</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: light;
-    /* Material 3 inspired palette (green) */
+    /* ---- Material 3 tokens — light (default: πράσινο) ---- */
     --primary: #15803d;
     --primary-light: #16a34a;
     --on-primary: #ffffff;
     --primary-container: #dcfce7;
     --on-primary-container: #14532d;
-    --surface: #fbfdf9;
+    --surface: #f8faf5;
     --surface-container: #ffffff;
-    --surface-variant: #f0f3ee;
-    --outline: #e2e6df;
-    --text: #1a201c;
-    --muted: #67716a;
+    --surface-container-high: #ffffff;
+    --surface-variant: #eef1ea;
+    --outline: #747d73;
+    --outline-variant: #dee3da;
+    --text: #191d18;                 /* on-surface */
+    --muted: #656f65;                /* on-surface-variant */
+    --disabled: #a9b2ab;
     --danger: #ba1a1a;
+    --danger-container: #ffdad6;
+    --on-danger-container: #410002;
+    --inverse-surface: #2e312d;
+    --inverse-on-surface: #f0f1ec;
+    --scrim: rgba(0,0,0,.45);
+    --warn-bg: #fef3c7;
+    --warn-border: #fcd34d;
+    --warn-text: #92400e;
+    --lunch: #b9762a;  --lunch-soft: #f8efe2;
+    --dinner: #4a5f9e; --dinner-soft: #e9edf8;
     --elev1: 0 1px 2px rgba(0,0,0,.05), 0 1px 3px rgba(0,0,0,.08);
     --elev2: 0 2px 6px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
     --elev3: 0 8px 24px rgba(0,0,0,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      /* ---- Material 3 tokens — dark ---- */
+      --primary: #4ade80;
+      --primary-light: #86efac;
+      --on-primary: #052e16;
+      --primary-container: #166534;
+      --on-primary-container: #dcfce7;
+      --surface: #101410;
+      --surface-container: #1b201b;
+      --surface-container-high: #252b25;
+      --surface-variant: #262c26;
+      --outline: #8b948a;
+      --outline-variant: #3a413a;
+      --text: #e1e4dd;
+      --muted: #a5ada3;
+      --disabled: #5c655c;
+      --danger: #ffb4ab;
+      --danger-container: #93000a;
+      --on-danger-container: #ffdad6;
+      --inverse-surface: #e1e4dd;
+      --inverse-on-surface: #1b201b;
+      --scrim: rgba(0,0,0,.6);
+      --warn-bg: #332a12;
+      --warn-border: #6b5b1e;
+      --warn-text: #e8c876;
+      --lunch: #e2b077;  --lunch-soft: #3a2f1f;
+      --dinner: #a9bce8; --dinner-soft: #242c40;
+      --elev1: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.35);
+      --elev2: 0 2px 6px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+      --elev3: 0 8px 24px rgba(0,0,0,.55);
+    }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; }
@@ -41,26 +90,26 @@
     min-height: 100vh;
   }
   button { font-family: inherit; }
-  .app { max-width: 680px; margin: 0 auto; padding: 12px 14px 110px; }
+  .app { max-width: 680px; margin: 0 auto; padding: 12px 14px 120px; }
 
-  /* ---------- Hero ---------- */
+  /* ---------- Hero (M3 primary card) ---------- */
   .hero {
     background: linear-gradient(135deg, var(--primary), var(--primary-light));
-    color: #fff; border-radius: 22px; padding: 16px 18px; margin-bottom: 14px;
+    color: var(--on-primary); border-radius: 24px; padding: 16px 18px; margin-bottom: 14px;
     box-shadow: var(--elev2);
   }
   .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .hero h1 { font-size: 19px; margin: 0; font-weight: 600; letter-spacing: .2px; }
+  .hero h1 { font-size: 20px; margin: 0; font-weight: 500; letter-spacing: .2px; }
   .hero-actions { display: flex; gap: 8px; align-items: center; }
   .status-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.4); }
   .status-dot.on { background: #a7f3d0; box-shadow: 0 0 6px #a7f3d0; }
   .hero .subtitle { font-size: 12.5px; opacity: .85; margin-top: 3px; }
   .hero .progress-label { font-size: 12.5px; opacity: .92; margin: 12px 0 5px; display: flex; justify-content: space-between; }
-  .hero .progress-bar { height: 8px; background: rgba(255,255,255,.25); border-radius: 5px; overflow: hidden; }
-  .hero .progress-fill { height: 100%; background: #fff; border-radius: 5px; transition: width .3s ease; }
+  .hero .progress-bar { height: 8px; background: rgba(0,0,0,.18); border-radius: 5px; overflow: hidden; }
+  .hero .progress-fill { height: 100%; background: var(--on-primary); border-radius: 5px; transition: width .3s ease; }
 
   .banner {
-    background: #fef3c7; border: 1px solid #fcd34d; color: #92400e;
+    background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn-text);
     padding: 10px 14px; border-radius: 12px; font-size: 14px; margin-bottom: 12px; display: none;
   }
   .banner.show { display: block; }
@@ -70,11 +119,12 @@
   .lists-bar::-webkit-scrollbar { display: none; }
   .list-tab {
     flex: 0 0 auto; padding: 10px 16px; border-radius: 999px; border: none;
-    background: var(--surface-variant); cursor: pointer; font-size: 14px; white-space: nowrap;
+    background: var(--surface-variant); cursor: pointer; font-size: 14px; font-weight: 500; white-space: nowrap;
     display: flex; align-items: center; gap: 7px; color: var(--text);
+    transition: background .15s;
   }
   .list-tab.active {
-    background: var(--primary); color: #fff; font-weight: 600; box-shadow: var(--elev1);
+    background: var(--primary); color: var(--on-primary); font-weight: 700; box-shadow: var(--elev1);
   }
   .list-tab .count {
     font-size: 11.5px; background: rgba(0,0,0,.08); border-radius: 999px; padding: 1px 7px;
@@ -86,29 +136,29 @@
   }
   .list-tab.active .more:active { background: rgba(255,255,255,.35); }
   .new-list-btn {
-    flex: 0 0 auto; padding: 10px 16px; border-radius: 999px; border: 1.5px dashed #b9c2ba;
+    flex: 0 0 auto; padding: 10px 16px; border-radius: 999px; border: 1.5px dashed var(--outline);
     background: transparent; cursor: pointer; font-size: 14px; color: var(--muted); white-space: nowrap;
   }
 
-  /* ---------- Filters + bulk row ---------- */
+  /* ---------- Filters (M3 filter chips) + bulk row ---------- */
   .list-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
   .filters { display: flex; gap: 6px; }
   .chip {
-    padding: 7px 14px; border-radius: 9px; border: 1px solid var(--outline);
-    background: var(--surface-container); cursor: pointer; font-size: 13px; color: var(--muted);
-    display: flex; align-items: center; gap: 4px;
+    padding: 7px 14px; border-radius: 8px; border: 1px solid var(--outline-variant);
+    background: transparent; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted);
+    display: flex; align-items: center; gap: 4px; transition: background .15s;
   }
   .chip.active {
     background: var(--primary-container); color: var(--on-primary-container);
-    border-color: transparent; font-weight: 600;
+    border-color: transparent; font-weight: 700;
   }
   .bulk { display: flex; gap: 6px; }
   .bulk button {
-    padding: 7px 12px; border-radius: 9px; border: none; background: transparent;
-    cursor: pointer; font-size: 13px; color: var(--primary); font-weight: 600;
+    padding: 8px 12px; border-radius: 999px; border: none; background: transparent;
+    cursor: pointer; font-size: 13px; color: var(--primary); font-weight: 700;
   }
   .bulk button:hover { background: var(--primary-container); }
-  .bulk button:disabled { color: #b6bfb8; cursor: default; background: transparent; }
+  .bulk button:disabled { color: var(--disabled); cursor: default; background: transparent; }
 
   /* ---------- Categories & items ---------- */
   .category { margin-bottom: 12px; }
@@ -125,7 +175,7 @@
     transition: color .2s;
   }
   .cat-header .cat-count {
-    font-size: 12.5px; color: #fff; background: var(--primary);
+    font-size: 12.5px; color: var(--on-primary); background: var(--primary);
     padding: 3px 10px; border-radius: 999px; font-weight: 700; transition: background .2s, color .2s;
   }
   .cat-header .chev { color: var(--on-primary-container); font-size: 12px; transition: transform .2s, color .2s; }
@@ -134,8 +184,8 @@
     background: var(--surface-variant); box-shadow: none; border-radius: 12px;
   }
   .category.collapsed .cat-header h2 { color: var(--muted); font-weight: 600; }
-  .category.collapsed .cat-count { background: #d8ded6; color: #4b554d; }
-  .category.collapsed .chev { color: #9aa39c; }
+  .category.collapsed .cat-count { background: var(--outline-variant); color: var(--muted); }
+  .category.collapsed .chev { color: var(--muted); }
   .category.collapsed .chev { transform: rotate(-90deg); }
   .category.collapsed .items { display: none; }
 
@@ -154,63 +204,64 @@
   .item .body { flex: 1; min-width: 0; }
   .item .name { font-size: 15px; word-break: break-word; display: block; }
   .item .note { font-size: 12px; color: var(--muted); display: block; margin-top: 1px; }
-  .item.done .name, .item.done .note { text-decoration: line-through; color: #a9b2ab; }
+  .item.done .name, .item.done .note { text-decoration: line-through; color: var(--disabled); }
   .item .qty {
     font-size: 12.5px; color: var(--on-primary-container); background: var(--primary-container);
     padding: 3px 9px; border-radius: 999px; font-weight: 700; flex-shrink: 0; white-space: nowrap;
   }
-  .item.done .qty { background: var(--surface-variant); color: #a9b2ab; }
+  .item.done .qty { background: var(--surface-variant); color: var(--disabled); }
   .item .btns { display: flex; gap: 4px; flex-shrink: 0; }
   .item .btns button {
     width: 30px; height: 30px; border: none; background: var(--surface-variant);
-    border-radius: 999px; cursor: pointer; font-size: 15px; line-height: 1; color: #556058;
+    border-radius: 999px; cursor: pointer; font-size: 15px; line-height: 1; color: var(--muted);
     display: flex; align-items: center; justify-content: center;
   }
   .item .btns button:active { transform: scale(.92); }
-  .item .btns .del { color: #9aa39c; font-size: 13px; }
-  .item .btns .del:hover { color: var(--danger); background: #fde8e8; }
+  .item .btns .del { color: var(--muted); font-size: 13px; }
+  .item .btns .del:hover { color: var(--on-danger-container); background: var(--danger-container); }
 
   .empty { text-align: center; color: var(--muted); padding: 44px 16px; font-size: 15px; }
   .empty .big { font-size: 46px; margin-bottom: 8px; }
   .empty .cta {
     margin-top: 16px; padding: 12px 22px; border-radius: 999px; border: none;
-    background: var(--primary); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+    background: var(--primary); color: var(--on-primary); font-size: 15px; font-weight: 600; cursor: pointer;
     box-shadow: var(--elev2);
   }
 
   /* ---------- Tips ---------- */
-  .tips { background: #fffbeb; border-radius: 16px; margin-top: 18px; padding: 4px 16px 6px; box-shadow: var(--elev1); }
-  .tips summary { cursor: pointer; font-size: 14px; font-weight: 700; color: #92400e; padding: 11px 0; list-style: none; }
+  .tips { background: var(--warn-bg); border-radius: 16px; margin-top: 18px; padding: 4px 16px 6px; box-shadow: var(--elev1); }
+  .tips summary { cursor: pointer; font-size: 14px; font-weight: 700; color: var(--warn-text); padding: 11px 0; list-style: none; }
   .tips summary::-webkit-details-marker { display: none; }
   .tips ul { margin: 0 0 10px; padding-left: 4px; list-style: none; }
-  .tips li { font-size: 13px; color: #78591f; padding: 4px 0; }
+  .tips li { font-size: 13px; color: var(--warn-text); opacity: .9; padding: 4px 0; }
 
-  /* ---------- FAB ---------- */
+  /* ---------- FAB (M3: primary-container, 56px, radius 16) ---------- */
   .fab {
-    position: fixed; right: 18px; bottom: 22px; width: 58px; height: 58px;
-    border-radius: 18px; border: none; background: var(--primary); color: #fff;
-    font-size: 28px; cursor: pointer; box-shadow: var(--elev3); z-index: 5;
+    position: fixed; right: 18px; bottom: 22px; width: 56px; height: 56px;
+    border-radius: 16px; border: none; background: var(--primary-container); color: var(--on-primary-container);
+    font-size: 26px; cursor: pointer; box-shadow: var(--elev3); z-index: 5;
     display: flex; align-items: center; justify-content: center; line-height: 1;
+    transition: box-shadow .15s;
   }
   .fab:active { transform: scale(.94); }
 
-  /* ---------- Bottom sheet ---------- */
+  /* ---------- Bottom sheet (M3: radius 28, surface-container-high) ---------- */
   .sheet-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 10;
+    position: fixed; inset: 0; background: var(--scrim); z-index: 10;
     opacity: 0; pointer-events: none; transition: opacity .2s;
   }
   .sheet-bg.open { opacity: 1; pointer-events: auto; }
   .sheet {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 11;
-    background: var(--surface-container); border-radius: 24px 24px 0 0;
+    background: var(--surface-container-high); border-radius: 28px 28px 0 0;
     padding: 8px 18px calc(18px + env(safe-area-inset-bottom));
     max-width: 680px; margin: 0 auto; box-shadow: var(--elev3);
     transform: translateY(105%); transition: transform .25s cubic-bezier(.2,.9,.3,1);
     max-height: 80vh; overflow-y: auto;
   }
   .sheet.open { transform: translateY(0); }
-  .sheet .grip { width: 36px; height: 4px; border-radius: 2px; background: #d5dbd4; margin: 6px auto 12px; }
-  .sheet h3 { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+  .sheet .grip { width: 32px; height: 4px; border-radius: 2px; background: var(--outline-variant); margin: 8px auto 14px; }
+  .sheet h3 { margin: 0 0 14px; font-size: 17px; font-weight: 500; }
 
   .menu-item {
     display: flex; align-items: center; gap: 14px; width: 100%;
@@ -236,42 +287,43 @@
   .sheet .field { margin-bottom: 12px; }
   .sheet label { display: block; font-size: 12.5px; color: var(--muted); margin: 0 0 5px 4px; font-weight: 600; }
   .sheet input, .sheet select {
-    width: 100%; padding: 13px 12px; border: 1px solid var(--outline); border-radius: 12px;
-    font-size: 16px; background: var(--surface); color: var(--text);
+    width: 100%; padding: 13px 12px; border: 1px solid var(--outline); border-radius: 8px;
+    font-size: 16px; background: transparent; color: var(--text);
   }
-  .sheet input:focus, .sheet select:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: transparent; background: #fff; }
+  .sheet input:focus, .sheet select:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: transparent; }
   .sheet .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .sheet .submit {
     width: 100%; padding: 15px; border-radius: 999px; border: none; margin-top: 4px;
-    background: var(--primary); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
+    background: var(--primary); color: var(--on-primary); font-size: 16px; font-weight: 600; cursor: pointer;
     box-shadow: var(--elev1);
   }
   .sheet .submit:active { transform: scale(.98); }
 
+  /* ---------- Snackbar (M3: inverse-surface) ---------- */
   .toast {
     position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%);
-    background: #1a201c; color: #fff; padding: 11px 20px; border-radius: 999px;
+    background: var(--inverse-surface); color: var(--inverse-on-surface); padding: 12px 20px; border-radius: 8px;
     font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 30;
     max-width: 90vw; text-align: center; box-shadow: var(--elev2);
   }
   .toast.show { opacity: 1; }
 
-  /* ---------- Dialogs ---------- */
+  /* ---------- Dialogs (M3: radius 28, surface-container-high) ---------- */
   .modal-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none;
+    position: fixed; inset: 0; background: var(--scrim); display: none;
     align-items: center; justify-content: center; padding: 16px; z-index: 20;
   }
   .modal-bg.open { display: flex; }
-  .modal { background: #fff; border-radius: 24px; padding: 22px; width: 100%; max-width: 360px; box-shadow: var(--elev3); }
-  .modal h3 { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
-  .modal input { width: 100%; padding: 13px; border: 1px solid var(--outline); border-radius: 12px; font-size: 16px; margin-bottom: 16px; }
-  .modal input:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+  .modal { background: var(--surface-container-high); border-radius: 28px; padding: 24px; width: 100%; max-width: 360px; box-shadow: var(--elev3); }
+  .modal h3 { margin: 0 0 14px; font-size: 18px; font-weight: 500; }
+  .modal input { width: 100%; padding: 13px; border: 1px solid var(--outline); border-radius: 8px; font-size: 16px; margin-bottom: 16px; background: transparent; color: var(--text); }
+  .modal input:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: transparent; }
   .modal .row { display: flex; gap: 6px; justify-content: flex-end; }
-  .modal .row button { padding: 10px 18px; border-radius: 999px; cursor: pointer; font-size: 14px; font-weight: 600; border: none; background: transparent; color: var(--primary); }
-  .modal .row .primary { background: var(--primary); color: #fff; }
-  .modal .row .danger-btn { background: var(--danger); color: #fff; }
+  .modal .row button { padding: 10px 18px; border-radius: 999px; cursor: pointer; font-size: 14px; font-weight: 700; border: none; background: transparent; color: var(--primary); }
+  .modal .row .primary { background: var(--primary); color: var(--on-primary); }
+  .modal .row .danger-btn { background: var(--danger); color: var(--surface-container-high); }
 
-  /* ---------- Bottom nav (Αρχική / Λίστα / Γεύματα) ---------- */
+  /* ---------- Navigation bar (M3: pill indicator στο ενεργό tab) ---------- */
   .hidden { display: none !important; }
   .bottom-nav {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 8;
@@ -280,14 +332,18 @@
     box-shadow: 0 -2px 12px rgba(0,0,0,.07);
   }
   .bottom-nav button {
-    flex: 1; border: none; background: none; padding: 8px 4px 9px;
-    font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    flex: 1; border: none; background: none; padding: 10px 4px 12px;
+    font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
   }
-  .bottom-nav button .ic { font-size: 21px; line-height: 1.2; }
-  .bottom-nav button.on { color: var(--primary); }
-  .bottom-nav button:active { transform: scale(.95); }
-  .fab { bottom: 84px; }
+  .bottom-nav button .ic {
+    font-size: 21px; line-height: 1.2; padding: 3px 18px; border-radius: 16px;
+    background: transparent; transition: background .2s;
+  }
+  .bottom-nav button.on { color: var(--text); font-weight: 700; }
+  .bottom-nav button.on .ic { background: var(--primary-container); }
+  .bottom-nav button:active .ic { background: var(--surface-variant); }
+  .fab { bottom: 96px; }
   body.no-fab .fab { display: none !important; }
 
   /* ---------- Αρχική ---------- */
@@ -296,8 +352,8 @@
   #viewHome .home-meal { display: flex; align-items: center; gap: 10px; padding: 9px 0; cursor: pointer; }
   #viewHome .home-meal + .home-meal { border-top: 1px dashed var(--surface-variant); }
   #viewHome .tag { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 99px; width: 72px; text-align: center; flex-shrink: 0; }
-  #viewHome .tag.lunch { background: #f8efe2; color: #b9762a; }
-  #viewHome .tag.dinner { background: #e9edf8; color: #4a5f9e; }
+  #viewHome .tag.lunch { background: var(--lunch-soft); color: var(--lunch); }
+  #viewHome .tag.dinner { background: var(--dinner-soft); color: var(--dinner); }
   #viewHome .hm-name { flex: 1; font-size: 14px; font-weight: 600; min-width: 0; }
   #viewHome .hm-done { text-decoration: line-through; color: var(--muted); font-weight: 400; }
   #viewHome .hm-meta { font-size: 11.5px; color: var(--muted); flex-shrink: 0; }
@@ -307,11 +363,10 @@
   #viewHome .hp-txt { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
 
   /* ---------- Γεύματα ---------- */
-  #viewMeals { --lunch:#b9762a; --lunch-soft:#f8efe2; --dinner:#4a5f9e; --dinner-soft:#e9edf8; }
   #viewMeals .g-sub { color: var(--muted); font-size: 12.5px; margin: 2px 0 12px; }
   #viewMeals .g-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
-  #viewMeals .g-toolbar button { font: inherit; cursor: pointer; border-radius: 9px; border: 1px solid var(--outline); background: var(--surface-container); padding: 8px 12px; font-size: 13px; font-weight: 600; }
-  #viewMeals .g-toolbar button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  #viewMeals .g-toolbar button { font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--outline-variant); background: var(--surface-container); color: var(--text); padding: 9px 14px; font-size: 13px; font-weight: 600; }
+  #viewMeals .g-toolbar button.primary { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
   #viewMeals .g-progress { flex: 1; min-width: 150px; display: flex; align-items: center; gap: 8px; }
   #viewMeals .g-bar { flex: 1; height: 8px; background: var(--surface-variant); border-radius: 99px; overflow: hidden; }
   #viewMeals .g-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; transition: width .3s; }
@@ -329,11 +384,11 @@
   #viewMeals .meal-name { font-size: 14px; font-weight: 600; }
   #viewMeals .meal-meta { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
   #viewMeals .slot.done .meal-name { text-decoration: line-through; color: var(--muted); font-weight: 400; }
-  #viewMeals .g-swap { border: none; background: var(--surface-variant); border-radius: 999px; width: 30px; height: 30px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
-  #viewMeals .g-foot { margin-top: 14px; font-size: 12px; color: var(--muted); line-height: 1.5; background: #fffbeb; border-radius: 16px; padding: 12px 16px; }
-  .g-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+  #viewMeals .g-swap { border: none; background: var(--surface-variant); color: var(--text); border-radius: 999px; width: 30px; height: 30px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+  #viewMeals .g-foot { margin-top: 14px; font-size: 12px; color: var(--warn-text); line-height: 1.5; background: var(--warn-bg); border-radius: 16px; padding: 12px 16px; }
+  .g-overlay { position: fixed; inset: 0; background: var(--scrim); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
   .g-overlay.open { display: flex; }
-  .g-modal { background: #fff; border-radius: 20px; max-width: 480px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 22px; box-shadow: var(--elev3); }
+  .g-modal { background: var(--surface-container-high); border-radius: 28px; max-width: 480px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 24px; box-shadow: var(--elev3); }
   .g-modal h2 { font-size: 17px; margin: 0 0 4px; }
   .g-modal .m-meta { font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
   .g-modal h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 12px 0 5px; }
@@ -343,11 +398,11 @@
   .g-modal .macros div { flex: 1; background: var(--primary-container); border-radius: 10px; padding: 8px 4px; text-align: center; }
   .g-modal .macros b { display: block; font-size: 15px; }
   .g-modal .macros span { font-size: 10.5px; color: var(--muted); }
-  .g-modal .g-close { margin-top: 16px; width: 100%; padding: 12px; border-radius: 999px; border: none; background: var(--primary); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
-  /* AI συνταγές (v6.2) */
+  .g-modal .g-close { margin-top: 16px; width: 100%; padding: 12px; border-radius: 999px; border: none; background: var(--primary); color: var(--on-primary); font-size: 15px; font-weight: 600; cursor: pointer; }
+  /* AI συνταγές (v6.2) — M3 outlined + filled buttons */
   .ai-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-  .ai-row button, .ai-row a { flex: 1; min-width: 110px; padding: 10px 8px; border-radius: 999px; border: 1.5px solid var(--primary); background: #fff; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
-  .ai-row button.ai-main { background: var(--primary); color: #fff; }
+  .ai-row button, .ai-row a { flex: 1; min-width: 110px; padding: 10px 8px; border-radius: 999px; border: 1px solid var(--outline); background: transparent; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
+  .ai-row button.ai-main { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
   .ai-box { margin-top: 10px; background: var(--primary-container); border-radius: 12px; padding: 12px; font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; display: none; }
   .ai-box.show { display: block; }
 </style>
@@ -565,26 +620,44 @@ const CATEGORIES = [
 ];
 const CAT_EMOJI = Object.fromEntries(CATEGORIES.map(([e, c]) => [c, e]));
 
-/* ---------- Χρώματα λίστας (Material tones) ---------- */
+/* ---------- Χρώματα λίστας (Material 3 tones, light + dark) ---------- */
 const PALETTE = {
-  green:  { name: 'Πράσινο',  primary: '#15803d', light: '#22a54f', container: '#dcfce7', on: '#14532d' },
-  blue:   { name: 'Μπλε',     primary: '#1d4ed8', light: '#3b82f6', container: '#dbeafe', on: '#1e3a8a' },
-  teal:   { name: 'Πετρόλ',   primary: '#0f766e', light: '#14b8a6', container: '#ccfbf1', on: '#134e4a' },
-  purple: { name: 'Μωβ',      primary: '#7c3aed', light: '#a78bfa', container: '#ede9fe', on: '#4c1d95' },
-  pink:   { name: 'Ροζ',      primary: '#db2777', light: '#f472b6', container: '#fce7f3', on: '#831843' },
-  orange: { name: 'Πορτοκαλί',primary: '#ea580c', light: '#fb923c', container: '#ffedd5', on: '#7c2d12' },
-  red:    { name: 'Κόκκινο',  primary: '#dc2626', light: '#f87171', container: '#fee2e2', on: '#7f1d1d' },
-  slate:  { name: 'Γκρι',     primary: '#475569', light: '#94a3b8', container: '#e2e8f0', on: '#1e293b' },
+  green:  { name: 'Πράσινο',  primary: '#15803d', light: '#22a54f', container: '#dcfce7', on: '#14532d',
+            dark: { primary: '#4ade80', onPrimary: '#052e16', light: '#86efac', container: '#166534', on: '#dcfce7' } },
+  blue:   { name: 'Μπλε',     primary: '#1d4ed8', light: '#3b82f6', container: '#dbeafe', on: '#1e3a8a',
+            dark: { primary: '#60a5fa', onPrimary: '#172554', light: '#93c5fd', container: '#1e40af', on: '#dbeafe' } },
+  teal:   { name: 'Πετρόλ',   primary: '#0f766e', light: '#14b8a6', container: '#ccfbf1', on: '#134e4a',
+            dark: { primary: '#2dd4bf', onPrimary: '#042f2e', light: '#5eead4', container: '#115e59', on: '#ccfbf1' } },
+  purple: { name: 'Μωβ',      primary: '#7c3aed', light: '#a78bfa', container: '#ede9fe', on: '#4c1d95',
+            dark: { primary: '#a78bfa', onPrimary: '#2e1065', light: '#c4b5fd', container: '#5b21b6', on: '#ede9fe' } },
+  pink:   { name: 'Ροζ',      primary: '#db2777', light: '#f472b6', container: '#fce7f3', on: '#831843',
+            dark: { primary: '#f472b6', onPrimary: '#500724', light: '#f9a8d4', container: '#9d174d', on: '#fce7f3' } },
+  orange: { name: 'Πορτοκαλί',primary: '#ea580c', light: '#fb923c', container: '#ffedd5', on: '#7c2d12',
+            dark: { primary: '#fb923c', onPrimary: '#431407', light: '#fdba74', container: '#9a3412', on: '#ffedd5' } },
+  red:    { name: 'Κόκκινο',  primary: '#dc2626', light: '#f87171', container: '#fee2e2', on: '#7f1d1d',
+            dark: { primary: '#f87171', onPrimary: '#450a0a', light: '#fca5a5', container: '#991b1b', on: '#fee2e2' } },
+  slate:  { name: 'Γκρι',     primary: '#475569', light: '#94a3b8', container: '#e2e8f0', on: '#1e293b',
+            dark: { primary: '#94a3b8', onPrimary: '#0f172a', light: '#cbd5e1', container: '#334155', on: '#e2e8f0' } },
 };
-function applyTheme(colorKey) {
+/* Pure: επιστρέφει τα M3 primary tokens για χρώμα + σχήμα (light/dark). Testable. */
+function themeTokens(colorKey, isDark) {
   const c = PALETTE[colorKey] || PALETTE.green;
+  if (isDark) return c.dark;
+  return { primary: c.primary, onPrimary: '#ffffff', light: c.light, container: c.container, on: c.on };
+}
+let themeColorKey = 'green';
+function applyTheme(colorKey) {
+  themeColorKey = colorKey || 'green';
+  const isDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const t = themeTokens(themeColorKey, isDark);
   const r = document.documentElement.style;
-  r.setProperty('--primary', c.primary);
-  r.setProperty('--primary-light', c.light);
-  r.setProperty('--primary-container', c.container);
-  r.setProperty('--on-primary-container', c.on);
+  r.setProperty('--primary', t.primary);
+  r.setProperty('--on-primary', t.onPrimary);
+  r.setProperty('--primary-light', t.light);
+  r.setProperty('--primary-container', t.container);
+  r.setProperty('--on-primary-container', t.on);
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = c.primary;
+  if (meta) meta.content = t.primary;
 }
 
 const UNITS = ['τεμ', 'κιλά', 'γρ', 'λίτρα', 'πακέτα', 'κονσέρβες', 'δωδεκάδες'];
@@ -1202,6 +1275,13 @@ unitSel.addEventListener('change', () => {
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeSheets();
 });
+/* Auto dark mode: re-apply τα primary tokens όταν αλλάζει το σχήμα του συστήματος */
+if (window.matchMedia) {
+  const schemeMq = window.matchMedia('(prefers-color-scheme: dark)');
+  const onSchemeChange = () => applyTheme(themeColorKey);
+  if (schemeMq.addEventListener) schemeMq.addEventListener('change', onSchemeChange);
+  else if (schemeMq.addListener) schemeMq.addListener(onSchemeChange);
+}
 window.addEventListener('hashchange', () => {
   const m = location.hash.match(/r=([A-Za-z0-9_-]{4,})/);
   if (m && m[1] !== ROOM) { lsSet('sm-room', m[1]); location.reload(); }

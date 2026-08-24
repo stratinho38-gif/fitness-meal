@@ -1,5 +1,13 @@
 # Changelog
 
+## v7.0.0 — 2026-08-24 (Material 3 UI)
+
+- Όλο το UI σε **Material Design 3**: design tokens σε CSS variables, M3 components (hero card, filter chips, FAB, navigation bar με pill indicator, bottom sheets/dialogs radius 28, snackbar, outlined text fields).
+- **Αυτόματο dark mode** μέσω `prefers-color-scheme` — κάθε χρώμα του PALETTE έχει light & dark variant.
+- Νέα pure function `themeTokens(colorKey, isDark)` + 7 νέα tests (51/51) + listener που κάνει re-apply το θέμα όταν αλλάζει το σχήμα του συστήματος.
+- Γραμματοσειρά Roboto (Google Fonts) με system fallback.
+- Τα σκληροκωδικοποιημένα χρώματα αντικαταστάθηκαν από tokens με dark variants.
+
 ## v6.2.0 — 2026-08-24 (AI συνταγές)
 
 - Στο modal συνταγής: ενότητα **«Θες κάτι διαφορετικό;»** με 3 επιλογές:

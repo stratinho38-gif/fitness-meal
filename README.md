@@ -23,6 +23,6 @@
 
 Κάθε αλλαγή: 1) ενημερώνεται το `docs/spec.md`, 2) υλοποιείται στο `index.html`, 3) τρέχουν τα tests, 4) γράφεται στο `CHANGELOG.md`, 5) commit, 6) συγχρονίζεται το artifact από το repo — ποτέ το αντίστροφο.
 
-## Εκκρεμότητα ασφάλειας
+## Ασφάλεια
 
-Ρύθμιση Firebase Database Rules (auth != null + validation) — βλ. `docs/spec.md` §5.
+Firebase Database Rules ενεργά (auth != null + validation δομής) — βλ. `docs/spec.md` §5.

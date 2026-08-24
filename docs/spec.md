@@ -44,7 +44,7 @@ rooms/<ROOM>/lists/<listId> = {
 
 - Το Firebase `apiKey` είναι public identifier (by design), ΔΕΝ είναι μυστικό.
 - Το room code είναι το μόνο access control: 9 χαρακτήρες από αλφάβητο 55 → ~2⁵² συνδυασμοί.
-- **Εκκρεμότητα**: Database Rules στο Firebase console να επιβάλλουν `auth != null` + validation δομής (μήκη strings, τύποι). Χωρίς rules, οποιοσδήποτε authenticated μπορεί να γράψει σε οποιοδήποτε room αν μαντέψει το code.
+- **Database Rules (ενεργά από 24/08/2026)**: `auth != null` για read/write στα rooms, room code pattern `[A-Za-z0-9_-]{4,20}`, validation δομής με τα ίδια όρια του κώδικα (name≤80, listName≤60, note≤120, qty 0.1–9999, `$other: false` σε άγνωστα πεδία).
 
 ## 6. Παραδοχές ποσοτήτων DIET
 

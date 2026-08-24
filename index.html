@@ -3,7 +3,7 @@
 {
   "name": "Lista Psonon Stratos",
   "schemaVersion": 1,
-  "description": "2 καρτέλες: (1) κοινή realtime λίστα ψώνων (Firebase) για 2 άτομα — πολλαπλές λίστες, +/− ποσότητες, import Nutrimed με παραμετροποιήσιμο στάνταρ, κοινοποίηση με link· (2) εβδομαδιαίο πρόγραμμα γευμάτων με 33 συνταγές cut, swap, τικ και modal υλικών/μακροθρεπτικών. Source of truth: repo lista-psonon."
+  "description": "Ψώνια & γεύματα για 2 άτομα: κοινή realtime λίστα ψώνων (Firebase) με πολλαπλές λίστες, επεξεργασία/undo, import Nutrimed· εβδομαδιαίο πρόγραμμα γευμάτων με 150 συνταγές cut, swap, τικ, επιλογή υλικών στη λίστα· read-only πρόγραμμα γυμναστηρίου από Google Sheet. Source of truth: repo lista-psonon."
 }
 </script>
 <html lang="el">
@@ -38,6 +38,7 @@
     --on-danger-container: #410002;
     --inverse-surface: #2e312d;
     --inverse-on-surface: #f0f1ec;
+    --inverse-primary: #86efac;
     --scrim: rgba(0,0,0,.45);
     --warn-bg: #fef3c7;
     --warn-border: #fcd34d;
@@ -72,6 +73,7 @@
       --on-danger-container: #ffdad6;
       --inverse-surface: #e1e4dd;
       --inverse-on-surface: #1b201b;
+      --inverse-primary: #15803d;
       --scrim: rgba(0,0,0,.6);
       --warn-bg: #332a12;
       --warn-border: #6b5b1e;
@@ -105,6 +107,7 @@
     --on-danger-container: #ffdad6;
     --inverse-surface: #e1e4dd;
     --inverse-on-surface: #1b201b;
+    --inverse-primary: #15803d;
     --scrim: rgba(0,0,0,.6);
     --warn-bg: #332a12;
     --warn-border: #6b5b1e;
@@ -124,7 +127,7 @@
     min-height: 100vh;
   }
   button { font-family: inherit; }
-  .app { max-width: 680px; margin: 0 auto; padding: 12px 14px 120px; }
+  .app { max-width: 680px; margin: 0 auto; padding: 12px 14px 176px; } /* v8.3: καθαρίζει το FAB στο τέλος της λίστας */
 
   /* ---------- Material Symbols (ligatures) ---------- */
   .msr {
@@ -255,9 +258,14 @@
   }
   .item:last-child { border-bottom: none; }
   .item input[type="checkbox"] {
-    width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0;
+    width: 24px; height: 24px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0;
   }
-  .item .body { flex: 1; min-width: 0; }
+  /* v8.3: μεγαλύτερη επιφάνεια πατήματος στο checkbox (40×40) χωρίς αλλαγή εικαστικού */
+  .item .cbwrap {
+    width: 40px; height: 40px; margin: -8px; flex-shrink: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .item .body { flex: 1; min-width: 0; cursor: pointer; }
   .item .name { font-size: 15px; word-break: break-word; display: block; }
   .item .note { font-size: 12px; color: var(--muted); display: block; margin-top: 1px; }
   .item.done .name, .item.done .note { text-decoration: line-through; color: var(--disabled); }
@@ -271,6 +279,11 @@
     width: 30px; height: 30px; border: none; background: var(--surface-variant);
     border-radius: 999px; cursor: pointer; font-size: 17px; line-height: 1; color: var(--muted);
     display: flex; align-items: center; justify-content: center;
+    position: relative; /* v8.3: για το αόρατο hit area */
+  }
+  /* v8.3: αόρατη επέκταση hit area σε ~42px (ίδιο εικαστικό) */
+  .item .btns button::before, .g-swap::before {
+    content: ''; position: absolute; inset: -6px; border-radius: 999px;
   }
   .item .btns button:active { transform: scale(.92); }
   .item .btns .del { color: var(--muted); font-size: 15px; }
@@ -365,8 +378,17 @@
     background: var(--inverse-surface); color: var(--inverse-on-surface); padding: 12px 20px; border-radius: 8px;
     font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 30;
     max-width: 90vw; text-align: center; box-shadow: var(--elev2);
+    display: flex; align-items: center; justify-content: center; gap: 6px; width: max-content;
   }
   .toast.show { opacity: 1; }
+  /* v8.3: snackbar με προαιρετικό action (π.χ. Αναίρεση διαγραφής) */
+  .toast.act { pointer-events: auto; }
+  .toast .t-act {
+    border: none; background: transparent; color: var(--inverse-primary);
+    font: inherit; font-weight: 700; cursor: pointer; padding: 8px 10px; margin: -8px -6px -8px 0;
+    border-radius: 8px; flex-shrink: 0;
+  }
+  .toast .t-act:active { background: rgba(127,127,127,.2); }
 
   /* ---------- Dialogs (M3: radius 28, surface-container-high) ---------- */
   .modal-bg {
@@ -490,7 +512,7 @@
   #viewMeals .meal-name { font-size: 14px; font-weight: 600; }
   #viewMeals .meal-meta { font-size: 11.5px; color: var(--muted); margin-top: 1px; display: flex; align-items: center; gap: 3px; }
   #viewMeals .slot.done .meal-name { text-decoration: line-through; color: var(--muted); font-weight: 400; }
-  #viewMeals .g-swap { border: none; background: var(--surface-variant); color: var(--muted); border-radius: 999px; width: 30px; height: 30px; font-size: 17px; cursor: pointer; flex-shrink: 0; }
+  #viewMeals .g-swap { border: none; background: var(--surface-variant); color: var(--muted); border-radius: 999px; width: 30px; height: 30px; font-size: 17px; cursor: pointer; flex-shrink: 0; position: relative; }
   #viewMeals .g-foot { margin-top: 14px; font-size: 12px; color: var(--warn-text); line-height: 1.5; background: var(--warn-bg); border-radius: 16px; padding: 12px 16px; }
   .g-overlay { position: fixed; inset: 0; background: var(--scrim); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
   .g-overlay.open { display: flex; }
@@ -500,6 +522,12 @@
   .g-modal h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 12px 0 5px; }
   .g-modal p, .g-modal li { font-size: 14px; line-height: 1.5; }
   .g-modal ul { padding-left: 18px; margin: 0; }
+  /* v8.4: υλικά με checkbox επιλογής */
+  .g-modal ul.ing-list { list-style: none; padding-left: 2px; }
+  .g-modal ul.ing-list li { padding: 2px 0; }
+  .g-modal ul.ing-list label { display: flex; align-items: flex-start; gap: 9px; cursor: pointer; }
+  .g-modal ul.ing-list input { width: 18px; height: 18px; accent-color: var(--primary); margin: 2px 0 0; flex-shrink: 0; }
+  .g-modal ul.ing-list input:not(:checked) + span { color: var(--muted); }
   .g-modal .ing-add { display: flex; gap: 8px; margin-top: 10px; }
   .g-modal .ing-add select { flex: 1; min-width: 0; font: inherit; font-size: 13px; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--outline-variant); background: var(--surface-container); color: var(--text); }
   .g-modal .ing-add button { font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; background: var(--primary-container); color: var(--on-primary-container, var(--text)); padding: 9px 14px; display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; }
@@ -589,7 +617,7 @@
   </div><!-- /viewShop -->
 
   <div id="viewMeals" class="hidden">
-    <div class="g-sub">Μεσημέρι & βράδυ κατά Nutrimed · 33 συνταγές · μερίδες cut για σένα, ×2 στα ψώνια · πάτα σε γεύμα για συνταγή</div>
+    <div class="g-sub">Μεσημέρι & βράδυ κατά Nutrimed · 150 συνταγές · μερίδες cut για σένα, ×2 στα ψώνια · πάτα σε γεύμα για συνταγή</div>
     <div class="g-toolbar">
       <button class="primary" id="gShuffleBtn"><span class="msr">shuffle</span>Νέα εβδομάδα</button>
       <button id="gClearBtn">Καθάρισμα τικ</button>
@@ -665,7 +693,7 @@
 <!-- Add product sheet -->
 <div class="sheet" id="addSheet">
   <div class="grip"></div>
-  <h3>Προσθήκη προϊόντος</h3>
+  <h3 id="addTitle">Προσθήκη προϊόντος</h3>
   <form onsubmit="addItem(event)">
     <div class="field">
       <label for="itemName">Προϊόν</label>
@@ -685,7 +713,11 @@
       <label for="itemCat">Κατηγορία</label>
       <select id="itemCat"></select>
     </div>
-    <button type="submit" class="submit">Προσθήκη στη λίστα</button>
+    <div class="field">
+      <label for="itemNote">Σημείωση (προαιρετικό)</label>
+      <input type="text" id="itemNote" placeholder="π.χ. Για: μεσημεριανά" autocomplete="off" maxlength="120">
+    </div>
+    <button type="submit" class="submit" id="addSubmit">Προσθήκη στη λίστα</button>
   </form>
 </div>
 
@@ -766,6 +798,28 @@ function mealIngItems(ing, existingNames, mealName) {
     out.push(it);
   });
   return out;
+}
+/* Καθαρισμένο αντικείμενο item για create/edit (v8.3). null αν λείπει όνομα. Testable. */
+function itemPayload(name, qty, unit, cat, note) {
+  const n = cleanText(name, LIMITS.name);
+  if (!n) return null;
+  const it = { name: n, qty: clampQty(qty), unit: unit || 'τεμ', cat: cat || 'Άλλα' };
+  const nt = cleanText(note, LIMITS.note);
+  if (nt) it.note = nt;
+  return it;
+}
+/* Αντίγραφο item χωρίς id — για επαναφορά μετά από διαγραφή (undo, v8.3). Testable. */
+function itemSnapshot(item) {
+  const it = {
+    name: item && item.name ? item.name : '',
+    qty: item && item.qty ? item.qty : 1,
+    unit: (item && item.unit) || 'τεμ',
+    cat: (item && item.cat) || 'Άλλα',
+    done: !!(item && item.done),
+    ts: item && Number.isFinite(item.ts) ? item.ts : 0
+  };
+  if (item && item.note) it.note = item.note;
+  return it;
 }
 /* Κάθε αποτυχημένο write στη βάση → toast, όχι σιωπηλή απώλεια. */
 function dbErr(err) {
@@ -1209,14 +1263,20 @@ function renderItem(listId, item) {
   const div = document.createElement('div');
   div.className = 'item' + (item.done ? ' done' : '');
 
+  /* v8.3: checkbox μέσα σε label 40×40 → μεγαλύτερη επιφάνεια πατήματος */
+  const cbWrap = document.createElement('label');
+  cbWrap.className = 'cbwrap';
   const cb = document.createElement('input');
   cb.type = 'checkbox';
   cb.checked = !!item.done;
   cb.onchange = () => db.ref(base + '/done').set(cb.checked).catch(dbErr);
-  div.appendChild(cb);
+  cbWrap.appendChild(cb);
+  div.appendChild(cbWrap);
 
   const body = document.createElement('div');
   body.className = 'body';
+  body.title = 'Επεξεργασία προϊόντος';
+  body.onclick = () => openEditSheet(listId, item);   /* v8.3: tap στο όνομα → edit */
   const name = document.createElement('span');
   name.className = 'name';
   name.textContent = item.name;
@@ -1260,7 +1320,16 @@ function renderItem(listId, item) {
   del.className = 'del msr';
   del.textContent = 'close';
   del.title = 'Διαγραφή';
-  del.onclick = () => db.ref(base).remove().catch(dbErr);
+  del.onclick = () => {
+    /* v8.3: διαγραφή με Αναίρεση — κρατάμε αντίγραφο και το επαναφέρουμε στο ίδιο path */
+    const snap = itemSnapshot(item);
+    db.ref(base).remove()
+      .then(() => showToast(`«${item.name}» διαγράφηκε`, {
+        label: 'Αναίρεση',
+        fn: () => db.ref(base).set(snap).catch(dbErr)
+      }))
+      .catch(dbErr);
+  };
   btns.appendChild(del);
 
   div.appendChild(btns);
@@ -1306,8 +1375,38 @@ function buildSwatches(l) {
   });
 }
 let addTarget = 'list';   /* 'list' = ενεργή λίστα, 'template' = στάνταρ πρόγραμμα */
+let editCtx = null;       /* v8.3: {listId, itemId} όταν το sheet είναι σε λειτουργία επεξεργασίας */
 function openAddSheet(target) {
   addTarget = target === 'template' ? 'template' : 'list';
+  editCtx = null;
+  document.getElementById('addTitle').textContent = 'Προσθήκη προϊόντος';
+  document.getElementById('addSubmit').textContent = addTarget === 'template' ? 'Προσθήκη στο στάνταρ' : 'Προσθήκη στη λίστα';
+  document.getElementById('itemName').value = '';
+  document.getElementById('itemNote').value = '';
+  document.getElementById('sheetBg').classList.add('open');
+  document.getElementById('addSheet').classList.add('open');
+  setTimeout(() => document.getElementById('itemName').focus(), 250);
+}
+/* v8.3: tap στο σώμα ενός προϊόντος → ίδιο sheet με προσυμπληρωμένα πεδία */
+function openEditSheet(listId, item) {
+  addTarget = 'list';
+  editCtx = { listId, itemId: item.id };
+  document.getElementById('addTitle').textContent = 'Επεξεργασία προϊόντος';
+  document.getElementById('addSubmit').textContent = 'Αποθήκευση';
+  document.getElementById('itemName').value = item.name || '';
+  document.getElementById('itemQty').value = item.qty || 1;
+  document.getElementById('itemNote').value = item.note || '';
+  const unitSel = document.getElementById('itemUnit');
+  unitSel.value = UNITS.includes(item.unit) ? item.unit : 'τεμ';
+  const catSel = document.getElementById('itemCat');
+  const cat = item.cat || 'Άλλα';
+  if (![...catSel.options].some(o => o.value === cat)) {
+    const o = document.createElement('option');
+    o.value = cat;
+    o.textContent = cat;   /* πιθανό user data → textContent */
+    catSel.appendChild(o);
+  }
+  catSel.value = cat;
   document.getElementById('sheetBg').classList.add('open');
   document.getElementById('addSheet').classList.add('open');
   setTimeout(() => document.getElementById('itemName').focus(), 250);
@@ -1318,6 +1417,7 @@ function closeSheets() {
   document.getElementById('addSheet').classList.remove('open');
   document.getElementById('tplSheet').classList.remove('open');
   addTarget = 'list';
+  editCtx = null;
 }
 
 /* ---------- Actions ---------- */
@@ -1329,6 +1429,19 @@ function addItem(e) {
   const qty = clampQty(document.getElementById('itemQty').value);
   const unit = document.getElementById('itemUnit').value;
   const cat = document.getElementById('itemCat').value;
+  const noteVal = document.getElementById('itemNote').value;
+
+  /* v8.3: λειτουργία επεξεργασίας — update στο υπάρχον item (κρατά done/ts) */
+  if (editCtx) {
+    const p = itemPayload(name, qty, unit, cat, noteVal);
+    if (!p) return;
+    db.ref('rooms/' + ROOM + '/lists/' + editCtx.listId + '/items/' + editCtx.itemId)
+      .update({ name: p.name, qty: p.qty, unit: p.unit, cat: p.cat, note: p.note || null })
+      .catch(dbErr);
+    closeSheets();
+    showToast(`«${p.name}» αποθηκεύτηκε`);
+    return;
+  }
 
   if (addTarget === 'template') {
     /* Προσθήκη στο στάνταρ πρόγραμμα (με συγχώνευση διπλοτύπων) */
@@ -1337,10 +1450,12 @@ function addItem(e) {
     if (dup) {
       db.ref(tplPath() + '/' + dup.id).update({ qty: clampQty((dup.qty || 1) + qty) }).catch(dbErr);
     } else {
-      db.ref(tplPath() + '/' + newId()).set({ name, qty, unit, cat, ts: Date.now() }).catch(dbErr);
+      const p = Object.assign(itemPayload(name, qty, unit, cat, noteVal), { ts: Date.now() });
+      db.ref(tplPath() + '/' + newId()).set(p).catch(dbErr);
     }
     nameEl.value = '';
     document.getElementById('itemQty').value = '1';
+    document.getElementById('itemNote').value = '';
     document.getElementById('addSheet').classList.remove('open');   /* το tplSheet μένει ανοιχτό */
     showToast(`«${name}» μπήκε στο στάνταρ`);
     return;
@@ -1353,10 +1468,12 @@ function addItem(e) {
   if (existing) {
     db.ref(listBase + existing.id).update({ qty: clampQty((existing.qty || 1) + qty), done: false }).catch(dbErr);
   } else {
-    db.ref(listBase + newId()).set({ name, qty, unit, cat, done: false, ts: Date.now() }).catch(dbErr);
+    const p = Object.assign(itemPayload(name, qty, unit, cat, noteVal), { done: false, ts: Date.now() });
+    db.ref(listBase + newId()).set(p).catch(dbErr);
   }
   nameEl.value = '';
   document.getElementById('itemQty').value = '1';
+  document.getElementById('itemNote').value = '';
   closeSheets();
   showToast(`«${name}» προστέθηκε`);
 }
@@ -1601,12 +1718,26 @@ function shareLink() {
 
 /* ---------- UI helpers ---------- */
 let toastTimer = null;
-function showToast(msg) {
+/* v8.3: προαιρετικό action ({label, fn}) → snackbar με κουμπί (π.χ. Αναίρεση), 5" αντί 2.5" */
+function showToast(msg, action) {
   const t = document.getElementById('toast');
   t.textContent = msg;
+  t.classList.toggle('act', !!action);
+  if (action) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 't-act';
+    b.textContent = action.label;
+    b.onclick = () => {
+      clearTimeout(toastTimer);
+      t.classList.remove('show');
+      action.fn();
+    };
+    t.appendChild(b);
+  }
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  toastTimer = setTimeout(() => t.classList.remove('show'), action ? 5000 : 2500);
 }
 function showBanner(msg) {
   const b = document.getElementById('banner');
@@ -2263,10 +2394,10 @@ function gOpenModal(id) {
     <h2>${r.n}</h2>
     <div class="m-meta"><span class="msr tiny">schedule</span> ${r.t} · ποσότητες για 2 άτομα</div>
     <h3>Υλικά</h3>
-    <ul>${r.ing.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <ul class="ing-list">${r.ing.map((x, i) => `<li><label><input type="checkbox" class="ing-chk" data-i="${i}" checked><span>${x}</span></label></li>`).join("")}</ul>
     <div class="ing-add">
       <select id="ingListSel" aria-label="Λίστα ψώνων"></select>
-      <button type="button" onclick="gAddIngredients('${id}')"><span class="msr">add_shopping_cart</span>Όλα στη λίστα</button>
+      <button type="button" id="ingAddBtn" onclick="gAddIngredients('${id}')"><span class="msr">add_shopping_cart</span><span id="ingAddLabel">Στη λίστα (${r.ing.length})</span></button>
     </div>
     <h3>Εκτέλεση — αναλυτικά βήματα</h3>
     <ol class="m-steps">${(Array.isArray(r.steps)?r.steps:[String(r.steps)]).map(s=>`<li>${s}</li>`).join("")}</ol>
@@ -2302,6 +2433,11 @@ function gOpenModal(id) {
     o.textContent = 'Νέα λίστα «Ψώνια»';
     sel.appendChild(o);
   }
+  // v8.4: live μετρητής στο κουμπί «Στη λίστα (N)» — Ν = τσεκαρισμένα υλικά
+  m.querySelectorAll('.ing-chk').forEach(c => c.addEventListener('change', () => {
+    const n = m.querySelectorAll('.ing-chk:checked').length;
+    document.getElementById('ingAddLabel').textContent = 'Στη λίστα (' + n + ')';
+  }));
   // Prefill links: το prompt φτιάχνεται από στατικά δεδομένα συνταγής (όχι user input)
   const q = encodeURIComponent(buildAiPrompt(r));
   document.getElementById('aiLinkGpt').href = 'https://chatgpt.com/?q=' + q;
@@ -2309,17 +2445,23 @@ function gOpenModal(id) {
   document.getElementById("gOverlay").classList.add("open");
 }
 
-/* Όλα τα υλικά της συνταγής → επιλεγμένη λίστα ψώνων (v8.2) */
+/* Υλικά συνταγής → επιλεγμένη λίστα ψώνων (v8.2 · επιλογή με checkbox v8.4) */
 function gAddIngredients(id) {
   const r = MEALS[id];
   if (!r) return;
+  /* v8.4: μόνο τα τσεκαρισμένα υλικά */
+  const picked = [...document.querySelectorAll('#gModal .ing-chk')]
+    .filter(c => c.checked)
+    .map(c => r.ing[+c.dataset.i])
+    .filter(x => x != null);
+  if (!picked.length) { showToast('Διάλεξε τουλάχιστον ένα υλικό'); return; }
   const sel = document.getElementById('ingListSel');
   const listId = sel ? sel.value : '';
   if (!listId || !lists[listId]) {
-    /* Δεν υπάρχει καμία λίστα → νέα λίστα «Ψώνια» με τα υλικά */
+    /* Δεν υπάρχει καμία λίστα → νέα λίστα «Ψώνια» με τα επιλεγμένα υλικά */
     const nid = newId();
     const items = {};
-    mealIngItems(r.ing, [], r.n).forEach((it, idx) => {
+    mealIngItems(picked, [], r.n).forEach((it, idx) => {
       it.ts = Date.now() + idx;
       items[newId() + idx] = it;
     });
@@ -2332,7 +2474,7 @@ function gAddIngredients(id) {
     return;
   }
   const l = { id: listId, ...lists[listId] };
-  const toAdd = mealIngItems(r.ing, itemArray(l).map(i => i.name), r.n);
+  const toAdd = mealIngItems(picked, itemArray(l).map(i => i.name), r.n);
   if (!toAdd.length) { showToast('Όλα τα υλικά υπάρχουν ήδη στη λίστα'); return; }
   const updates = {};
   toAdd.forEach((it, idx) => {

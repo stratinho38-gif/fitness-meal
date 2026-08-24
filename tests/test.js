@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, mealIngItems, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, mealIngItems, itemPayload, itemSnapshot, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -103,6 +103,29 @@ t('mealIngItems: όνομα εντός ορίου 80', m.mealIngItems(['Α'.repe
 t('mealIngItems: κενά/null υλικά αγνοούνται', m.mealIngItems(['', '  ', null, 'Ρύζι'], []).length === 1);
 t('mealIngItems: null inputs → []', m.mealIngItems(null, null).length === 0);
 t('mealIngItems: χωρίς ts (το βάζει ο caller)', ingRes.every(i => !('ts' in i)));
+
+// Επεξεργασία προϊόντος & undo (v8.3): itemPayload / itemSnapshot
+const pl = m.itemPayload('  Γάλα  ', '2.345', 'λίτρα', 'Αυγά & Γαλακτοκομικά', ' Για καφέ ');
+t('itemPayload: καθαρισμένα πεδία', pl.name === 'Γάλα' && pl.qty === 2.35 && pl.unit === 'λίτρα' && pl.cat === 'Αυγά & Γαλακτοκομικά');
+t('itemPayload: note καθαρισμένο', pl.note === 'Για καφέ');
+t('itemPayload: χωρίς note όταν κενό', !('note' in m.itemPayload('Ψωμί', 1, 'τεμ', 'Άλλα', '   ')));
+t('itemPayload: κενό όνομα → null', m.itemPayload('   ', 1, 'τεμ', 'Άλλα') === null);
+t('itemPayload: όνομα εντός ορίου 80', m.itemPayload('Α'.repeat(200), 1, 'τεμ', 'Άλλα').name.length === m.LIMITS.name);
+t('itemPayload: note εντός ορίου 120', m.itemPayload('Ψωμί', 1, 'τεμ', 'Άλλα', 'Β'.repeat(300)).note.length === m.LIMITS.note);
+t('itemPayload: default unit/cat', m.itemPayload('Ψωμί', 1, '', '').unit === 'τεμ' && m.itemPayload('Ψωμί', 1, '', '').cat === 'Άλλα');
+t('itemPayload: qty clamp', m.itemPayload('Ψωμί', -3, 'τεμ', 'Άλλα').qty === 0.1);
+const snapSrc = { id: 'x1', name: 'Ρύζι', qty: 2, unit: 'κιλά', cat: 'Ψωμί & Δημητριακά', note: 'Basmati', done: 1, ts: 42 };
+const snap = m.itemSnapshot(snapSrc);
+t('itemSnapshot: κρατά τα πεδία', snap.name === 'Ρύζι' && snap.qty === 2 && snap.unit === 'κιλά' && snap.cat === 'Ψωμί & Δημητριακά' && snap.note === 'Basmati' && snap.ts === 42);
+t('itemSnapshot: done → boolean', snap.done === true);
+t('itemSnapshot: χωρίς id', !('id' in snap));
+t('itemSnapshot: χωρίς note όταν λείπει', !('note' in m.itemSnapshot({ name: 'Ψωμί' })));
+t('itemSnapshot: defaults σε ελλιπές item', (() => { const s = m.itemSnapshot({}); return s.qty === 1 && s.unit === 'τεμ' && s.cat === 'Άλλα' && s.done === false && s.ts === 0; })());
+
+// Επιλογή υλικών γεύματος (v8.4) — δομικοί έλεγχοι στο script
+t('v8.4: checkbox ανά υλικό στο modal', /class="ing-chk" data-i=/.test(script));
+t('v8.4: προστίθενται μόνο τα τσεκαρισμένα', /mealIngItems\(picked/.test(script) && !/mealIngItems\(r\.ing/.test(script));
+t('v8.4: toast όταν κανένα τσεκαρισμένο', script.includes('Διάλεξε τουλάχιστον ένα υλικό'));
 
 // Ρύθμιση θέματος (v7.2): nextScheme / resolveDark / CAT_ICON
 t('nextScheme auto→light', m.nextScheme('auto') === 'light');

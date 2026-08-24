@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, mealIngItems, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -87,6 +87,22 @@ t('buildAiPrompt εντός ορίου function (1200)', prompt.length > 50 && p
 t('buildAiPrompt χωρίς kcal', m.buildAiPrompt({ n: 'Τεστ', ing: ['α'] }).includes('Τεστ'));
 t('buildAiPrompt null → κενό', m.buildAiPrompt(null) === '');
 t('buildAiPrompt χωρίς όνομα → κενό', m.buildAiPrompt({}) === '');
+
+// Υλικά γεύματος → λίστα (v8.2): mealIngItems
+const ingRes = m.mealIngItems(['400γρ στήθος κοτόπουλο', '1 φλ ρύζι'], [], 'Κοτόπουλο σχάρας');
+t('mealIngItems: όλα τα υλικά', ingRes.length === 2);
+t('mealIngItems: πλήρη πεδία item', ingRes.every(i =>
+  i.name && i.qty === 1 && i.unit === 'τεμ' && i.cat === 'Άλλα' && i.done === false));
+t('mealIngItems: note με όνομα γεύματος', ingRes.every(i => i.note === 'Για: Κοτόπουλο σχάρας'));
+t('mealIngItems: χωρίς mealName → χωρίς note', m.mealIngItems(['α'], []).every(i => !('note' in i)));
+t('mealIngItems: dedupe με υπάρχοντα (case-insensitive)',
+  m.mealIngItems(['1 φλ ρύζι', 'Σαλάτα'], ['1 ΦΛ ΡΥΖΙ']).length === 1);
+t('mealIngItems: dedupe μέσα στη συνταγή',
+  m.mealIngItems(['Σαλάτα', 'σαλάτα'], []).length === 1);
+t('mealIngItems: όνομα εντός ορίου 80', m.mealIngItems(['Α'.repeat(200)], [])[0].name.length === m.LIMITS.name);
+t('mealIngItems: κενά/null υλικά αγνοούνται', m.mealIngItems(['', '  ', null, 'Ρύζι'], []).length === 1);
+t('mealIngItems: null inputs → []', m.mealIngItems(null, null).length === 0);
+t('mealIngItems: χωρίς ts (το βάζει ο caller)', ingRes.every(i => !('ts' in i)));
 
 // Ρύθμιση θέματος (v7.2): nextScheme / resolveDark / CAT_ICON
 t('nextScheme auto→light', m.nextScheme('auto') === 'light');

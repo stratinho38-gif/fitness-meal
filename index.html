@@ -500,6 +500,10 @@
   .g-modal h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 12px 0 5px; }
   .g-modal p, .g-modal li { font-size: 14px; line-height: 1.5; }
   .g-modal ul { padding-left: 18px; margin: 0; }
+  .g-modal .ing-add { display: flex; gap: 8px; margin-top: 10px; }
+  .g-modal .ing-add select { flex: 1; min-width: 0; font: inherit; font-size: 13px; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--outline-variant); background: var(--surface-container); color: var(--text); }
+  .g-modal .ing-add button { font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; background: var(--primary-container); color: var(--on-primary-container, var(--text)); padding: 9px 14px; display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; }
+  .g-modal .ing-add button .msr { font-size: 17px; }
   .g-modal ol.m-steps { padding-left: 20px; margin: 0; }
   .g-modal ol.m-steps li { margin: 0 0 8px; }
   .g-modal ol.m-steps li::marker { font-weight: 700; color: var(--primary); }
@@ -742,6 +746,26 @@ function clampQty(v) {
 }
 function cleanText(v, max) {
   return String(v == null ? '' : v).trim().slice(0, max);
+}
+/* Υλικά συνταγής → items λίστας (v8.2). Dedupe με υπάρχοντα ονόματα (case-insensitive)
+   και μέσα στην ίδια συνταγή. Χωρίς ts — το βάζει ο caller. */
+function mealIngItems(ing, existingNames, mealName) {
+  /* Σύγκριση χωρίς κεφαλαία/τόνους (π.χ. «ΡΥΖΙ» == «ρύζι») */
+  const norm = s => String(s == null ? '' : s).trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const seen = {};
+  (Array.isArray(existingNames) ? existingNames : []).forEach(n => { seen[norm(n)] = true; });
+  const out = [];
+  (Array.isArray(ing) ? ing : []).forEach(x => {
+    const name = cleanText(x, LIMITS.name);
+    if (!name || seen[norm(name)]) return;
+    seen[norm(name)] = true;
+    const it = { name, qty: 1, unit: 'τεμ', cat: 'Άλλα', done: false };
+    const note = cleanText(mealName ? 'Για: ' + mealName : '', LIMITS.note);
+    if (note) it.note = note;
+    out.push(it);
+  });
+  return out;
 }
 /* Κάθε αποτυχημένο write στη βάση → toast, όχι σιωπηλή απώλεια. */
 function dbErr(err) {
@@ -2240,6 +2264,10 @@ function gOpenModal(id) {
     <div class="m-meta"><span class="msr tiny">schedule</span> ${r.t} · ποσότητες για 2 άτομα</div>
     <h3>Υλικά</h3>
     <ul>${r.ing.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="ing-add">
+      <select id="ingListSel" aria-label="Λίστα ψώνων"></select>
+      <button type="button" onclick="gAddIngredients('${id}')"><span class="msr">add_shopping_cart</span>Όλα στη λίστα</button>
+    </div>
     <h3>Εκτέλεση — αναλυτικά βήματα</h3>
     <ol class="m-steps">${(Array.isArray(r.steps)?r.steps:[String(r.steps)]).map(s=>`<li>${s}</li>`).join("")}</ol>
     <div class="macros">
@@ -2257,11 +2285,63 @@ function gOpenModal(id) {
     </div>
     <div class="ai-box" id="aiBox"></div>
     <button class="g-close" onclick="gCloseModal()">Κλείσιμο</button>`;
+  // Επιλογέας λίστας για τα υλικά — ονόματα λιστών = user input, ΜΟΝΟ textContent
+  const sel = document.getElementById('ingListSel');
+  const arr = listArray();
+  if (arr.length) {
+    arr.forEach(l => {
+      const o = document.createElement('option');
+      o.value = l.id;
+      o.textContent = l.name || 'Λίστα';
+      if (l.id === activeId) o.selected = true;
+      sel.appendChild(o);
+    });
+  } else {
+    const o = document.createElement('option');
+    o.value = '';
+    o.textContent = 'Νέα λίστα «Ψώνια»';
+    sel.appendChild(o);
+  }
   // Prefill links: το prompt φτιάχνεται από στατικά δεδομένα συνταγής (όχι user input)
   const q = encodeURIComponent(buildAiPrompt(r));
   document.getElementById('aiLinkGpt').href = 'https://chatgpt.com/?q=' + q;
   document.getElementById('aiLinkClaude').href = 'https://claude.ai/new?q=' + q;
   document.getElementById("gOverlay").classList.add("open");
+}
+
+/* Όλα τα υλικά της συνταγής → επιλεγμένη λίστα ψώνων (v8.2) */
+function gAddIngredients(id) {
+  const r = MEALS[id];
+  if (!r) return;
+  const sel = document.getElementById('ingListSel');
+  const listId = sel ? sel.value : '';
+  if (!listId || !lists[listId]) {
+    /* Δεν υπάρχει καμία λίστα → νέα λίστα «Ψώνια» με τα υλικά */
+    const nid = newId();
+    const items = {};
+    mealIngItems(r.ing, [], r.n).forEach((it, idx) => {
+      it.ts = Date.now() + idx;
+      items[newId() + idx] = it;
+    });
+    db.ref('rooms/' + ROOM + '/lists/' + nid)
+      .set({ name: 'Ψώνια', ts: Date.now(), items })
+      .then(() => showToast('Νέα λίστα «Ψώνια» με τα υλικά του γεύματος'))
+      .catch(dbErr);
+    activeId = nid;
+    lsSet('sm-active-' + ROOM, nid);
+    return;
+  }
+  const l = { id: listId, ...lists[listId] };
+  const toAdd = mealIngItems(r.ing, itemArray(l).map(i => i.name), r.n);
+  if (!toAdd.length) { showToast('Όλα τα υλικά υπάρχουν ήδη στη λίστα'); return; }
+  const updates = {};
+  toAdd.forEach((it, idx) => {
+    it.ts = Date.now() + idx;
+    updates[newId() + idx] = it;
+  });
+  db.ref('rooms/' + ROOM + '/lists/' + listId + '/items').update(updates)
+    .then(() => showToast('Μπήκαν ' + toAdd.length + ' υλικά στη λίστα «' + (l.name || 'Λίστα') + '»'))
+    .catch(dbErr);
 }
 
 /* In-app AI μέσω Netlify function. Η απάντηση είναι untrusted → ΜΟΝΟ textContent. */

@@ -1,6 +1,6 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v8.5 (Τυπογραφία, προσβασιμότητα, δωμάτιο στο μενού)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v8.6 (Ψώνια εβδομάδας, σερί προσθήκη)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
@@ -94,6 +94,12 @@
 - **Προσβασιμότητα**: καθολικό `:focus-visible` outline · `prefers-reduced-motion: reduce` κόβει transitions/animations · sheets & dialogs με `role="dialog"`, `aria-modal`, `aria-labelledby` (το modal συνταγής παίρνει `aria-label` το όνομα της συνταγής) · όλα τα ligature icons (`.msr`) με `aria-hidden` (στατικά μέσω init pass, δυναμικά στο σημείο δημιουργίας) · icon-only κουμπιά με `aria-label` (FAB, +/−/✕, swap, ⋮, chip «✓», scheme, navSwitch, swatches) · `--lunch` (light) σκούρυνε σε `#8a5719` για αντίθεση AA.
 - **Δωμάτιο στο μενού λίστας**: εμφάνιση του room code + κουμπί **«Σύνδεση σε άλλο δωμάτιο»** → modal εισαγωγής κωδικού· έγκυρος = `[A-Za-z0-9_-]{4,20}` (pure `validRoomCode`, testable)· θέτει το URL hash και το υπάρχον hashchange listener αποθηκεύει & κάνει reload. Άκυρος κωδικός ή ίδιο δωμάτιο → toast, καμία αλλαγή.
 - **Επιβεβαίωση στο 🎲 «Νέα εβδομάδα»** (confirm dialog): προστασία από κατά λάθος αντικατάσταση του εβδομαδιαίου προγράμματος.
+
+### Ψώνια εβδομάδας & σερί προσθήκη (v8.6)
+
+- **«Ψώνια εβδομάδας»** (κουμπί στο toolbar των Γευμάτων): μαζεύει τα υλικά και των **14 γευμάτων** της εβδομάδας στην ενεργή λίστα, με confirm πρώτα («…στη λίστα "Χ";»). Dedupe παντού: μέσα στην ίδια συνταγή, μεταξύ γευμάτων, και με ό,τι υπάρχει ήδη στη λίστα. Κάθε υλικό παίρνει note «Για: <πρώτο γεύμα που το χρειάζεται>». Αν δεν υπάρχει λίστα → νέα «Ψώνια» (ενεργή). Όλα ήδη μέσα → toast, κανένα write.
+- Pure function `weekIngItems(picks, mealsMap, existingNames)` (πριν το Room block, testable): επαναχρησιμοποιεί τη `mealIngItems` ανά γεύμα με σωρευτικό seen set· επιστρέφει items χωρίς `ts`.
+- **Σερί προσθήκη**: στο addSheet (λειτουργία λίστας) το sheet **μένει ανοιχτό** μετά από κάθε προσθήκη — καθαρίζει όνομα/σημείωση, μηδενίζει ποσότητα, ξαναδίνει focus στο «Προϊόν». Κλείσιμο με tap στο φόντο/Escape (όπως πριν). Το edit mode κλείνει κανονικά μετά την αποθήκευση.
 
 ### Schema (Firebase)
 ```

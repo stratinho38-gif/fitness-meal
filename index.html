@@ -627,6 +627,7 @@
     <div class="g-sub">Μεσημέρι & βράδυ κατά Nutrimed · 150 συνταγές · μερίδες cut για σένα, ×2 στα ψώνια · πάτα σε γεύμα για συνταγή</div>
     <div class="g-toolbar">
       <button class="primary" id="gShuffleBtn"><span class="msr">shuffle</span>Νέα εβδομάδα</button>
+      <button id="gWeekShopBtn"><span class="msr">add_shopping_cart</span>Ψώνια εβδομάδας</button>
       <button id="gClearBtn">Καθάρισμα τικ</button>
       <div class="g-progress"><div class="g-bar"><i id="gBarFill"></i></div><div class="g-pct" id="gPctTxt"></div></div>
     </div>
@@ -834,6 +835,21 @@ function itemSnapshot(item) {
   };
   if (item && item.note) it.note = item.note;
   return it;
+}
+/* Υλικά ΟΛΩΝ των γευμάτων της εβδομάδας → items λίστας (v8.6).
+   Σωρευτικό dedupe: μέσα σε συνταγή, μεταξύ γευμάτων, και με τα υπάρχοντα. Testable. */
+function weekIngItems(picks, mealsMap, existingNames) {
+  const out = [];
+  const seen = Array.isArray(existingNames) ? existingNames.slice() : [];
+  (Array.isArray(picks) ? picks : []).forEach(id => {
+    const r = mealsMap && mealsMap[id];
+    if (!r || !Array.isArray(r.ing)) return;
+    mealIngItems(r.ing, seen, r.n).forEach(it => {
+      out.push(it);
+      seen.push(it.name);
+    });
+  });
+  return out;
 }
 /* Κάθε αποτυχημένο write στη βάση → toast, όχι σιωπηλή απώλεια. */
 function dbErr(err) {
@@ -1496,7 +1512,8 @@ function addItem(e) {
   nameEl.value = '';
   document.getElementById('itemQty').value = '1';
   document.getElementById('itemNote').value = '';
-  closeSheets();
+  /* v8.6: το sheet μένει ανοιχτό για σερί προσθήκες — κλείνει με tap στο φόντο/Escape */
+  nameEl.focus();
   showToast(`«${name}» προστέθηκε`);
 }
 
@@ -2598,6 +2615,39 @@ document.getElementById("gShuffleBtn").addEventListener("click", () => {
 });
 document.getElementById("gClearBtn").addEventListener("click", () => {
   gState.done = Array(14).fill(false); gSave(); gRender();
+});
+
+/* v8.6: υλικά ΟΛΗΣ της εβδομάδας → ενεργή λίστα (ή νέα «Ψώνια») */
+document.getElementById('gWeekShopBtn').addEventListener('click', () => {
+  const l = getActive();
+  const target = l ? `στη λίστα «${l.name}»` : 'σε νέα λίστα «Ψώνια»';
+  openConfirm(`Να μπουν τα υλικά όλων των γευμάτων της εβδομάδας ${target};`, () => {
+    if (!l) {
+      const nid = newId();
+      const items = {};
+      weekIngItems(gState.picks, MEALS, []).forEach((it, idx) => {
+        it.ts = Date.now() + idx;
+        items[newId() + idx] = it;
+      });
+      db.ref('rooms/' + ROOM + '/lists/' + nid)
+        .set({ name: 'Ψώνια', ts: Date.now(), items })
+        .then(() => showToast('Νέα λίστα «Ψώνια» με τα υλικά της εβδομάδας'))
+        .catch(dbErr);
+      activeId = nid;
+      lsSet('sm-active-' + ROOM, nid);
+      return;
+    }
+    const toAdd = weekIngItems(gState.picks, MEALS, itemArray(l).map(i => i.name));
+    if (!toAdd.length) { showToast('Όλα τα υλικά της εβδομάδας υπάρχουν ήδη στη λίστα'); return; }
+    const updates = {};
+    toAdd.forEach((it, idx) => {
+      it.ts = Date.now() + idx;
+      updates[newId() + idx] = it;
+    });
+    db.ref('rooms/' + ROOM + '/lists/' + l.id + '/items').update(updates)
+      .then(() => showToast(`Μπήκαν ${toAdd.length} υλικά στη λίστα «${l.name}»`))
+      .catch(dbErr);
+  }, 'Προσθήκη');
 });
 
 /* ---------- Αρχική ---------- */

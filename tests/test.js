@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, mealIngItems, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, mealIngItems, weekIngItems, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -122,6 +122,17 @@ t('itemSnapshot: χωρίς id', !('id' in snap));
 t('itemSnapshot: χωρίς note όταν λείπει', !('note' in m.itemSnapshot({ name: 'Ψωμί' })));
 t('itemSnapshot: defaults σε ελλιπές item', (() => { const s = m.itemSnapshot({}); return s.qty === 1 && s.unit === 'τεμ' && s.cat === 'Άλλα' && s.done === false && s.ts === 0; })());
 
+// Ψώνια εβδομάδας (v8.6): weekIngItems
+const wkMeals = { m1: { n: 'Γεύμα 1', ing: ['Ρύζι', 'Κοτόπουλο'] }, m2: { n: 'Γεύμα 2', ing: ['ρύζι', 'Ντομάτα'] } };
+const wk = m.weekIngItems(['m1', 'm2'], wkMeals, ['Κρεμμύδι']);
+t('weekIngItems: dedupe μεταξύ γευμάτων', wk.length === 3 && wk.map(i => i.name).join() === 'Ρύζι,Κοτόπουλο,Ντομάτα');
+t('weekIngItems: note από το γεύμα που το χρειάζεται', wk[0].note === 'Για: Γεύμα 1' && wk[2].note === 'Για: Γεύμα 2');
+t('weekIngItems: dedupe με υπάρχοντα (case-insensitive)', m.weekIngItems(['m1'], wkMeals, ['ΚΟΤΟΠΟΥΛΟ']).length === 1);
+t('weekIngItems: άγνωστα ids / null → []', m.weekIngItems(['nope'], wkMeals, []).length === 0 && m.weekIngItems(null, null, null).length === 0);
+t('weekIngItems: χωρίς ts (το βάζει ο caller)', wk.every(i => !('ts' in i)));
+t('weekIngItems: πλήρη πεδία item', wk.every(i => i.qty === 1 && i.unit === 'τεμ' && i.cat === 'Άλλα' && i.done === false));
+t('v8.6: κουμπί «Ψώνια εβδομάδας» υπάρχει', html.includes('gWeekShopBtn') && /weekIngItems\(gState\.picks/.test(script));
+
 // Δωμάτιο (v8.5): validRoomCode — ίδιο pattern με Database Rules
 t('validRoomCode: έγκυρος', m.validRoomCode('abc123XYZ') === true);
 t('validRoomCode: trim', m.validRoomCode('  abcd  ') === true);
@@ -144,7 +155,8 @@ t('v8.5: κανένα font-size κάτω από 12px στο CSS', !/font-size:\s
 
 // Επιλογή υλικών γεύματος (v8.4) — δομικοί έλεγχοι στο script
 t('v8.4: checkbox ανά υλικό στο modal', /class="ing-chk" data-i=/.test(script));
-t('v8.4: προστίθενται μόνο τα τσεκαρισμένα', /mealIngItems\(picked/.test(script) && !/mealIngItems\(r\.ing/.test(script));
+const gAddBody = script.slice(script.indexOf('function gAddIngredients'), script.indexOf('function gAskAi'));
+t('v8.4: προστίθενται μόνο τα τσεκαρισμένα', /mealIngItems\(picked/.test(gAddBody) && !/mealIngItems\(r\.ing/.test(gAddBody));
 t('v8.4: toast όταν κανένα τσεκαρισμένο', script.includes('Διάλεξε τουλάχιστον ένα υλικό'));
 
 // Ρύθμιση θέματος (v7.2): nextScheme / resolveDark / CAT_ICON

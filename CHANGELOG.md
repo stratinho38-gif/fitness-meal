@@ -7,6 +7,7 @@
 - **Service worker**: navigations network-first με cache fallback (offline δείχνει την τελευταία εκδοχή — χρήσιμο μέσα στο σούπερ μάρκετ), same-origin assets cache-first, cross-origin (Firebase) ανέπαφα. Versioned cache `lista-v8.8.0`, παλιά caches καθαρίζονται στο activate.
 - Registration μόνο σε `https:` με `.catch` — στο Cowork artifact δουλεύει όπως πριν, χωρίς SW.
 - iOS meta tags (apple-touch-icon, standalone, τίτλος «Λίστα»). 173/173 tests πράσινα.
+- **Cowork artifact → σελίδα-«πόρτα»**: το Cowork preview μπλοκάρει Firebase/Google Fonts (CSP), οπότε η εφαρμογή δεν τρέχει εκεί από τις 24/08. Το artifact έγινε στατική κάρτα με κουμπί προς το Netlify + οδηγίες εγκατάστασης· μοναδική παραγωγή πλέον το Netlify.
 
 ## v8.7.0 — 2026-08-24 (Έξυπνη προσθήκη υλικών — aggregate ποσοτήτων)
 

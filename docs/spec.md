@@ -1,6 +1,6 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v8.8 (PWA — εγκατάσταση στο κινητό)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v8.8 (PWA — εγκατάσταση στο κινητό)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` (μοναδική παραγωγή — το Cowork artifact `lista-psonon-stratos` είναι πλέον σελίδα-«πόρτα», βλ. CLAUDE.md)
 
 ## 1. Σκοπός
 

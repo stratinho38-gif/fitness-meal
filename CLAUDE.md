@@ -6,7 +6,7 @@
 
 - **Repo (source of truth)**: αυτός ο φάκελος (`~/Documents/lista-psonon`). Remote: `https://github.com/stratinho38-gif/fitness-meal` (private).
 - **Παραγωγή #1**: Netlify site `lista-supemarket` (https://lista-supemarket.netlify.app) — auto-deploy από push στο main.
-- **Παραγωγή #2**: Cowork artifact `lista-psonon-stratos` — ενημέρωση με update_artifact από το index.html.
+- **Cowork artifact** `lista-psonon-stratos`: ΔΕΝ είναι πια παραγωγή — από 25/08/2026 είναι σταθερή σελίδα-«πόρτα» προς το Netlify (το Cowork CSP μπλοκάρει Firebase/Google Fonts, η εφαρμογή δεν τρέχει εκεί). Δεν χρειάζεται update σε κάθε αλλαγή.
 
 ## Ροή για ΚΑΘΕ αλλαγή (με τη σειρά)
 
@@ -15,8 +15,7 @@
 3. **Tests**: `node tests/test.js` — όλα πράσινα. Νέα pure λογική = νέα tests.
 4. **Changelog**: εγγραφή στο `CHANGELOG.md` (semver).
 5. **Commit** με περιγραφικό μήνυμα στα ελληνικά.
-6. **Artifact**: update_artifact του `lista-psonon-stratos` με το νέο index.html.
-7. **Push**: ο Στράτος τρέχει `cd ~/Documents/lista-psonon && git push` (credentials δικά του — ο Claude δεν χειρίζεται ποτέ tokens). Το push κάνει auto-deploy στο Netlify.
+6. **Push**: ο Στράτος τρέχει `cd ~/Documents/lista-psonon && git push` (credentials δικά του — ο Claude δεν χειρίζεται ποτέ tokens). Το push κάνει auto-deploy στο Netlify.
 
 ## Σημειώσεις
 

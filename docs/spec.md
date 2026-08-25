@@ -1,6 +1,6 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v8.7 (Έξυπνη προσθήκη υλικών — aggregate ποσοτήτων)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
+Έκδοση: **v8.8 (PWA — εγκατάσταση στο κινητό)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` + Cowork artifact `lista-psonon-stratos`
 
 ## 1. Σκοπός
 
@@ -114,6 +114,15 @@ rooms/<ROOM>/lists/<listId> = {
 }
 rooms/<ROOM>/dietTemplate/<itemId> = { name, qty:number, unit, cat, note?, ts:number }   // v7.1, προαιρετικό
 ```
+
+### PWA — εγκατάσταση στο κινητό (v8.8)
+
+- Η εφαρμογή είναι **installable PWA**: «Προσθήκη στην αρχική οθόνη» σε iPhone/Android → ανοίγει standalone (χωρίς μπάρα browser), με δικό της εικονίδιο.
+- Νέα αρχεία (εξαίρεση στο single-file — τα απαιτεί το PWA standard): `manifest.webmanifest`, `sw.js`, `icons/` (icon-192, icon-512, icon-512-maskable, apple-touch-icon 180).
+- **Service worker** (`sw.js`): navigations = network-first με cache fallback (offline δείχνει την τελευταία εκδοχή)· same-origin assets = cache-first. **Δεν αγγίζει** cross-origin (Firebase, Google Fonts CDN μπαίνουν στο cache μόνο ως same-origin — τα Firebase requests είναι cross-origin και περνούν ανέπαφα). Όνομα cache versioned (`lista-vX.Y.Z`) — bump σε κάθε release, τα παλιά caches καθαρίζονται στο activate.
+- Registration στο τέλος του κύριου script, μόνο σε `https:` και με `.catch` (στο Cowork artifact/`file:` αποτυγχάνει σιωπηλά, η εφαρμογή δουλεύει κανονικά χωρίς SW).
+- Το room δεν χάνεται με `start_url: "./"` — αποθηκεύεται στο `localStorage` (`sm-room`).
+- iOS meta: `apple-touch-icon`, `apple-mobile-web-app-capable`, τίτλος «Λίστα».
 
 ## 3. Κανόνες robustness (v5)
 

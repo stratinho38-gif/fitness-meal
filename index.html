@@ -475,6 +475,14 @@
   #viewGym .gym-status button { display: block; margin: 14px auto 0; font: inherit; cursor: pointer; border-radius: 999px; border: none; background: var(--primary); color: var(--on-primary); padding: 10px 20px; font-weight: 600; }
   #viewGym .gym-link { display: block; text-align: center; margin: 14px 0 4px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
 
+  /* ---------- Καταχώρηση κιλών/επαναλήψεων (v8.9) ---------- */
+  #viewGym .ex-log { margin-top: 9px; font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--outline-variant); background: var(--surface); color: var(--primary); padding: 7px 13px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+  #viewGym .ex-log .msr { font-size: 16px; }
+  #viewGym .ex-log:active { background: var(--surface-variant); }
+  #gymLogSheet .wk-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  #gymLogSheet .wk-chips button { font: inherit; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--outline-variant); background: var(--surface); color: var(--text); font-weight: 600; font-size: 13.5px; }
+  #gymLogSheet .wk-chips button.on { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+
   /* ---------- Αρχική ---------- */
   #viewHome .home-card { background: var(--surface-container); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: var(--elev1); }
   #viewHome .home-card h3 { margin: 0 0 10px; font-size: 15px; display: flex; align-items: center; gap: 7px; }
@@ -735,6 +743,29 @@
       <input type="text" id="itemNote" placeholder="π.χ. Για: μεσημεριανά" autocomplete="off" maxlength="120">
     </div>
     <button type="submit" class="submit" id="addSubmit">Προσθήκη στη λίστα</button>
+  </form>
+</div>
+
+<!-- Gym log sheet (v8.9): καταχώρηση κιλών/επαναλήψεων εβδομάδας -->
+<div class="sheet" id="gymLogSheet" role="dialog" aria-modal="true" aria-labelledby="gymLogTitle">
+  <div class="grip"></div>
+  <h3 id="gymLogTitle">Καταχώρηση</h3>
+  <form onsubmit="gymLogSubmit(event)">
+    <div class="field">
+      <label id="gymWeekLabel">Εβδομάδα</label>
+      <div class="wk-chips" id="gymWeekChips" role="group" aria-labelledby="gymWeekLabel"></div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="gymKg">Κιλά</label>
+        <input type="text" id="gymKg" inputmode="decimal" placeholder="π.χ. 80" autocomplete="off" maxlength="7">
+      </div>
+      <div class="field">
+        <label for="gymReps">Επαναλήψεις</label>
+        <input type="text" id="gymReps" placeholder="π.χ. 8-8-7" autocomplete="off" maxlength="40">
+      </div>
+    </div>
+    <button type="submit" class="submit" id="gymLogSubmit">Καταχώρηση στο Sheet</button>
   </form>
 </div>
 
@@ -1308,6 +1339,10 @@ function dietItems(custom) {
 /* ---------- Γυμναστήριο (v7.3): pure parsing του Google Sheet (gviz JSON) ---------- */
 const GYM_SHEET_ID = '1VPNVq0KLeHfqGDNjyntgXQPbLXtAP4qN462kl20Hmog';
 const GYM_DAYS = ['Α', 'Β', 'Γ', 'Δ', 'Ε'];
+/* Καταχώρηση στο Sheet (v8.9): Apps Script Web App — βλ. docs/odigies-gym-sync.md */
+const GYM_WEEKS = 8;
+const GYM_WRITE_URL = ''; // Συμπληρώνεται μετά το deploy του Apps Script (Βήμα 4 των οδηγιών)
+const GYM_WRITE_TOKEN = 'lp-gym-7Qk4mR2vXw9s';
 
 // Το gviz endpoint επιστρέφει "google.visualization.Query.setResponse({...});" — βγάζουμε το JSON.
 function gymParseGviz(text) {
@@ -1341,6 +1376,47 @@ function gymLastKg(row, cols) {
   return out;
 }
 function gymFormatKg(n) { return String(Math.round(n * 100) / 100).replace('.', ','); }
+// Κείμενο κελιού gviz: προτιμάμε το formatted (f) — π.χ. reps «12/12» που το Sheet έκανε ημερομηνία.
+function gymCellText(c) {
+  if (!c || c.v == null) return '';
+  if (c.f != null) return String(c.f).trim();
+  return String(c.v).trim();
+}
+// Όλες οι εβδομάδες μιας άσκησης: map εβδομάδα → {kg, reps} από τα ζεύγη στηλών «Εβδ N — Κιλά/Επαν.»
+function gymWeeks(row, cols) {
+  const out = {};
+  for (let i = 6; i < cols.length; i += 2) {
+    const w = (((cols[i] && cols[i].label) || '').match(/Εβδ\s*(\d+)/) || [])[1];
+    if (!w) continue;
+    const c = row.c || [];
+    let kg = null;
+    const ck = c[i];
+    if (ck && ck.v != null) {
+      if (typeof ck.v === 'number') kg = ck.v;
+      else { const n = parseFloat(String(ck.v).replace(',', '.')); if (Number.isFinite(n)) kg = n; }
+    }
+    const reps = gymCellText(c[i + 1]);
+    if (kg != null || reps) out[+w] = { kg: kg, reps: reps };
+  }
+  return out;
+}
+// Payload καταχώρησης προς το Apps Script — null αν κάτι δεν είναι έγκυρο.
+function gymLogPayload(day, name, week, kg, reps) {
+  if (GYM_DAYS.indexOf(day) === -1) return null;
+  const n = cleanText(name, 120);
+  if (!n) return null;
+  const w = Math.floor(Number(week));
+  if (!(w >= 1 && w <= GYM_WEEKS)) return null;
+  let k = null;
+  if (kg != null && String(kg).trim() !== '') {
+    k = parseFloat(String(kg).trim().replace(',', '.'));
+    if (!Number.isFinite(k) || k <= 0 || k > 999) return null;
+    k = Math.round(k * 100) / 100;
+  }
+  const r = cleanText(reps, 40);
+  if (k == null && !r) return null;
+  return { token: GYM_WRITE_TOKEN, day: day, exercise: n, week: w, kg: k, reps: r };
+}
 // Μοντέλο ημέρας από τον πίνακα gviz: κρατάμε μόνο γραμμές ασκήσεων (όνομα + αριθμός σετ)
 function gymDayModel(table) {
   if (!table) return null;
@@ -1356,7 +1432,7 @@ function gymDayModel(table) {
     if (/^ΣΥΝΟΛΟ/.test(name)) { if (sets != null) total = sets; return; }
     if (sets == null) return; // γραμμές σημειώσεων/footer
     const cell = i => (c[i] && c[i].v != null ? String(c[i].v).trim() : '');
-    exercises.push({ name: name, sets: sets, reps: cell(2), rir: cell(3), rest: cell(4), notes: cell(5), last: gymLastKg(r, cols) });
+    exercises.push({ name: name, sets: sets, reps: cell(2), rir: cell(3), rest: cell(4), notes: cell(5), last: gymLastKg(r, cols), weeks: gymWeeks(r, cols) });
   });
   if (!exercises.length) return null;
   return { title: head.title, note: head.note, total: total, exercises: exercises };
@@ -1740,8 +1816,10 @@ function closeSheets() {
   document.getElementById('menuSheet').classList.remove('open');
   document.getElementById('addSheet').classList.remove('open');
   document.getElementById('tplSheet').classList.remove('open');
+  document.getElementById('gymLogSheet').classList.remove('open');
   addTarget = 'list';
   editCtx = null;
+  gymLogCtx = null;
 }
 
 /* ---------- Actions ---------- */
@@ -3143,17 +3221,89 @@ function gymRender(d, model, ts) {
     if (x.reps) chips.appendChild(gymEl('span', 'ex-chip', x.reps + ' επαν.'));
     if (x.rir) chips.appendChild(gymEl('span', 'ex-chip', 'RIR ' + x.rir));
     if (x.rest) chips.appendChild(gymEl('span', 'ex-chip', 'Ξεκ. ' + x.rest));
-    if (x.last) chips.appendChild(gymEl('span', 'ex-chip kg', (x.last.week ? 'Εβδ ' + x.last.week + ': ' : '') + gymFormatKg(x.last.kg) + ' kg'));
+    if (x.last) {
+      const lw = x.weeks && x.last.week ? x.weeks[x.last.week] : null;
+      chips.appendChild(gymEl('span', 'ex-chip kg', (x.last.week ? 'Εβδ ' + x.last.week + ': ' : '') + gymFormatKg(x.last.kg) + ' kg' + (lw && lw.reps ? ' × ' + lw.reps : '')));
+    }
     card.appendChild(chips);
     if (x.notes) card.appendChild(gymEl('div', 'ex-notes', x.notes));
+    const logBtn = gymEl('button', 'ex-log', null);
+    const lIc = gymEl('span', 'msr', 'edit');
+    lIc.setAttribute('aria-hidden', 'true');
+    logBtn.appendChild(lIc);
+    logBtn.appendChild(document.createTextNode('Καταχώρηση'));
+    logBtn.addEventListener('click', () => openGymLogSheet(x));
+    card.appendChild(logBtn);
     body.appendChild(card);
   });
   if (model.total) body.appendChild(gymEl('div', 'gym-total', 'Σύνολο: ' + model.total + ' σετ προπόνησης'));
-  const a = gymEl('a', 'gym-link', 'Άνοιγμα στο Google Sheets ↗ (εκεί καταχωρείς κιλά)');
+  const a = gymEl('a', 'gym-link', 'Άνοιγμα στο Google Sheets ↗');
   a.href = 'https://docs.google.com/spreadsheets/d/' + GYM_SHEET_ID + '/edit';
   a.target = '_blank';
   a.rel = 'noopener';
   body.appendChild(a);
+}
+
+/* ---------- Καταχώρηση κιλών/επαναλήψεων → Sheet (v8.9) ---------- */
+let gymLogCtx = null; // { day, name, weeks, week }
+
+// Chips εβδομάδας 1..GYM_WEEKS (φτιάχνονται μία φορά)
+(function () {
+  const box = document.getElementById('gymWeekChips');
+  for (let i = 1; i <= GYM_WEEKS; i++) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.id = 'gymWk' + i;
+    b.textContent = String(i);
+    b.setAttribute('aria-label', 'Εβδομάδα ' + i);
+    b.addEventListener('click', () => gymLogPickWeek(i));
+    box.appendChild(b);
+  }
+})();
+
+function openGymLogSheet(x) {
+  gymLogCtx = { day: gymDay, name: x.name, weeks: x.weeks || {} };
+  document.getElementById('gymLogTitle').textContent = x.name;
+  let w = parseInt(lsGet('sm-gym-week'), 10);
+  if (!(w >= 1 && w <= GYM_WEEKS)) w = (x.last && x.last.week) ? Math.min(GYM_WEEKS, x.last.week) : 1;
+  gymLogPickWeek(w);
+  document.getElementById('gymLogSheet').classList.add('open');
+  document.getElementById('sheetBg').classList.add('open');
+}
+function gymLogPickWeek(w) {
+  if (!gymLogCtx) return;
+  gymLogCtx.week = w;
+  for (let i = 1; i <= GYM_WEEKS; i++) document.getElementById('gymWk' + i).classList.toggle('on', i === w);
+  const cur = gymLogCtx.weeks[w] || {};
+  document.getElementById('gymKg').value = cur.kg != null ? gymFormatKg(cur.kg) : '';
+  document.getElementById('gymReps').value = cur.reps || '';
+}
+function gymLogSubmit(ev) {
+  ev.preventDefault();
+  if (!gymLogCtx) return;
+  const payload = gymLogPayload(gymLogCtx.day, gymLogCtx.name, gymLogCtx.week,
+    document.getElementById('gymKg').value, document.getElementById('gymReps').value);
+  if (!payload) { showToast('Γράψε κιλά (0–999) ή επαναλήψεις'); return; }
+  if (!GYM_WRITE_URL) { showToast('Δεν έχει ρυθμιστεί ακόμα η σύνδεση με το Sheet'); return; }
+  const btn = document.getElementById('gymLogSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Αποστολή…';
+  const day = gymLogCtx.day;
+  fetch(GYM_WRITE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // απλό CORS request — χωρίς preflight
+    body: JSON.stringify(payload)
+  })
+    .then(r => r.json())
+    .then(o => {
+      if (!o || o.ok !== true) throw new Error('write');
+      lsSet('sm-gym-week', String(payload.week));
+      closeSheets();
+      showToast('Καταχωρήθηκε στο Sheet (Εβδ ' + payload.week + ')');
+      gymFetch(day);
+    })
+    .catch(() => { showToast('Δεν έγινε η καταχώρηση. Δοκίμασε ξανά.'); })
+    .then(() => { btn.disabled = false; btn.textContent = 'Καταχώρηση στο Sheet'; });
 }
 
 applyScheme();

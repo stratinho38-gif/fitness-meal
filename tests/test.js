@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, ING_DICT, ingNorm, ingSplit, ingStripParens, ingMatch, ingParseQty, ingLineMinor, mergeQty, ingPlan, ingPlanPairs, weekPlan, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, ING_DICT, ingNorm, ingSplit, ingStripParens, ingMatch, ingParseQty, ingLineMinor, mergeQty, ingPlan, ingPlanPairs, weekPlan, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel, GYM_WEEKS, GYM_WRITE_TOKEN, gymCellText, gymWeeks, gymLogPayload};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -335,6 +335,25 @@ t('gymHeaderParts: χωρίς σημείωση', m.gymHeaderParts('Ημέρα Β
 t('gymFormatKg: δεκαδικά με κόμμα', m.gymFormatKg(82.5) === '82,5');
 t('gymFormatKg: ακέραιο', m.gymFormatKg(80) === '80');
 t('GYM_DAYS: 5 ημέρες', m.GYM_DAYS.length === 5);
+
+// Καταχώρηση κιλών/επαναλήψεων (v8.9): gymCellText, gymWeeks, gymLogPayload
+t('gymCellText: προτιμά formatted f', m.gymCellText({ v: 'Date(2026,11,12)', f: '12/12' }) === '12/12');
+t('gymCellText: αριθμός χωρίς f', m.gymCellText({ v: 8 }) === '8');
+t('gymCellText: null → κενό', m.gymCellText(null) === '' && m.gymCellText({ v: null }) === '');
+const wk0 = gymModel.exercises[0].weeks;
+t('gymWeeks: εβδ 1 μόνο κιλά', wk0[1].kg === 80 && wk0[1].reps === '');
+t('gymWeeks: εβδ 2 κιλά με κόμμα + reps', wk0[2].kg === 82.5 && wk0[2].reps === '8');
+t('gymWeeks: χωρίς καταχωρήσεις → κενό map', Object.keys(gymModel.exercises[1].weeks).length === 0);
+const gpl = m.gymLogPayload('Α', ' Πιέσεις πάγκου ', '3', '82,5', ' 8-8-7 ');
+t('gymLogPayload: έγκυρο', gpl !== null && gpl.day === 'Α' && gpl.week === 3 && gpl.kg === 82.5 && gpl.reps === '8-8-7' && gpl.exercise === 'Πιέσεις πάγκου' && gpl.token === m.GYM_WRITE_TOKEN);
+t('gymLogPayload: μόνο reps (κενά κιλά)', m.gymLogPayload('Β', 'Άρσεις', 1, '', '10-10').kg === null);
+t('gymLogPayload: μόνο κιλά (τελεία)', m.gymLogPayload('Ε', 'Σκουώτ', m.GYM_WEEKS, '102.5', '').kg === 102.5);
+t('gymLogPayload: τίποτα από τα δύο → null', m.gymLogPayload('Α', 'Χ', 1, '', '') === null);
+t('gymLogPayload: άκυρη ημέρα → null', m.gymLogPayload('Ζ', 'Χ', 1, '80', '') === null);
+t('gymLogPayload: άκυρη εβδομάδα → null', m.gymLogPayload('Α', 'Χ', 0, '80', '') === null && m.gymLogPayload('Α', 'Χ', m.GYM_WEEKS + 1, '80', '') === null);
+t('gymLogPayload: άκυρα κιλά → null', m.gymLogPayload('Α', 'Χ', 1, 'abc', '') === null && m.gymLogPayload('Α', 'Χ', 1, '-5', '') === null && m.gymLogPayload('Α', 'Χ', 1, '1000', '') === null);
+t('gymLogPayload: κενό όνομα → null', m.gymLogPayload('Α', '  ', 1, '80', '') === null);
+t('gymLogPayload: reps κόβονται στα 40', m.gymLogPayload('Α', 'Χ', 1, '', 'x'.repeat(100)).reps.length === 40);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

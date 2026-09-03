@@ -1,6 +1,6 @@
 # Spec — Λίστα Σούπερ Μάρκετ (source of truth)
 
-Έκδοση: **v8.8 (PWA — εγκατάσταση στο κινητό)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` (μοναδική παραγωγή — το Cowork artifact `lista-psonon-stratos` είναι πλέον σελίδα-«πόρτα», βλ. CLAUDE.md)
+Έκδοση: **v8.9 (Καταχώρηση κιλών/επαναλήψεων γυμναστηρίου από την εφαρμογή)** · Αρχείο εφαρμογής: `index.html` · Deployed: Netlify `lista-supemarket` (μοναδική παραγωγή — το Cowork artifact `lista-psonon-stratos` είναι πλέον σελίδα-«πόρτα», βλ. CLAUDE.md)
 
 ## 1. Σκοπός
 
@@ -84,6 +84,15 @@
 - **Render**: κάρτες ασκήσεων ανά ημέρα (σετ/επαναλήψεις/RIR/ξεκούραση chips, σημείωση εκτέλεσης, badge «Εβδ N: X kg»), σημείωση ημέρας σε details, σύνολο σετ, ώρα τελευταίας ενημέρωσης, κουμπί ανανέωσης, link «Άνοιγμα στο Google Sheets».
 - **Cache offline**: τελευταίο επιτυχές μοντέλο ανά ημέρα σε localStorage `sm-gym-<Χ>` (stale-while-revalidate: δείχνει cache αμέσως, φέρνει φρέσκα στο background). Αποτυχία fetch χωρίς cache → μήνυμα σφάλματος με retry.
 - **Ασφάλεια**: το περιεχόμενο του Sheet είναι **εξωτερικό/untrusted** → μπαίνει στο DOM ΜΟΝΟ με `textContent`/DOM APIs, ποτέ innerHTML. Το FAB κρύβεται σε λειτουργία γυμναστηρίου. Το Sheet πρέπει να είναι «Anyone with the link → Viewer» για να διαβάζεται.
+
+### Καταχώρηση κιλών/επαναλήψεων εβδομάδας από την εφαρμογή → Sheet (v8.9)
+
+- **Στόχος**: το log της προπόνησης (στήλες «Εβδ N — Κιλά» / «Εβδ N — Επαν.» του Sheet) καταχωρείται πλέον και μέσα από την εφαρμογή· το Sheet παραμένει το source of truth (η ανάγνωση συνεχίζει μέσω gviz).
+- **Write-back μέσω Google Apps Script Web App** δεμένο στο Sheet (Extensions → Apps Script, deploy «Anyone»): κώδικας στο `docs/gym-sync-apps-script.gs`, βήμα-βήμα οδηγίες στο `docs/odigies-gym-sync.md`. Η εφαρμογή κάνει `POST` (Content-Type `text/plain` για απλό CORS request) με JSON `{token, day, exercise, week, kg, reps}` στο URL `GYM_WRITE_URL` (const στο index.html — συμπληρώνεται μετά το deploy). Shared token `GYM_WRITE_TOKEN` και στα δύο άκρα (αποτρεπτικό μόνο — φαίνεται στο source, όπως και το room code).
+- **Apps Script (doPost)**: ελέγχει token → βρίσκει φύλλο «Ημέρα Χ» → header row (κελί «Σετ» στη στήλη B) → στήλες «Εβδ N — Κιλά/Επαν.» → γραμμή άσκησης με ακριβές όνομα στη στήλη A → γράφει κιλά (αριθμός) και επαναλήψεις (**setNumberFormat('@')** πριν το setValue, ώστε π.χ. «12/12» να μην γίνεται ημερομηνία). Απαντά JSON `{ok}` ή `{ok:false, error}`.
+- **UI**: κουμπί «Καταχώρηση» σε κάθε κάρτα άσκησης → bottom sheet `gymLogSheet`: chips εβδομάδας 1–8 (**ο χρήστης διαλέγει**· default η τελευταία επιλογή `sm-gym-week`, αλλιώς η εβδομάδα της τελευταίας καταχώρησης), πεδία Κιλά (text, inputmode decimal, δεκτό και κόμμα) + Επαναλήψεις (text, π.χ. «8-8-7»), προσυμπλήρωση με τις υπάρχουσες τιμές της επιλεγμένης εβδομάδας. Submit: απενεργοποιημένο κουμπί όσο τρέχει, toast επιτυχίας + refresh (gymFetch), toast αποτυχίας αλλιώς. Κενό `GYM_WRITE_URL` → toast «δεν έχει ρυθμιστεί».
+- **Pure functions** (testable): `gymCellText(c)` (κείμενο κελιού gviz — προτιμά το formatted `f`), `gymWeeks(row, cols)` (map εβδομάδα → {kg, reps} από τα ζεύγη στηλών), `gymLogPayload(day, name, week, kg, reps)` (validation/καθαρισμός: day ∈ GYM_DAYS, week 1–`GYM_WEEKS`(8), κιλά 0<kg≤999 με κόμμα ή τελεία, reps ≤40 chars, απαιτείται τουλάχιστον ένα από τα δύο· null αν άκυρο). Το `gymDayModel` επιστρέφει πλέον και `weeks` ανά άσκηση· το chip «Εβδ N: X kg» δείχνει και «× reps» όταν υπάρχουν.
+- Η απάντηση του Apps Script είναι εξωτερικό περιεχόμενο → δεν μπαίνει ποτέ στο DOM· μόνο σταθερά ελληνικά μηνύματα toast.
 
 ### Επεξεργασία προϊόντος, undo διαγραφής, touch targets (v8.3)
 

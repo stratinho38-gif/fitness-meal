@@ -460,6 +460,7 @@
   #viewGym .gym-meta { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; }
   #viewGym .gym-meta button { font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--outline-variant); background: var(--surface-container); color: var(--text); padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
   #viewGym .gym-meta button .msr { font-size: 16px; }
+  #viewGym .gym-meta button.primary { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
   #viewGym .gym-updated { font-size: 12.5px; color: var(--muted); flex: 1; text-align: right; } /* v8.5 */
   #viewGym .gym-note { background: var(--surface-container); border-radius: 16px; padding: 4px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--muted); }
   #viewGym .gym-note summary { cursor: pointer; padding: 8px 0; font-weight: 600; color: var(--text); font-size: 13px; }
@@ -473,16 +474,22 @@
   #viewGym .gym-stat.on b, #viewGym .gym-stat.on span { color: var(--on-primary-container); }
   #viewGym .ex-card { background: var(--surface-container); border-radius: 18px; padding: 14px; margin-bottom: 12px; box-shadow: var(--elev1); }
   #viewGym .ex-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
-  #viewGym .ex-num { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-variant); color: var(--text); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-  #viewGym .ex-name { flex: 1; font-size: 16px; font-weight: 700; line-height: 1.3; padding-top: 2px; }
-  #viewGym .ex-done { flex: none; font-size: 22px; color: var(--primary); }
-  #viewGym .ex-rx { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-  #viewGym .ex-main { font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -.3px; }
-  #viewGym .ex-main .ex-x { font-weight: 400; color: var(--muted); margin: 0 5px; font-size: 20px; }
-  #viewGym .ex-main small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 5px; }
-  #viewGym .ex-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
-  #viewGym .ex-meta span { display: inline-flex; align-items: center; gap: 4px; }
-  #viewGym .ex-meta .msr { font-size: 16px; color: var(--muted); }
+  #viewGym .ex-num { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--surface-variant); color: var(--text); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  #viewGym .ex-card.arms .ex-num { background: var(--primary-container); color: var(--on-primary-container); }
+  #viewGym .ex-title { flex: 1; min-width: 0; padding-top: 3px; }
+  #viewGym .ex-name { font-size: 16px; font-weight: 700; line-height: 1.3; }
+  #viewGym .ex-tag { display: inline-block; margin-top: 5px; font-size: 12px; font-weight: 700; letter-spacing: .03em; color: var(--on-primary-container); background: var(--primary-container); border-radius: 6px; padding: 2px 7px; }
+  #viewGym .ex-done { flex: none; font-size: 22px; color: var(--primary); margin-top: 3px; }
+  #viewGym .ex-info { flex: none; width: 40px; height: 40px; margin: -5px -8px -5px -4px; border: none; background: transparent; color: var(--muted); border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  #viewGym .ex-info .msr { font-size: 22px; }
+  #viewGym .ex-info:active { background: var(--surface-variant); }
+  #viewGym .ex-card.current { box-shadow: 0 0 0 2px var(--primary), var(--elev1); }
+  .rx-grid { display: grid; grid-template-columns: .8fr 1.35fr 1fr 1fr; background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 14px; overflow: hidden; }
+  .rx-grid > div { padding: 9px 4px 8px; text-align: center; min-width: 0; }
+  .rx-grid > div + div { border-left: 1px solid var(--outline-variant); }
+  .rx-grid b { display: block; font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .rx-grid span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  #viewGym .ex-notes { margin-top: 10px; font-size: 13px; color: var(--muted); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   #viewGym .ex-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--outline-variant); }
   #viewGym .ex-last { min-width: 0; }
   #viewGym .ex-last .lbl { display: block; font-size: 12px; color: var(--muted); }
@@ -490,8 +497,6 @@
   #viewGym .ex-last.none { color: var(--muted); font-size: 13px; }
   #viewGym .ex-hist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   #viewGym .ex-hist span { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 8px; padding: 3px 7px; }
-  #viewGym .ex-notes { display: flex; gap: 6px; font-size: 13px; color: var(--muted); line-height: 1.45; }
-  #viewGym .ex-notes .msr { flex: none; font-size: 16px; margin-top: 1px; }
   #viewGym .gym-total { text-align: center; font-size: 12.5px; color: var(--muted); margin: 12px 0 4px; }
   #viewGym .gym-status { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; }
   #viewGym .gym-status button { display: block; margin: 14px auto 0; font: inherit; cursor: pointer; border-radius: 999px; border: none; background: var(--primary); color: var(--on-primary); padding: 10px 20px; font-weight: 600; }
@@ -501,6 +506,44 @@
   #viewGym .ex-log { flex: none; width: 44px; height: 44px; padding: 0; cursor: pointer; border-radius: 50%; border: 1px solid var(--outline-variant); background: transparent; color: var(--primary); display: inline-flex; align-items: center; justify-content: center; }
   #viewGym .ex-log .msr { font-size: 24px; }
   #viewGym .ex-log:active { background: var(--surface-variant); }
+  /* ---------- Οδηγίες εκτέλεσης (v8.13) ---------- */
+  #gymInfoSheet h3 { font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+  #gymInfoSheet .gi-mu { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+  #gymInfoSheet h4 { margin: 18px 0 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  #gymInfoSheet ol { margin: 0; padding-left: 22px; font-size: 14.5px; line-height: 1.5; }
+  #gymInfoSheet ol li { margin-bottom: 7px; padding-left: 2px; }
+  #gymInfoSheet ol li::marker { font-weight: 700; color: var(--primary); }
+  #gymInfoSheet .gi-warn { margin: 0; padding: 10px 14px 10px 30px; background: var(--warn-bg); color: var(--warn-text); border-radius: 14px; font-size: 13.5px; line-height: 1.45; }
+  #gymInfoSheet .gi-warn li + li { margin-top: 4px; }
+  #gymInfoSheet .gi-note { background: var(--surface-container); border-radius: 14px; padding: 10px 14px; font-size: 13.5px; line-height: 1.45; }
+  #gymInfoSheet .gi-video { display: inline-flex; align-items: center; gap: 5px; margin-top: 14px; font-size: 13.5px; font-weight: 600; color: var(--primary); text-decoration: none; }
+  #gymInfoSheet .gi-video .msr { font-size: 18px; }
+  #gymInfoSheet .gi-actions { display: flex; gap: 10px; margin-top: 18px; }
+  #gymInfoSheet .gi-actions button { flex: 1; min-height: 48px; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  #gymInfoSheet .gi-actions .gi-start { background: var(--primary); color: var(--on-primary); border: none; }
+  #gymInfoSheet .gi-actions .gi-log { background: transparent; color: var(--primary); border: 1px solid var(--outline-variant); }
+  #gymInfoSheet .gi-actions .msr { font-size: 19px; }
+
+  /* ---------- Χρονόμετρο προπόνησης (v8.13) ---------- */
+  .gym-timer { position: fixed; left: 10px; right: 10px; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 9; max-width: 660px; margin: 0 auto; background: var(--surface-container-high); border-radius: 22px; box-shadow: var(--elev3); padding: 12px 14px 0; overflow: hidden; }
+  .gym-timer[hidden] { display: none; }
+  .gym-timer.rest { background: var(--primary-container); color: var(--on-primary-container); }
+  .gym-timer .gt-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; opacity: .75; }
+  .gym-timer .gt-x { width: 36px; height: 36px; margin: -8px -8px -6px 0; border: none; background: transparent; color: inherit; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  .gym-timer .gt-name { font-size: 15px; font-weight: 700; line-height: 1.3; margin: 2px 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gym-timer .gt-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 12px; }
+  .gym-timer .gt-label { font-size: 12px; font-weight: 600; opacity: .8; }
+  .gym-timer .gt-clock { font-size: 30px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
+  .gym-timer .gt-actions { display: flex; gap: 8px; flex: none; }
+  .gym-timer .gt-actions button { min-height: 44px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border-radius: 999px; padding: 0 14px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--outline-variant); background: transparent; color: inherit; }
+  .gym-timer .gt-actions button.main { background: var(--primary); color: var(--on-primary); border-color: var(--primary); padding: 0 18px; }
+  .gym-timer .gt-actions button.ic { width: 44px; padding: 0; justify-content: center; }
+  .gym-timer .gt-actions .msr { font-size: 20px; }
+  .gym-timer .gt-bar { height: 4px; margin: 0 -14px; background: transparent; }
+  .gym-timer .gt-bar i { display: block; height: 100%; background: var(--primary); transition: width .25s linear; }
+  body.timer-on #viewGym { padding-bottom: 170px; }
+  body:not(.gym) .gym-timer { display: none; }
+
   #gymLogSheet .wk-chips { display: flex; flex-wrap: wrap; gap: 7px; }
   #gymLogSheet .wk-chips button { font: inherit; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--outline-variant); background: var(--surface); color: var(--text); font-weight: 600; font-size: 13.5px; }
   #gymLogSheet .wk-chips button.on { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
@@ -793,6 +836,28 @@
     </div>
     <button type="submit" class="submit" id="gymLogSubmit">Καταχώρηση στο Sheet</button>
   </form>
+</div>
+
+<div class="sheet" id="gymInfoSheet" role="dialog" aria-modal="true" aria-labelledby="giTitle">
+  <div class="grip"></div>
+  <h3 id="giTitle"></h3>
+  <div class="gi-mu" id="giMu"></div>
+  <div class="rx-grid" id="giRx"></div>
+  <div id="giBody"></div>
+  <div class="gi-actions">
+    <button type="button" class="gi-log" id="giLog"><span class="msr" aria-hidden="true">add</span>Καταχώρηση</button>
+    <button type="button" class="gi-start" id="giStart"><span class="msr" aria-hidden="true">play_arrow</span>Ξεκίνα από εδώ</button>
+  </div>
+</div>
+
+<div class="gym-timer" id="gymTimer" role="region" aria-label="Χρονόμετρο προπόνησης" hidden>
+  <div class="gt-top"><span id="gtPos" aria-live="polite"></span><button type="button" class="gt-x" id="gtStop" aria-label="Τέλος προπόνησης"><span class="msr" aria-hidden="true">close</span></button></div>
+  <div class="gt-name" id="gtName"></div>
+  <div class="gt-row">
+    <div><div class="gt-label" id="gtLabel" aria-live="polite"></div><div class="gt-clock" id="gtClock"></div></div>
+    <div class="gt-actions" id="gtActions"></div>
+  </div>
+  <div class="gt-bar"><i id="gtBar"></i></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1507,6 +1572,152 @@ function gymDaySummary(model, week) {
   return { count: ex.length, sets: sets, logged: ex.filter(x => x.weeks && x.weeks[week]).length };
 }
 
+// ---- Οδηγίες εκτέλεσης & χρονόμετρο (v8.13): pure helpers ----
+/* Οδηγοί εκτέλεσης ανά άσκηση. k = εναλλακτικά κλειδιά (κανονικοποιημένα, «+» = όλα τα κομμάτια).
+   Η σειρά μετράει: τα πιο ειδικά πριν από τα γενικά (reverse pec πριν από pec deck κ.λπ.). Στατικό περιεχόμενο. */
+const GYM_GUIDE = [
+  { id: "reversePec", k: ["reverse pec", "οπισθιοι δελτ"], en: "reverse pec deck", mu: "Οπίσθιοι ώμοι · μέση πλάτη",
+    st: ["Κάθισε με το στήθος στο μαξιλάρι, λαβές στο ύψος των ώμων.", "Χέρια σχεδόν τεντωμένα, αγκώνες σταθεροί σε όλη την κίνηση.", "Άνοιξε τα χέρια προς τα πίσω σε τόξο μέχρι τη γραμμή του κορμού.", "Γύρνα αργά χωρίς να ακουμπήσουν οι πλάκες του βάρους."],
+    er: ["Μάζεμα των ωμοπλατών: δουλεύει η πλάτη αντί για τους ώμους.", "Λύγισμα των αγκώνων για να ανέβει το βάρος."] },
+  { id: "pecDeck", k: ["pec deck", "πεταλουδα"], en: "pec deck fly", mu: "Στήθος (απομόνωση)",
+    st: ["Ρύθμισε το κάθισμα ώστε οι λαβές να είναι στο ύψος του στήθους.", "Πλάτη κολλημένη στο μηχάνημα, αγκώνες ελαφρά λυγισμένοι.", "Φέρε τις λαβές μπροστά σε τόξο μέχρι να ακουμπήσουν και σφίξε 1 δευτ.", "Γύρνα αργά μέχρι να νιώσεις τέντωμα, όχι πιο πίσω από τη γραμμή των ώμων."],
+    er: ["Σπρώξιμο με τα χέρια αντί για «αγκαλιά» σε τόξο.", "Ώμοι που φεύγουν μπροστά στο τέλος."] },
+  { id: "reverseCurl", k: ["reverse curl", "αναποδη λαβη"], en: "EZ bar reverse curl", mu: "Βραχιονοκερκιδικός · αντιβράχια · βραχιόνιος",
+    st: ["Μπάρα EZ με λαβή από πάνω (παλάμες προς τα κάτω), στο πλάτος των ώμων.", "Αγκώνες κολλητά στα πλευρά, καρποί ίσιοι.", "Λύγισε μέχρι οι πήχεις να γίνουν κάθετοι.", "Κατέβασε αργά μέχρι πλήρες τέντωμα."],
+    er: ["Καρποί που λυγίζουν προς τα κάτω.", "Πολύ βάρος, που χαλάει την τεχνική."] },
+  { id: "ezCurl", k: ["μπαρα ez"], en: "EZ bar curl", mu: "Δικέφαλοι · βραχιόνιος",
+    st: ["Όρθιος, λαβή στις εσωτερικές κλίσεις της μπάρας EZ, στο πλάτος των ώμων.", "Αγκώνες κολλητά στα πλευρά, κορμός ακίνητος.", "Λύγισε μέχρι η μπάρα να φτάσει στο ύψος του στήθους και σφίξε 1 δευτ.", "Κατέβασε σε 2-3 δευτ. μέχρι πλήρες τέντωμα."],
+    er: ["Κούνημα λεκάνης ή πλάτης για να ανέβει η μπάρα.", "Αγκώνες που έρχονται μπροστά στην κορυφή."] },
+  { id: "inclineCurl", k: ["καμψ+επικλιν", "incline db curl"], en: "incline dumbbell curl", mu: "Δικέφαλοι (κυρίως η μακρά κεφαλή)",
+    st: ["Πάγκος στις 45°, πλάτη και κεφάλι κολλητά.", "Τα χέρια κρέμονται κάθετα, ελαφρά πίσω από τον κορμό: νιώσε το τέντωμα.", "Λύγισε χωρίς να έρθουν μπροστά οι αγκώνες, με τις παλάμες προς τα πάνω.", "Κατέβασε αργά μέχρι πλήρες τέντωμα."],
+    er: ["Αγκώνες που φεύγουν μπροστά.", "Ώμοι που ξεκολλάνε από τον πάγκο."] },
+  { id: "inclineBB", k: ["μπαρα+επικλιν"], en: "incline barbell bench press", mu: "Άνω στήθος · μπροστινοί ώμοι · τρικέφαλοι",
+    st: ["Πάγκος στις 30°. Ωμοπλάτες μαζεμένες πίσω και κάτω, πέλματα σταθερά στο πάτωμα.", "Λαβή λίγο πιο φαρδιά από τους ώμους, καρποί ίσιοι πάνω από τους αγκώνες.", "Κατέβασε σε 2 δευτ. την μπάρα στο πάνω στήθος, λίγο κάτω από την κλείδα.", "Σπρώξε πάνω χωρίς να ξεκολλήσουν οι ωμοπλάτες από τον πάγκο."],
+    er: ["Αγκώνες ανοιχτοί στις 90°: κράτα τους περίπου στις 45-60° από τον κορμό.", "Αναπήδηση της μπάρας στο στήθος.", "Πάγκος πολύ όρθιος: η άσκηση γίνεται άσκηση ώμων."] },
+  { id: "inclineDB", k: ["αλτηρ+επικλιν+πιεσ"], en: "incline dumbbell press", mu: "Άνω στήθος · μπροστινοί ώμοι · τρικέφαλοι",
+    st: ["Πάγκος στις 30-45°. Φέρε τους αλτήρες στο ύψος των ώμων με τη βοήθεια των γονάτων.", "Ωμοπλάτες πίσω και κάτω, στήθος ψηλά.", "Σπρώξε πάνω και ελαφρά προς τα μέσα, πάνω από το άνω στήθος.", "Κατέβασε αργά μέχρι να νιώσεις τέντωμα στο στήθος."],
+    er: ["Ώμοι που ανεβαίνουν προς τα αυτιά.", "Πάγκος πολύ όρθιος."] },
+  { id: "flatDB", k: ["αλτηρ+οριζοντ"], en: "flat dumbbell bench press", mu: "Στήθος · μπροστινοί ώμοι · τρικέφαλοι",
+    st: ["Κάθισε με τους αλτήρες στους μηρούς, ξάπλωσε και φέρ’ τους πάνω από το στήθος με τα γόνατα.", "Ωμοπλάτες μαζεμένες, ελαφριά καμάρα, πέλματα στο πάτωμα.", "Κατέβασε σε 2 δευτ. μέχρι το ύψος του στήθους, με τους αγκώνες περίπου στις 45°.", "Σπρώξε πάνω φέρνοντας τους αλτήρες κοντά, χωρίς να χτυπήσουν."],
+    er: ["Μικρό εύρος: σταμάτημα πολύ ψηλά.", "Αγκώνες ανοιχτοί στις 90°."] },
+  { id: "bbRow", k: ["κωπηλατ+μπαρα"], en: "barbell row", mu: "Πλάτη (ραχιαίοι, τραπεζοειδής) · οπίσθιοι ώμοι · δικέφαλοι",
+    st: ["Γόνατα ελαφρά λυγισμένα, σκύψε από τη λεκάνη μέχρι ο κορμός να είναι περίπου στις 45°, μέση ίσια.", "Λαβή στο πλάτος των ώμων, χέρια τεντωμένα.", "Τράβα την μπάρα προς τον αφαλό οδηγώντας με τους αγκώνες και μάζεψε τις ωμοπλάτες.", "Κατέβασε ελεγχόμενα μέχρι να τεντώσουν τα χέρια."],
+    er: ["Κούνημα του κορμού για να ανέβει το βάρος.", "Στρογγυλεμένη μέση."] },
+  { id: "chestSupRow", k: ["κωπηλατ+στηριξ"], en: "chest supported row machine", mu: "Μέση πλάτη · ραχιαίοι · οπίσθιοι ώμοι",
+    st: ["Ρύθμισε το κάθισμα ώστε οι λαβές να είναι στο ύψος του κάτω στήθους.", "Στήθος κολλημένο στο μαξιλάρι σε όλη την κίνηση.", "Τράβα τους αγκώνες προς τα πίσω και σφίξε τις ωμοπλάτες 1 δευτ.", "Άφησε τα χέρια να τεντώσουν πλήρως μπροστά, για να νιώσεις τέντωμα στην πλάτη."],
+    er: ["Ξεκόλλημα του στήθους από το μαξιλάρι.", "Μισό εύρος κίνησης."] },
+  { id: "sgArmRow", k: ["κωπηλατ+εναν", "single-arm"], en: "single arm dumbbell row", mu: "Ραχιαίοι · μέση πλάτη",
+    st: ["Γόνατο και χέρι της ίδιας πλευράς στον πάγκο, πλάτη ίσια και παράλληλη με το πάτωμα.", "Ο αλτήρας κρέμεται με τεντωμένο χέρι.", "Τράβα τον αγκώνα προς τον γοφό (όχι ίσια πάνω) μέχρι ο αλτήρας να φτάσει στο πλάι του κορμού.", "Κατέβασε αργά με πλήρες τέντωμα."],
+    er: ["Μεγάλη περιστροφή του κορμού για να σηκωθεί το βάρος.", "Τράβηγμα προς το στήθος αντί προς τον γοφό."] },
+  { id: "ropePushdown", k: ["pushdown", "σχοινι"], en: "rope triceps pushdown", mu: "Τρικέφαλοι (κυρίως η πλάγια κεφαλή)",
+    st: ["Τροχαλία ψηλά με σχοινί. Στάσου κοντά, με ελαφριά κλίση μπροστά.", "Αγκώνες κολλητά στα πλευρά: δεν κουνιούνται.", "Σπρώξε κάτω μέχρι να τεντώσουν τα χέρια και άνοιξε το σχοινί στο τέλος.", "Ανέβα αργά μέχρι οι πήχεις να περάσουν λίγο την οριζόντια."],
+    er: ["Αγκώνες που ανεβοκατεβαίνουν.", "Σπρώξιμο με το βάρος του σώματος."] },
+  { id: "overheadTri", k: ["υπερκεφαλ"], en: "overhead cable triceps extension", mu: "Τρικέφαλοι (κυρίως η μακρά κεφαλή)",
+    st: ["Τροχαλία χαμηλά ή στη μέση, με σχοινί. Γύρνα πλάτη και βάλε το ένα πόδι μπροστά για σταθερότητα.", "Χέρια πάνω από το κεφάλι, αγκώνες δίπλα στα αυτιά.", "Άφησε τα χέρια να λυγίσουν πίσω από το κεφάλι μέχρι βαθύ τέντωμα.", "Τέντωσε μπροστά και πάνω, χωρίς να κουνηθούν οι αγκώνες."],
+    er: ["Αγκώνες που ανοίγουν προς τα έξω.", "Μικρό τέντωμα πίσω, που χάνει το μεγαλύτερο όφελος της άσκησης."] },
+  { id: "skull", k: ["skull"], en: "EZ bar skull crusher", mu: "Τρικέφαλοι (όλες οι κεφαλές)",
+    st: ["Ξαπλωμένος, μπάρα EZ με τεντωμένα χέρια πάνω από τους ώμους.", "Γείρε ελαφρά τα μπράτσα προς το κεφάλι.", "Λύγισε μόνο στους αγκώνες και κατέβασε την μπάρα πίσω από το κεφάλι.", "Τέντωσε ξανά στην αρχική θέση, με τους αγκώνες στενά."],
+    er: ["Αγκώνες που ανοίγουν.", "Κατέβασμα στο μέτωπο με πολύ βάρος, που επιβαρύνει τους αγκώνες."] },
+  { id: "hammer", k: ["hammer", "σφυρι"], en: "dumbbell hammer curl", mu: "Βραχιόνιος · βραχιονοκερκιδικός · δικέφαλοι",
+    st: ["Όρθιος, αλτήρες στα πλάγια με τις παλάμες να κοιτάζουν η μία την άλλη.", "Αγκώνες κολλητά στα πλευρά.", "Λύγισε μέχρι ο αλτήρας να φτάσει στο ύψος του ώμου, χωρίς να γυρίσεις τον καρπό.", "Κατέβασε αργά (2-3 δευτ.) μέχρι πλήρες τέντωμα."],
+    er: ["Κούνημα του κορμού.", "Αγκώνες που φεύγουν μπροστά."] },
+  { id: "preacher", k: ["preacher", "ιερεα"], en: "preacher curl", mu: "Δικέφαλοι · βραχιόνιος",
+    st: ["Ρύθμισε το κάθισμα ώστε οι μασχάλες να ακουμπούν στην κορυφή του μαξιλαριού.", "Το πίσω μέρος των μπράτσων ακουμπά σε όλο το μαξιλάρι.", "Λύγισε μέχρι λίγο πριν οι πήχεις γίνουν κάθετοι.", "Κατέβασε αργά (3 δευτ.) μέχρι σχεδόν τέντωμα: εκεί γίνεται η δουλειά, χωρίς να «πέσει» το βάρος."],
+    er: ["Αναπήδηση στο κάτω σημείο.", "Αγκώνες που σηκώνονται από το μαξιλάρι."] },
+  { id: "bayesian", k: ["πισω απο το σωμα", "bayesian"], en: "bayesian cable curl", mu: "Δικέφαλοι (κυρίως η μακρά κεφαλή)",
+    st: ["Τροχαλία χαμηλά, μονή λαβή. Γύρνα πλάτη στην τροχαλία και κάνε ένα βήμα μπροστά.", "Το χέρι μένει πίσω από τον κορμό, με τέντωμα στον δικέφαλο.", "Λύγισε φέρνοντας τη λαβή προς τον ώμο, χωρίς να έρθει μπροστά ο αγκώνας.", "Κατέβασε αργά. Κάνε όλες τις επαναλήψεις με το ένα χέρι και μετά με το άλλο."],
+    er: ["Αγκώνας που έρχεται μπροστά.", "Περιστροφή του κορμού."] },
+  { id: "dbShoulderPress", k: ["πιεσεισ ωμων"], en: "seated dumbbell shoulder press", mu: "Μπροστινοί και πλάγιοι ώμοι · τρικέφαλοι",
+    st: ["Πάγκος στις 80-90°, πλάτη κολλητά.", "Αλτήρες στο ύψος των αυτιών, αγκώνες λίγο μπροστά από τον κορμό.", "Σπρώξε πάνω μέχρι σχεδόν τέντωμα: οι αλτήρες πλησιάζουν χωρίς να χτυπήσουν.", "Κατέβασε αργά ως το ύψος του πηγουνιού."],
+    er: ["Μεγάλη καμάρα στη μέση.", "Μισό κατέβασμα."] },
+  { id: "lateral", k: ["πλαγιεσ αρσεισ"], en: "dumbbell lateral raise", mu: "Πλάγιοι ώμοι",
+    st: ["Όρθιος με ελαφριά κλίση μπροστά, αλτήρες μπροστά από τους μηρούς.", "Αγκώνες ελαφρά λυγισμένοι και σταθεροί.", "Σήκωσε προς τα πλάγια οδηγώντας με τους αγκώνες μέχρι το ύψος των ώμων.", "Κατέβασε αργά (2-3 δευτ.) χωρίς να ακουμπήσουν κάτω. Για το drop set: όταν αποτύχεις, πάρε περίπου 30% πιο ελαφριούς και συνέχισε."],
+    er: ["Φόρα από τον κορμό.", "Ώμοι που ανεβαίνουν προς τα αυτιά (δουλεύει ο τραπεζοειδής)."] },
+  { id: "pullup", k: ["μονοζυγ", "pull-up"], en: "weighted pull up", mu: "Ραχιαίοι · δικέφαλοι · μέση πλάτη",
+    st: ["Ζώνη με βάρος ή αλτήρας ανάμεσα στα πόδια. Λαβή λίγο πιο φαρδιά από τους ώμους.", "Ξεκίνα από πλήρες κρέμασμα και κατέβασε τους ώμους μακριά από τα αυτιά.", "Τράβα μέχρι το πηγούνι να περάσει τη μπάρα, οδηγώντας τους αγκώνες προς τα πλευρά.", "Κατέβα ελεγχόμενα σε πλήρες κρέμασμα."],
+    er: ["Μισές επαναλήψεις.", "Κλοτσιές με τα πόδια."] },
+  { id: "straightArm", k: ["τεντωμενα χερια"], en: "straight arm cable pulldown", mu: "Ραχιαίοι (απομόνωση)",
+    st: ["Τροχαλία ψηλά, μπάρα ή σχοινί. Βήμα πίσω, ελαφριά κλίση μπροστά.", "Χέρια σχεδόν τεντωμένα σε όλη την κίνηση.", "Φέρε τη λαβή σε τόξο κάτω μέχρι τους μηρούς, σφίγγοντας τους ραχιαίους.", "Γύρνα αργά πάνω μέχρι να νιώσεις τέντωμα."],
+    er: ["Λύγισμα των αγκώνων (γίνεται pushdown).", "Κούνημα του κορμού."] },
+  { id: "latPulldown", k: ["pulldown", "ελξεισ τροχαλ"], en: "neutral grip lat pulldown", mu: "Ραχιαίοι · δικέφαλοι",
+    st: ["Κάθισε με τους μηρούς κάτω από τα μαξιλάρια, με ουδέτερη λαβή.", "Στήθος έξω, ελαφριά κλίση πίσω.", "Τράβα τη λαβή στο πάνω στήθος οδηγώντας τους αγκώνες κάτω και πίσω.", "Άφησέ τη να ανέβει αργά, μέχρι να τεντώσουν τα χέρια."],
+    er: ["Μεγάλη γέρση πίσω (γίνεται κωπηλατική).", "Τράβηγμα με τα χέρια αντί για τους αγκώνες."] },
+  { id: "lowHighFly", k: ["διασταυρωσ"], en: "low to high cable fly", mu: "Άνω/έσω στήθος",
+    st: ["Τροχαλίες χαμηλά. Στάσου ένα βήμα μπροστά από τη μέση.", "Αγκώνες ελαφρά λυγισμένοι, παλάμες προς τα πάνω και μπροστά.", "Φέρε τις λαβές μπροστά και πάνω σε τόξο, μέχρι το ύψος του πηγουνιού.", "Γύρνα αργά μέχρι να νιώσεις τέντωμα στο στήθος."],
+    er: ["Λύγισμα των αγκώνων (γίνεται πίεση).", "Πολύ βάρος, που χαλάει το τόξο."] },
+  { id: "facePull", k: ["face pull"], en: "face pull", mu: "Οπίσθιοι ώμοι · στροφείς · μέση πλάτη",
+    st: ["Τροχαλία στο ύψος του προσώπου, με σχοινί και τους αντίχειρες προς τα πίσω.", "Βήμα πίσω, χέρια τεντωμένα.", "Τράβα προς το πρόσωπο ανοίγοντας τα χέρια, με τους αγκώνες ψηλά: τα χέρια καταλήγουν δίπλα στα αυτιά.", "Κράτα 1 δευτ. και γύρνα αργά."],
+    er: ["Αγκώνες χαμηλά (γίνεται κωπηλατική).", "Γέρση του κορμού προς τα πίσω."] },
+  { id: "hack", k: ["hack"], en: "hack squat", mu: "Τετρακέφαλοι · γλουτοί",
+    st: ["Πλάτη και ώμοι κολλητά στο μαξιλάρι, πέλματα χαμηλά στην πλατφόρμα, στο πλάτος των ώμων.", "Ξεκλείδωσε και κατέβα αργά μέχρι οι μηροί να περάσουν την παράλληλη, όσο σου επιτρέπει η κινητικότητα.", "Τα γόνατα ακολουθούν τη γραμμή των δαχτύλων.", "Σπρώξε από όλο το πέλμα μέχρι σχεδόν τέντωμα, χωρίς να κλειδώσεις τα γόνατα."],
+    er: ["Φτέρνες που σηκώνονται.", "Γόνατα που κλείνουν προς τα μέσα.", "Μισό κατέβασμα."] },
+  { id: "bulgarian", k: ["bulgarian"], en: "dumbbell bulgarian split squat", mu: "Τετρακέφαλοι · γλουτοί",
+    st: ["Πίσω πόδι στον πάγκο (η ράχη του πέλματος), μπροστινό πόδι περίπου 60-80 εκ. μπροστά.", "Αλτήρες στα πλάγια, κορμός όρθιος.", "Κατέβα κάθετα μέχρι το πίσω γόνατο να πλησιάσει το πάτωμα.", "Σπρώξε από τη φτέρνα του μπροστινού ποδιού. Κάνε όλες τις επαναλήψεις με το ένα πόδι και μετά με το άλλο."],
+    er: ["Μπροστινό πόδι πολύ κοντά στον πάγκο.", "Σπρώξιμο από το πίσω πόδι."] },
+  { id: "seatedLegCurl", k: ["seated leg curl", "μηριαιων+καθιστ", "ποδιου+καθιστ"], en: "seated leg curl", mu: "Οπίσθιοι μηριαίοι",
+    st: ["Ρύθμισε ώστε τα γόνατα να είναι στη γραμμή του άξονα του μηχανήματος, με το μαξιλάρι πάνω από τους αστραγάλους.", "Κλείδωσε τους μηρούς με το πάνω μαξιλάρι και κράτα τις λαβές.", "Λύγισε τα γόνατα τραβώντας τις φτέρνες κάτω και πίσω, και σφίξε 1 δευτ.", "Γύρνα σε 3 δευτ. μέχρι σχεδόν πλήρες τέντωμα."],
+    er: ["Γρήγορο, ανεξέλεγκτο γύρισμα.", "Λεκάνη που ξεκολλάει από τη θέση."] },
+  { id: "lyingLegCurl", k: ["lying leg curl", "μηριαιων+ξαπλωτ", "ποδιου+ξαπλωτ"], en: "lying leg curl", mu: "Οπίσθιοι μηριαίοι",
+    st: ["Μπρούμυτα, γόνατα λίγο έξω από την άκρη του πάγκου, μαξιλάρι πάνω από τις φτέρνες.", "Λεκάνη πιεσμένη στον πάγκο, χέρια στις λαβές.", "Τράβα τις φτέρνες προς τους γλουτούς, με τα δάχτυλα των ποδιών προς τα εσένα.", "Κατέβασε σε 3 δευτ."],
+    er: ["Λεκάνη που σηκώνεται (καμάρα στη μέση).", "Μισό εύρος."] },
+  { id: "standCalf", k: ["γαμπασ+ορθι"], en: "standing calf raise", mu: "Γάμπες (γαστροκνήμιος)",
+    st: ["Οι μπάλες των ποδιών στην άκρη του σκαλοπατιού, γόνατα σχεδόν τεντωμένα.", "Κατέβασε τις φτέρνες αργά (3 δευτ.) σε πλήρες τέντωμα και κράτα 1 δευτ.", "Ανέβα όσο πιο ψηλά γίνεται στις μύτες.", "Κράτα 1 δευτ. πάνω και ξανακατέβα αργά."],
+    er: ["Αναπήδηση στο κάτω σημείο.", "Μικρό εύρος."] },
+  { id: "seatedCalf", k: ["γαμπασ+καθιστ"], en: "seated calf raise", mu: "Γάμπες (υποκνημίδιος)",
+    st: ["Κάθισε με τα γόνατα κάτω από το μαξιλάρι και τις μπάλες των ποδιών στην άκρη.", "Κατέβασε τις φτέρνες αργά σε πλήρες τέντωμα, με παύση 1 δευτ.", "Ανέβα στις μύτες όσο πιο ψηλά γίνεται.", "Κράτα 1 δευτ. πάνω."],
+    er: ["Αναπήδηση.", "Τόσο βάρος που χάνεται το εύρος."] },
+  { id: "hipThrust", k: ["hip thrust"], en: "barbell hip thrust", mu: "Γλουτοί · οπίσθιοι μηριαίοι",
+    st: ["Ωμοπλάτες στην άκρη του πάγκου, μπάρα με μαξιλαράκι πάνω στη λεκάνη.", "Πέλματα στο πλάτος της λεκάνης· στην κορυφή οι κνήμες είναι κάθετες.", "Σπρώξε από τις φτέρνες μέχρι ο κορμός να γίνει ευθεία με τους μηρούς και σφίξε τους γλουτούς 1 δευτ.", "Πηγούνι μαζεμένο, κατέβα ελεγχόμενα."],
+    er: ["Καμάρα στη μέση στην κορυφή.", "Πέλματα πολύ μακριά (δουλεύουν οι οπίσθιοι αντί για τους γλουτούς)."] },
+  { id: "cableCrunch", k: ["cable crunch", "κοιλιακοι+τροχαλ"], en: "cable crunch", mu: "Ορθός κοιλιακός",
+    st: ["Γονατιστός μπροστά στην τροχαλία, σχοινί δίπλα στο κεφάλι.", "Λεκάνη σταθερή: δεν κάθεσαι πίσω στις φτέρνες.", "Κύρτωσε τη σπονδυλική φέρνοντας τους αγκώνες προς τους μηρούς.", "Γύρνα αργά μέχρι να τεντωθούν οι κοιλιακοί."],
+    er: ["Λύγισμα από τη λεκάνη αντί για κύρτωση της πλάτης.", "Τράβηγμα με τα χέρια."] },
+  { id: "abWheel", k: ["ab wheel", "τροχοσ κοιλιακ"], en: "ab wheel rollout", mu: "Κοιλιακοί · κορμός (αντι-έκταση)",
+    st: ["Γονατιστός, ο τροχός κάτω από τους ώμους.", "Λεκάνη σε οπίσθια κλίση: σφίξε γλουτούς και κοιλιακούς.", "Κύλησε μπροστά αργά, όσο μπορείς χωρίς να κρεμάσει η μέση.", "Γύρνα πίσω τραβώντας με τους κοιλιακούς."],
+    er: ["Μέση που κρεμάει προς τα κάτω.", "Πολύ μεγάλο εύρος πριν είσαι έτοιμος."] },
+  { id: "pallof", k: ["pallof"], en: "pallof press", mu: "Κοιλιακοί · λοξοί (αντι-περιστροφή)",
+    st: ["Τροχαλία στο ύψος του στήθους· στάσου πλάγια σε αυτήν.", "Λαβή στο στήθος με τα δύο χέρια, πόδια στο πλάτος των ώμων.", "Σπρώξε ευθεία μπροστά και κράτα 2 δευτ., χωρίς να γυρίσει ο κορμός.", "Φέρε πίσω αργά. Κάνε όλες τις επαναλήψεις και μετά την άλλη πλευρά."],
+    er: ["Περιστροφή του κορμού προς την τροχαλία.", "Πολύ βάρος."] }
+];
+function gymGuideFor(name) {
+  const n = ingNorm(name);
+  if (!n) return null;
+  for (const g of GYM_GUIDE) {
+    if (g.k.some(alt => alt.split('+').every(tok => n.indexOf(tok) !== -1))) return g;
+  }
+  return null;
+}
+// «ΧΕΡΙΑ. Από εβδ. 5: …» → { arms: true, text: 'Από εβδ. 5: …' }
+function gymNoteParts(notes) {
+  const t = String(notes || '').trim();
+  const m = t.match(/^ΧΕΡΙΑ\.\s*/);
+  return { arms: !!m, text: m ? t.slice(m[0].length) : t };
+}
+// «150 δευτ.» → 150 · «2 λεπτά» → 120 · άκυρο → 90. Όρια 15–600.
+function gymRestSeconds(rest) {
+  const t = String(rest || '');
+  const m = t.match(/(\d+)/);
+  if (!m) return 90;
+  let n = +m[1];
+  if (/λεπτ|min/i.test(t)) n *= 60;
+  return Math.max(15, Math.min(600, n));
+}
+// 84 → «1:24»
+function gymClock(sec) {
+  const n = Math.max(0, Math.round(Number(sec) || 0));
+  return Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
+}
+// Επόμενη θέση μετά από ολοκληρωμένο σετ: επόμενο σετ, αλλιώς 1ο σετ επόμενης άσκησης, αλλιώς null (τέλος).
+function gymTimerNext(exercises, ex, set) {
+  const list = exercises || [];
+  const cur = list[ex];
+  if (!cur) return null;
+  const total = Math.max(1, cur.sets || 1);
+  if (set < total) return { ex: ex, set: set + 1 };
+  if (ex + 1 < list.length) return { ex: ex + 1, set: 1 };
+  return null;
+}
+
 /* ---------- Room ---------- */
 function getRoom() {
   const m = location.hash.match(/r=([A-Za-z0-9_-]{4,})/);
@@ -1886,6 +2097,7 @@ function closeSheets() {
   document.getElementById('addSheet').classList.remove('open');
   document.getElementById('tplSheet').classList.remove('open');
   document.getElementById('gymLogSheet').classList.remove('open');
+  document.getElementById('gymInfoSheet').classList.remove('open');
   addTarget = 'list';
   editCtx = null;
   gymLogCtx = null;
@@ -3337,6 +3549,16 @@ function gymRender(d, model, ts) {
   btn.appendChild(document.createTextNode('Ανανέωση'));
   btn.addEventListener('click', () => { gymStatus('Φόρτωση από το Google Sheet…', null); gymFetch(d); });
   meta.appendChild(btn);
+  gymNow = { day: d, model: model };
+  if (model.exercises.length) {
+    const sb = gymEl('button', 'primary', null);
+    const sIc = gymEl('span', 'msr', gymT && gymT.day === d ? 'timer' : 'play_arrow');
+    sIc.setAttribute('aria-hidden', 'true');
+    sb.appendChild(sIc);
+    sb.appendChild(document.createTextNode(gymT && gymT.day === d ? 'Σε εξέλιξη' : 'Έναρξη προπόνησης'));
+    sb.addEventListener('click', () => { if (!(gymT && gymT.day === d)) gymTimerStart(0); });
+    meta.appendChild(sb);
+  }
   meta.appendChild(gymEl('div', 'gym-updated', ts ? 'Ενημερώθηκε ' + new Date(ts).toLocaleString('el-GR', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''));
   body.appendChild(meta);
   if (model.note) {
@@ -3359,42 +3581,32 @@ function gymRender(d, model, ts) {
   stat(sum.logged + '/' + sum.count, 'εβδ. ' + week, sum.count > 0 && sum.logged === sum.count);
   body.appendChild(stats);
   const icon = name => { const i = gymEl('span', 'msr', name); i.setAttribute('aria-hidden', 'true'); return i; };
+  gymCards = [];
   model.exercises.forEach((x, idx) => {
-    const card = gymEl('div', 'ex-card');
+    const np = gymNoteParts(x.notes);
+    const card = gymEl('div', 'ex-card' + (np.arms ? ' arms' : '') + (gymT && gymT.day === d && gymT.ex === idx ? ' current' : ''));
+    gymCards.push(card);
     const head = gymEl('div', 'ex-head');
     head.appendChild(gymEl('span', 'ex-num', String(idx + 1)));
-    head.appendChild(gymEl('div', 'ex-name', x.name));
+    const ttl = gymEl('div', 'ex-title');
+    ttl.appendChild(gymEl('div', 'ex-name', x.name));
+    if (np.arms) ttl.appendChild(gymEl('span', 'ex-tag', 'Έμφαση χέρια'));
+    head.appendChild(ttl);
     if (x.weeks && x.weeks[week]) {
       const ok = gymEl('span', 'msr ex-done', 'check_circle');
       ok.setAttribute('role', 'img');
       ok.setAttribute('aria-label', 'Καταχωρήθηκε για την εβδομάδα ' + week);
       head.appendChild(ok);
     }
+    const infoBtn = gymEl('button', 'ex-info', null);
+    infoBtn.appendChild(icon('info'));
+    infoBtn.setAttribute('aria-label', 'Οδηγίες εκτέλεσης: ' + x.name);
+    infoBtn.title = 'Οδηγίες εκτέλεσης';
+    infoBtn.addEventListener('click', () => openGymInfo(x, idx));
+    head.appendChild(infoBtn);
     card.appendChild(head);
-    const rx = gymEl('div', 'ex-rx');
-    const main = gymEl('div', 'ex-main');
-    main.appendChild(document.createTextNode(String(x.sets)));
-    main.appendChild(gymEl('span', 'ex-x', '×'));
-    main.appendChild(document.createTextNode(x.reps || '—'));
-    main.appendChild(gymEl('small', null, 'σετ × επαναλήψεις'));
-    rx.appendChild(main);
-    const meta = gymEl('div', 'ex-meta');
-    if (x.rir) meta.appendChild(gymEl('span', null, 'RIR ' + x.rir));
-    if (x.rest) {
-      const r = gymEl('span', null, null);
-      r.appendChild(icon('timer'));
-      r.appendChild(document.createTextNode(gymRestLabel(x.rest)));
-      r.setAttribute('aria-label', 'Ξεκούραση ' + x.rest);
-      meta.appendChild(r);
-    }
-    rx.appendChild(meta);
-    card.appendChild(rx);
-    if (x.notes) {
-      const n = gymEl('div', 'ex-notes');
-      n.appendChild(icon('info'));
-      n.appendChild(gymEl('span', null, x.notes));
-      card.appendChild(n);
-    }
+    card.appendChild(gymRxGrid(x));
+    if (np.text) card.appendChild(gymEl('div', 'ex-notes', np.text));
     const hist = gymHistory(x.weeks, 4);
     const foot = gymEl('div', 'ex-foot');
     if (hist.length) {
@@ -3443,6 +3655,224 @@ let gymLogCtx = null; // { day, name, weeks, week }
     box.appendChild(b);
   }
 })();
+
+/* ---------- Οδηγίες εκτέλεσης & χρονόμετρο (v8.13) ---------- */
+let gymNow = null;   // { day, model } της ημέρας που φαίνεται
+let gymCards = [];   // κάρτες ασκήσεων (για επισήμανση της τρέχουσας)
+let gymT = null;     // κατάσταση χρονομέτρου
+let gymTick = null, gymAudio = null, gymWake = null;
+
+function gymRxGrid(x) {
+  const g = gymEl('div', 'rx-grid');
+  const cell = (big, small, aria) => {
+    const c = gymEl('div', null, null);
+    c.appendChild(gymEl('b', null, big));
+    c.appendChild(gymEl('span', null, small));
+    if (aria) c.setAttribute('aria-label', aria);
+    g.appendChild(c);
+  };
+  cell(String(x.sets || '—'), 'σετ');
+  cell(x.reps || '—', 'επαναλήψεις');
+  cell(x.rir || '—', 'RIR');
+  cell(x.rest ? gymRestLabel(x.rest) : '—', 'ξεκούραση', x.rest ? 'Ξεκούραση ' + x.rest : null);
+  return g;
+}
+
+function openGymInfo(x, idx) {
+  const gd = gymGuideFor(x.name);
+  const np = gymNoteParts(x.notes);
+  document.getElementById('giTitle').textContent = x.name;
+  document.getElementById('giMu').textContent = gd ? gd.mu : '';
+  const rx = document.getElementById('giRx');
+  rx.replaceWith(Object.assign(gymRxGrid(x), { id: 'giRx' }));
+  const body = document.getElementById('giBody');
+  body.textContent = '';
+  if (gd) {
+    body.appendChild(gymEl('h4', null, 'Πώς εκτελείται'));
+    const ol = gymEl('ol', null, null);
+    gd.st.forEach(t => ol.appendChild(gymEl('li', null, t)));
+    body.appendChild(ol);
+    body.appendChild(gymEl('h4', null, 'Πρόσεξε'));
+    const ul = gymEl('ul', 'gi-warn', null);
+    gd.er.forEach(t => ul.appendChild(gymEl('li', null, t)));
+    body.appendChild(ul);
+  }
+  if (np.text) {
+    body.appendChild(gymEl('h4', null, 'Σημείωση προγράμματος'));
+    body.appendChild(gymEl('div', 'gi-note', np.text));
+  }
+  if (!gd && !np.text) body.appendChild(gymEl('div', 'gi-note', 'Δεν υπάρχουν ακόμα οδηγίες για αυτή την άσκηση.'));
+  const q = (gd ? gd.en : x.name) + ' proper form';
+  const a = gymEl('a', 'gi-video', null);
+  a.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+  a.target = '_blank';
+  a.rel = 'noopener';
+  const vi = gymEl('span', 'msr', 'play_circle');
+  vi.setAttribute('aria-hidden', 'true');
+  a.appendChild(vi);
+  a.appendChild(document.createTextNode('Δες την τεχνική σε βίντεο ↗'));
+  body.appendChild(a);
+  document.getElementById('giLog').onclick = () => {
+    document.getElementById('gymInfoSheet').classList.remove('open');
+    openGymLogSheet(x);
+  };
+  document.getElementById('giStart').onclick = () => { closeSheets(); gymTimerStart(idx); };
+  document.getElementById('gymInfoSheet').classList.add('open');
+  document.getElementById('sheetBg').classList.add('open');
+}
+
+function gymTimerEx() { return gymNow && gymT && gymNow.day === gymT.day ? gymNow.model.exercises : null; }
+
+function gymTimerStart(idx) {
+  if (!gymNow || !gymNow.model.exercises[idx]) return;
+  try { gymAudio = gymAudio || new (window.AudioContext || window.webkitAudioContext)(); gymAudio.resume(); } catch (e) { gymAudio = null; }
+  gymT = { day: gymNow.day, ex: idx, set: 1, phase: 'work', endsAt: 0, total: 0, next: null };
+  gymWakeOn();
+  document.body.classList.add('timer-on');
+  if (!gymTick) gymTick = setInterval(gymTimerTick, 250);
+  gymRender(gymNow.day, gymNow.model, gymCacheGet(gymNow.day) ? gymCacheGet(gymNow.day).ts : null);
+  gymTimerUI(true);
+}
+
+function gymTimerStop() {
+  gymT = null;
+  clearInterval(gymTick); gymTick = null;
+  document.getElementById('gymTimer').hidden = true;
+  document.body.classList.remove('timer-on');
+  gymWakeOff();
+  if (gymNow) gymRender(gymNow.day, gymNow.model, gymCacheGet(gymNow.day) ? gymCacheGet(gymNow.day).ts : null);
+}
+
+function gymTimerSetDone() {
+  const list = gymTimerEx();
+  if (!list) return;
+  const next = gymTimerNext(list, gymT.ex, gymT.set);
+  if (!next) { gymT.phase = 'done'; gymTimerUI(true); gymBeep(2); return; }
+  const secs = gymRestSeconds(list[gymT.ex].rest);
+  gymT.phase = 'rest';
+  gymT.total = secs;
+  gymT.endsAt = Date.now() + secs * 1000;
+  gymT.next = next;
+  gymTimerUI(true);
+}
+
+function gymTimerGo(pos) {
+  const moved = pos.ex !== gymT.ex;
+  gymT.ex = pos.ex; gymT.set = pos.set; gymT.phase = 'work'; gymT.next = null;
+  gymTimerUI(true);
+  if (moved) gymMarkCurrent(true);
+}
+
+function gymTimerSkipEx() {
+  const list = gymTimerEx();
+  if (!list) return;
+  if (gymT.ex + 1 < list.length) gymTimerGo({ ex: gymT.ex + 1, set: 1 });
+  else { gymT.phase = 'done'; gymTimerUI(true); }
+}
+
+function gymTimerTick() {
+  if (!gymT || gymT.phase !== 'rest') return;
+  const left = (gymT.endsAt - Date.now()) / 1000;
+  if (left <= 0) { gymBeep(3); gymTimerGo(gymT.next); return; }
+  gymTimerUI(false);
+}
+
+function gymMarkCurrent(scroll) {
+  gymCards.forEach((c, i) => c.classList.toggle('current', !!gymT && gymT.ex === i));
+  const c = gymT && gymCards[gymT.ex];
+  if (scroll && c) c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function gymTimerUI(full) {
+  const box = document.getElementById('gymTimer');
+  const list = gymTimerEx();
+  if (!gymT || !list) { box.hidden = true; return; }
+  box.hidden = false;
+  const x = list[gymT.ex];
+  const clock = document.getElementById('gtClock');
+  const bar = document.getElementById('gtBar');
+  if (gymT.phase === 'rest') {
+    const left = Math.max(0, (gymT.endsAt - Date.now()) / 1000);
+    clock.textContent = gymClock(Math.ceil(left));
+    bar.style.width = (gymT.total ? (left / gymT.total) * 100 : 0) + '%';
+  }
+  if (!full) return;
+  box.classList.toggle('rest', gymT.phase === 'rest');
+  const acts = document.getElementById('gtActions');
+  acts.textContent = '';
+  const btn = (label, ic, cls, fn, aria) => {
+    const b = gymEl('button', cls || null, null);
+    b.type = 'button';
+    if (ic) { const i = gymEl('span', 'msr', ic); i.setAttribute('aria-hidden', 'true'); b.appendChild(i); }
+    if (label) b.appendChild(document.createTextNode(label));
+    if (aria) b.setAttribute('aria-label', aria);
+    b.addEventListener('click', fn);
+    acts.appendChild(b);
+  };
+  const total = Math.max(1, x.sets || 1);
+  const pos = document.getElementById('gtPos');
+  const name = document.getElementById('gtName');
+  const label = document.getElementById('gtLabel');
+  if (gymT.phase === 'done') {
+    pos.textContent = 'Τέλος προπόνησης';
+    name.textContent = 'Μπράβο! Όλες οι ασκήσεις της ημέρας έγιναν.';
+    label.textContent = '';
+    clock.textContent = '✓';
+    bar.style.width = '0';
+    btn('Κλείσιμο', null, 'main', gymTimerStop);
+    return;
+  }
+  if (gymT.phase === 'work') {
+    pos.textContent = 'Άσκηση ' + (gymT.ex + 1) + '/' + list.length + ' · Σετ ' + gymT.set + '/' + total;
+    name.textContent = x.name;
+    label.textContent = 'Στόχος' + (x.rir ? ' · RIR ' + x.rir : '');
+    clock.textContent = (x.reps || '—') + ' επαν.';
+    bar.style.width = '0';
+    btn(null, 'skip_next', 'ic', gymTimerSkipEx, 'Επόμενη άσκηση');
+    btn('Έγινε', 'check', 'main', gymTimerSetDone, 'Έγινε το σετ ' + gymT.set);
+    return;
+  }
+  const nx = gymT.next;
+  const nxEx = list[nx.ex];
+  pos.textContent = nx.ex === gymT.ex ? 'Επόμενο: σετ ' + nx.set + '/' + total : 'Επόμενη άσκηση ' + (nx.ex + 1) + '/' + list.length;
+  name.textContent = nxEx.name;
+  label.textContent = 'Ξεκούραση';
+  btn('+15″', null, null, () => { gymT.endsAt += 15000; gymT.total += 15; gymTimerUI(false); }, 'Πρόσθεσε 15 δευτερόλεπτα');
+  btn('Πάμε', 'skip_next', 'main', () => gymTimerGo(gymT.next), 'Τέλος ξεκούρασης');
+  gymTimerUI(false);
+}
+
+function gymBeep(n) {
+  try { if (navigator.vibrate) navigator.vibrate([250, 120, 250, 120, 400].slice(0, n * 2 - 1)); } catch (e) {}
+  if (!gymAudio) return;
+  try {
+    const t0 = gymAudio.currentTime;
+    for (let i = 0; i < n; i++) {
+      const o = gymAudio.createOscillator(), g = gymAudio.createGain();
+      o.frequency.value = i === n - 1 ? 1175 : 880;
+      g.gain.setValueAtTime(0.0001, t0 + i * 0.28);
+      g.gain.exponentialRampToValueAtTime(0.35, t0 + i * 0.28 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.28 + 0.2);
+      o.connect(g); g.connect(gymAudio.destination);
+      o.start(t0 + i * 0.28); o.stop(t0 + i * 0.28 + 0.22);
+    }
+  } catch (e) {}
+}
+
+function gymWakeOn() {
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => { gymWake = w; }).catch(() => {}); } catch (e) {}
+}
+function gymWakeOff() {
+  try { if (gymWake) gymWake.release(); } catch (e) {}
+  gymWake = null;
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && gymT) { gymWakeOn(); gymTimerTick(); }
+});
+document.getElementById('gtStop').addEventListener('click', () => {
+  if (gymT && gymT.phase !== 'done' && !confirm('Τέλος προπόνησης;')) return;
+  gymTimerStop();
+});
 
 function openGymLogSheet(x) {
   gymLogCtx = { day: gymDay, name: x.name, weeks: x.weeks || {} };

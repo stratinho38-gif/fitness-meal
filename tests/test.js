@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, ING_DICT, ingNorm, ingSplit, ingStripParens, ingMatch, ingParseQty, ingLineMinor, mergeQty, ingPlan, ingPlanPairs, weekPlan, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel, GYM_WEEKS, GYM_WRITE_TOKEN, gymCellText, gymWeeks, gymLogPayload, gymHistory, gymEntryText, gymRestLabel, gymActiveWeek, gymDaySummary};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, ING_DICT, ingNorm, ingSplit, ingStripParens, ingMatch, ingParseQty, ingLineMinor, mergeQty, ingPlan, ingPlanPairs, weekPlan, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel, GYM_WEEKS, GYM_WRITE_TOKEN, gymCellText, gymWeeks, gymLogPayload, gymHistory, gymEntryText, gymRestLabel, gymActiveWeek, gymDaySummary, GYM_GUIDE, gymGuideFor, gymNoteParts, gymRestSeconds, gymClock, gymTimerNext};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -389,6 +389,40 @@ t('gymHeaderParts: δείκτης ΟΔΗΓΙΕΣ → τίτλος', ghp.title ==
 t('gymHeaderParts: δείκτης ΟΔΗΓΙΕΣ → σημείωση χωρίς το πρόθεμα', ghp.note === 'Πρόγραμμα υπερτροφίας.');
 t('gymHeaderParts: παλιός δείκτης ΣΕ ΕΛΛΕΙΜΜΑ ακόμα δουλεύει', m.gymHeaderParts('Ημέρα Α — ΣΤΗΘΟΣ ΣΕ ΕΛΛΕΙΜΜΑ: κράτα. Άσκηση').note === 'ΣΕ ΕΛΛΕΙΜΜΑ: κράτα.');
 t('gymLogPayload: εβδομάδα 12 έγκυρη, 13 όχι', m.gymLogPayload('Α', 'Χ', 12, '80', '') !== null && m.gymLogPayload('Α', 'Χ', 13, '80', '') === null);
+
+// v8.13: οδηγίες εκτέλεσης + χρονόμετρο
+const progNames = {
+  'Πιέσεις με μπάρα σε επικλινή πάγκο (30°)': 'inclineBB', 'Κωπηλατική με μπάρα (γωνία ~45°)': 'bbRow',
+  'Πιέσεις με αλτήρες σε οριζόντιο πάγκο': 'flatDB', 'Κωπηλατική με στήριξη στήθους (μηχάνημα)': 'chestSupRow',
+  'Πεταλούδα σε μηχάνημα (pec deck)': 'pecDeck', 'Εκτάσεις τρικεφάλων με σχοινί (rope pushdown)': 'ropePushdown',
+  'Hack squat (ή βαθύ squat με μπάρα)': 'hack', 'Bulgarian split squat με αλτήρες': 'bulgarian',
+  'Κάμψεις μηριαίων καθιστός (seated leg curl)': 'seatedLegCurl', 'Άρσεις γάμπας όρθιος': 'standCalf',
+  'Κάμψεις δικεφάλων «σφυρί» με αλτήρες (hammer curl)': 'hammer', 'Κοιλιακοί σε τροχαλία (cable crunch)': 'cableCrunch',
+  'Πιέσεις ώμων με αλτήρες, καθιστός': 'dbShoulderPress', 'Πλάγιες άρσεις με αλτήρες': 'lateral',
+  'Οπίσθιοι δελτοειδείς σε μηχάνημα (reverse pec deck)': 'reversePec', 'Κάμψεις δικεφάλων με μπάρα EZ, όρθιος': 'ezCurl',
+  'Εκτάσεις τρικεφάλων υπερκεφαλής σε τροχαλία': 'overheadTri', 'Κάμψεις δικεφάλων σε επικλινή πάγκο (incline DB curl)': 'inclineCurl',
+  'Έλξεις σε μονόζυγο με πρόσθετο βάρος': 'pullup', 'Πιέσεις με αλτήρες σε επικλινή πάγκο (30-45°)': 'inclineDB',
+  'Έλξεις τροχαλίας με ουδέτερη λαβή (lat pulldown)': 'latPulldown', 'Κωπηλατική με έναν αλτήρα (single-arm DB row)': 'sgArmRow',
+  'Διασταυρώσεις σε τροχαλία, από κάτω προς τα πάνω': 'lowHighFly', 'Face pull σε τροχαλία': 'facePull',
+  'Κάμψεις δικεφάλων σε τροχαλία, χέρια πίσω από το σώμα': 'bayesian', 'Hip thrust με μπάρα': 'hipThrust',
+  'Κάμψεις μηριαίων ξαπλωτός (lying leg curl)': 'lyingLegCurl', 'Κάμψεις δικεφάλων σε πάγκο ιερέα (preacher curl)': 'preacher',
+  'Εκτάσεις τρικεφάλων ξαπλωτός (skull crushers)': 'skull', 'Κάμψεις με μπάρα EZ, ανάποδη λαβή (reverse curl)': 'reverseCurl',
+  'Άρσεις γάμπας καθιστός': 'seatedCalf', 'Τροχός κοιλιακών (ab wheel rollout)': 'abWheel', 'Pallof press σε τροχαλία': 'pallof'
+};
+const guideMiss = Object.keys(progNames).filter(n => { const g = m.gymGuideFor(n); return !g || g.id !== progNames[n]; });
+t('gymGuideFor: και οι 33 ασκήσεις του προγράμματος → σωστός οδηγός' + (guideMiss.length ? ' (λάθος: ' + guideMiss.join(' | ') + ')' : ''), guideMiss.length === 0);
+t('gymGuideFor: άγνωστη άσκηση → null', m.gymGuideFor('Κάτι εντελώς άγνωστο') === null && m.gymGuideFor('') === null);
+t('GYM_GUIDE: πλήρη πεδία, μοναδικά id', m.GYM_GUIDE.every(g => g.id && g.k.length && g.en && g.mu && g.st.length >= 3 && g.er.length >= 2) &&
+  new Set(m.GYM_GUIDE.map(g => g.id)).size === m.GYM_GUIDE.length);
+t('gymNoteParts: πρόθεμα ΧΕΡΙΑ', JSON.stringify(m.gymNoteParts('ΧΕΡΙΑ. Από εβδ. 5: 4 σετ.')) === '{"arms":true,"text":"Από εβδ. 5: 4 σετ."}');
+t('gymNoteParts: χωρίς πρόθεμα / κενό', m.gymNoteParts('Έναρξη: 80 kg.').arms === false && m.gymNoteParts(null).text === '');
+t('gymRestSeconds: δευτ./λεπτά/άκυρο/όρια', m.gymRestSeconds('150 δευτ.') === 150 && m.gymRestSeconds('2 λεπτά') === 120 &&
+  m.gymRestSeconds('') === 90 && m.gymRestSeconds('5 δευτ.') === 15 && m.gymRestSeconds('900 δευτ.') === 600);
+t('gymClock', m.gymClock(84) === '1:24' && m.gymClock(0) === '0:00' && m.gymClock(-3) === '0:00' && m.gymClock(600) === '10:00');
+const tex = [{ sets: 2 }, { sets: 1 }];
+t('gymTimerNext: επόμενο σετ → επόμενη άσκηση → τέλος',
+  JSON.stringify(m.gymTimerNext(tex, 0, 1)) === '{"ex":0,"set":2}' && JSON.stringify(m.gymTimerNext(tex, 0, 2)) === '{"ex":1,"set":1}' &&
+  m.gymTimerNext(tex, 1, 1) === null && m.gymTimerNext(tex, 5, 1) === null);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

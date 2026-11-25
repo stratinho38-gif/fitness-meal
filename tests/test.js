@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, ING_DICT, ingNorm, ingSplit, ingStripParens, ingMatch, ingParseQty, ingLineMinor, mergeQty, ingPlan, ingPlanPairs, weekPlan, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel, GYM_WEEKS, GYM_WRITE_TOKEN, gymCellText, gymWeeks, gymLogPayload};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, ING_DICT, ingNorm, ingSplit, ingStripParens, ingMatch, ingParseQty, ingLineMinor, mergeQty, ingPlan, ingPlanPairs, weekPlan, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel, GYM_WEEKS, GYM_WRITE_TOKEN, gymCellText, gymWeeks, gymLogPayload, gymHistory, gymEntryText, gymRestLabel, gymActiveWeek, gymDaySummary};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -354,6 +354,30 @@ t('gymLogPayload: άκυρη εβδομάδα → null', m.gymLogPayload('Α', '
 t('gymLogPayload: άκυρα κιλά → null', m.gymLogPayload('Α', 'Χ', 1, 'abc', '') === null && m.gymLogPayload('Α', 'Χ', 1, '-5', '') === null && m.gymLogPayload('Α', 'Χ', 1, '1000', '') === null);
 t('gymLogPayload: κενό όνομα → null', m.gymLogPayload('Α', '  ', 1, '80', '') === null);
 t('gymLogPayload: reps κόβονται στα 40', m.gymLogPayload('Α', 'Χ', 1, '', 'x'.repeat(100)).reps.length === 40);
+
+// Κάρτες ασκήσεων (v8.10): gymHistory, gymEntryText, gymRestLabel, gymActiveWeek, gymDaySummary
+const gw = { 3: { kg: 80, reps: '6' }, 1: { kg: 80, reps: '' }, 7: { kg: null, reps: '12' }, 5: { kg: 82.5, reps: '8-8-7' } };
+const gh = m.gymHistory(gw, 3);
+t('gymHistory: ταξινόμηση αύξουσα + τελευταίες n', gh.length === 3 && gh[0].week === 3 && gh[1].week === 5 && gh[2].week === 7);
+t('gymHistory: όλες όταν n=0', m.gymHistory(gw, 0).length === 4 && m.gymHistory(gw, 0)[0].week === 1);
+t('gymHistory: κενό/undefined → []', m.gymHistory(undefined, 4).length === 0 && m.gymHistory({}, 4).length === 0);
+t('gymEntryText: κιλά × reps', m.gymEntryText({ kg: 82.5, reps: '8-8-7' }) === '82,5 kg × 8-8-7');
+t('gymEntryText: μόνο κιλά', m.gymEntryText({ kg: 80, reps: '' }) === '80 kg');
+t('gymEntryText: μόνο reps', m.gymEntryText({ kg: null, reps: '12' }) === '12 επαν.');
+t('gymEntryText: τίποτα → κενό', m.gymEntryText(null) === '' && m.gymEntryText({ kg: null, reps: '' }) === '');
+t('gymRestLabel: 150 δευτ. → 2:30', m.gymRestLabel('150 δευτ.') === '2:30');
+t('gymRestLabel: 60 → 1:00, 45 → 0:45', m.gymRestLabel('60 δευτ.') === '1:00' && m.gymRestLabel('45 δευτ.') === '0:45');
+t('gymRestLabel: χωρίς αριθμό μένει ίδιο', m.gymRestLabel('όσο χρειάζεται') === 'όσο χρειάζεται' && m.gymRestLabel('') === '');
+t('gymRestLabel: «2-3 λεπτά» μένει ίδιο', m.gymRestLabel('2-3 λεπτά') === '2-3 λεπτά');
+const gex = [{ sets: 4, weeks: { 1: { kg: 80, reps: '' }, 6: { kg: 80, reps: '6' } } }, { sets: 3, weeks: { 2: { kg: 40, reps: '8' } } }, { sets: 3, weeks: {} }];
+t('gymActiveWeek: έγκυρη προτίμηση κερδίζει', m.gymActiveWeek(gex, '3') === 3);
+t('gymActiveWeek: χωρίς προτίμηση → τελευταία με καταχώρηση', m.gymActiveWeek(gex, null) === 6);
+t('gymActiveWeek: άκυρη προτίμηση αγνοείται', m.gymActiveWeek(gex, '99') === 6 && m.gymActiveWeek(gex, 'abc') === 6);
+t('gymActiveWeek: καμία καταχώρηση → 1', m.gymActiveWeek([{ weeks: {} }], null) === 1 && m.gymActiveWeek([], null) === 1);
+const gs = m.gymDaySummary({ total: 23, exercises: gex }, 6);
+t('gymDaySummary: ασκήσεις/σετ από total/logged', gs.count === 3 && gs.sets === 23 && gs.logged === 1);
+t('gymDaySummary: χωρίς total → άθροισμα σετ', m.gymDaySummary({ total: null, exercises: gex }, 2).sets === 10 && m.gymDaySummary({ total: null, exercises: gex }, 2).logged === 1);
+t('gymDaySummary: κενό μοντέλο', m.gymDaySummary(null, 1).count === 0 && m.gymDaySummary(null, 1).sets === 0);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

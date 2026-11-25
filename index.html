@@ -464,21 +464,42 @@
   #viewGym .gym-note { background: var(--surface-container); border-radius: 16px; padding: 4px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--muted); }
   #viewGym .gym-note summary { cursor: pointer; padding: 8px 0; font-weight: 600; color: var(--text); font-size: 13px; }
   #viewGym .gym-note p { margin: 0 0 10px; line-height: 1.5; white-space: pre-wrap; }
-  #viewGym .ex-card { background: var(--surface-container); border-radius: 16px; padding: 13px 14px; margin-bottom: 10px; box-shadow: var(--elev1); }
-  #viewGym .ex-name { font-size: 14.5px; font-weight: 700; margin-bottom: 7px; }
-  #viewGym .ex-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  #viewGym .ex-chip { font-size: 12.5px; font-weight: 600; background: var(--surface-variant); color: var(--text); border-radius: 8px; padding: 4px 8px; } /* v8.5 */
-  #viewGym .ex-chip.kg { background: var(--primary-container); color: var(--on-primary-container); }
-  #viewGym .ex-notes { font-size: 12px; color: var(--muted); margin-top: 7px; line-height: 1.45; }
+  /* Κάρτες ασκήσεων (v8.10): αρίθμηση, συνταγή «σετ × επαν.», τελευταία καταχώρηση, ιστορικό */
+  #viewGym .gym-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 12px; }
+  #viewGym .gym-stat { background: var(--surface-container); border-radius: 14px; padding: 10px 8px; text-align: center; }
+  #viewGym .gym-stat b { display: block; font-size: 19px; font-weight: 700; line-height: 1.2; color: var(--text); }
+  #viewGym .gym-stat span { font-size: 12px; color: var(--muted); }
+  #viewGym .gym-stat.on { background: var(--primary-container); }
+  #viewGym .gym-stat.on b, #viewGym .gym-stat.on span { color: var(--on-primary-container); }
+  #viewGym .ex-card { background: var(--surface-container); border-radius: 18px; padding: 14px; margin-bottom: 12px; box-shadow: var(--elev1); }
+  #viewGym .ex-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+  #viewGym .ex-num { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-variant); color: var(--text); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  #viewGym .ex-name { flex: 1; font-size: 16px; font-weight: 700; line-height: 1.3; padding-top: 2px; }
+  #viewGym .ex-done { flex: none; font-size: 22px; color: var(--primary); }
+  #viewGym .ex-rx { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  #viewGym .ex-main { font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -.3px; }
+  #viewGym .ex-main .ex-x { font-weight: 400; color: var(--muted); margin: 0 5px; font-size: 20px; }
+  #viewGym .ex-main small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 5px; }
+  #viewGym .ex-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  #viewGym .ex-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  #viewGym .ex-meta .msr { font-size: 16px; color: var(--muted); }
+  #viewGym .ex-last { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--primary-container); color: var(--on-primary-container); border-radius: 12px; padding: 9px 12px; }
+  #viewGym .ex-last .lbl { font-size: 12.5px; font-weight: 600; }
+  #viewGym .ex-last .val { font-size: 16px; font-weight: 700; text-align: right; }
+  #viewGym .ex-last.none { background: var(--surface-variant); color: var(--muted); font-size: 13px; }
+  #viewGym .ex-hist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+  #viewGym .ex-hist span { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 8px; padding: 3px 7px; }
+  #viewGym .ex-notes { display: flex; gap: 6px; font-size: 13px; color: var(--muted); margin-top: 11px; line-height: 1.45; }
+  #viewGym .ex-notes .msr { flex: none; font-size: 16px; margin-top: 1px; }
   #viewGym .gym-total { text-align: center; font-size: 12.5px; color: var(--muted); margin: 12px 0 4px; }
   #viewGym .gym-status { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; }
   #viewGym .gym-status button { display: block; margin: 14px auto 0; font: inherit; cursor: pointer; border-radius: 999px; border: none; background: var(--primary); color: var(--on-primary); padding: 10px 20px; font-weight: 600; }
   #viewGym .gym-link { display: block; text-align: center; margin: 14px 0 4px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
 
   /* ---------- Καταχώρηση κιλών/επαναλήψεων (v8.9) ---------- */
-  #viewGym .ex-log { margin-top: 9px; font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--outline-variant); background: var(--surface); color: var(--primary); padding: 7px 13px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
-  #viewGym .ex-log .msr { font-size: 16px; }
-  #viewGym .ex-log:active { background: var(--surface-variant); }
+  #viewGym .ex-log { margin-top: 12px; width: 100%; min-height: 44px; font: inherit; cursor: pointer; border-radius: 999px; border: none; background: var(--primary); color: var(--on-primary); padding: 10px 16px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  #viewGym .ex-log .msr { font-size: 18px; }
+  #viewGym .ex-log:active { opacity: .85; }
   #gymLogSheet .wk-chips { display: flex; flex-wrap: wrap; gap: 7px; }
   #gymLogSheet .wk-chips button { font: inherit; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--outline-variant); background: var(--surface); color: var(--text); font-weight: 600; font-size: 13.5px; }
   #gymLogSheet .wk-chips button.on { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
@@ -657,7 +678,7 @@
       <div class="hero-top">
         <div>
           <h1>Γυμναστήριο</h1>
-          <div class="subtitle" id="gymSub" style="display:block">Πρόγραμμα από το Google Sheet — μόνο ανάγνωση</div>
+          <div class="subtitle" id="gymSub" style="display:block">Πρόγραμμα από το Google Sheet</div>
         </div>
       </div>
     </div>
@@ -1436,6 +1457,42 @@ function gymDayModel(table) {
   });
   if (!exercises.length) return null;
   return { title: head.title, note: head.note, total: total, exercises: exercises };
+}
+
+// ---- Κάρτες ασκήσεων (v8.10): pure helpers ----
+// Τελευταίες n καταχωρήσεις μιας άσκησης, ταξινομημένες κατά εβδομάδα (αύξουσα).
+function gymHistory(weeks, n) {
+  const out = Object.keys(weeks || {}).map(k => +k).filter(k => k >= 1).sort((a, b) => a - b)
+    .map(k => ({ week: k, kg: weeks[k].kg == null ? null : weeks[k].kg, reps: weeks[k].reps || '' }));
+  return n > 0 ? out.slice(-n) : out;
+}
+// Κείμενο καταχώρησης: «80 kg × 7», «80 kg» ή «12 επαν.»
+function gymEntryText(e) {
+  if (!e) return '';
+  if (e.kg != null) return gymFormatKg(e.kg) + ' kg' + (e.reps ? ' × ' + e.reps : '');
+  return e.reps ? e.reps + ' επαν.' : '';
+}
+// «150 δευτ.» → «2:30» (λεπτά:δευτερόλεπτα)· ό,τι δεν έχει αριθμό μένει όπως είναι.
+function gymRestLabel(rest) {
+  const t = String(rest || '').trim();
+  const m = t.match(/^(\d{1,4})\s*(δευτ|sec|s|″|"|$)/i);
+  if (!m) return t;
+  const n = +m[1];
+  return Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
+}
+// Τρέχουσα εβδομάδα: η επιλογή του χρήστη αν είναι έγκυρη, αλλιώς η τελευταία με καταχώρηση, αλλιώς 1.
+function gymActiveWeek(exercises, pref) {
+  const p = Math.floor(Number(pref));
+  if (p >= 1 && p <= GYM_WEEKS) return p;
+  let mx = 0;
+  (exercises || []).forEach(x => Object.keys(x.weeks || {}).forEach(k => { if (+k > mx && +k <= GYM_WEEKS) mx = +k; }));
+  return mx || 1;
+}
+// Σύνοψη ημέρας: ασκήσεις, σετ, πόσες έχουν καταχώρηση στην εβδομάδα week.
+function gymDaySummary(model, week) {
+  const ex = (model && model.exercises) || [];
+  const sets = model && model.total != null ? model.total : ex.reduce((a, x) => a + (x.sets || 0), 0);
+  return { count: ex.length, sets: sets, logged: ex.filter(x => x.weeks && x.weeks[week]).length };
 }
 
 /* ---------- Room ---------- */
@@ -3213,30 +3270,78 @@ function gymRender(d, model, ts) {
     det.appendChild(gymEl('p', null, model.note));
     body.appendChild(det);
   }
-  model.exercises.forEach(x => {
+  const week = gymActiveWeek(model.exercises, lsGet('sm-gym-week'));
+  const sum = gymDaySummary(model, week);
+  const stats = gymEl('div', 'gym-stats');
+  const stat = (big, small, on) => {
+    const t = gymEl('div', 'gym-stat' + (on ? ' on' : ''));
+    t.appendChild(gymEl('b', null, big));
+    t.appendChild(gymEl('span', null, small));
+    stats.appendChild(t);
+  };
+  stat(String(sum.count), 'ασκήσεις');
+  stat(String(sum.sets), 'σετ');
+  stat(sum.logged + '/' + sum.count, 'εβδ. ' + week, sum.count > 0 && sum.logged === sum.count);
+  body.appendChild(stats);
+  const icon = name => { const i = gymEl('span', 'msr', name); i.setAttribute('aria-hidden', 'true'); return i; };
+  model.exercises.forEach((x, idx) => {
     const card = gymEl('div', 'ex-card');
-    card.appendChild(gymEl('div', 'ex-name', x.name));
-    const chips = gymEl('div', 'ex-chips');
-    chips.appendChild(gymEl('span', 'ex-chip', x.sets + ' σετ'));
-    if (x.reps) chips.appendChild(gymEl('span', 'ex-chip', x.reps + ' επαν.'));
-    if (x.rir) chips.appendChild(gymEl('span', 'ex-chip', 'RIR ' + x.rir));
-    if (x.rest) chips.appendChild(gymEl('span', 'ex-chip', 'Ξεκ. ' + x.rest));
-    if (x.last) {
-      const lw = x.weeks && x.last.week ? x.weeks[x.last.week] : null;
-      chips.appendChild(gymEl('span', 'ex-chip kg', (x.last.week ? 'Εβδ ' + x.last.week + ': ' : '') + gymFormatKg(x.last.kg) + ' kg' + (lw && lw.reps ? ' × ' + lw.reps : '')));
+    const head = gymEl('div', 'ex-head');
+    head.appendChild(gymEl('span', 'ex-num', String(idx + 1)));
+    head.appendChild(gymEl('div', 'ex-name', x.name));
+    if (x.weeks && x.weeks[week]) {
+      const ok = gymEl('span', 'msr ex-done', 'check_circle');
+      ok.setAttribute('role', 'img');
+      ok.setAttribute('aria-label', 'Καταχωρήθηκε για την εβδομάδα ' + week);
+      head.appendChild(ok);
     }
-    card.appendChild(chips);
-    if (x.notes) card.appendChild(gymEl('div', 'ex-notes', x.notes));
+    card.appendChild(head);
+    const rx = gymEl('div', 'ex-rx');
+    const main = gymEl('div', 'ex-main');
+    main.appendChild(document.createTextNode(String(x.sets)));
+    main.appendChild(gymEl('span', 'ex-x', '×'));
+    main.appendChild(document.createTextNode(x.reps || '—'));
+    main.appendChild(gymEl('small', null, 'σετ × επαναλήψεις'));
+    rx.appendChild(main);
+    const meta = gymEl('div', 'ex-meta');
+    if (x.rir) meta.appendChild(gymEl('span', null, 'RIR ' + x.rir));
+    if (x.rest) {
+      const r = gymEl('span', null, null);
+      r.appendChild(icon('timer'));
+      r.appendChild(document.createTextNode(gymRestLabel(x.rest)));
+      r.setAttribute('aria-label', 'Ξεκούραση ' + x.rest);
+      meta.appendChild(r);
+    }
+    rx.appendChild(meta);
+    card.appendChild(rx);
+    const hist = gymHistory(x.weeks, 4);
+    if (hist.length) {
+      const lastE = hist[hist.length - 1];
+      const last = gymEl('div', 'ex-last');
+      last.appendChild(gymEl('span', 'lbl', 'Τελευταία · Εβδ ' + lastE.week));
+      last.appendChild(gymEl('span', 'val', gymEntryText(lastE)));
+      card.appendChild(last);
+      if (hist.length > 1) {
+        const hb = gymEl('div', 'ex-hist');
+        hist.slice(0, -1).forEach(e => hb.appendChild(gymEl('span', null, 'Εβδ ' + e.week + ' · ' + gymEntryText(e))));
+        card.appendChild(hb);
+      }
+    } else {
+      card.appendChild(gymEl('div', 'ex-last none', 'Καμία καταχώρηση ακόμα'));
+    }
+    if (x.notes) {
+      const n = gymEl('div', 'ex-notes');
+      n.appendChild(icon('info'));
+      n.appendChild(gymEl('span', null, x.notes));
+      card.appendChild(n);
+    }
     const logBtn = gymEl('button', 'ex-log', null);
-    const lIc = gymEl('span', 'msr', 'edit');
-    lIc.setAttribute('aria-hidden', 'true');
-    logBtn.appendChild(lIc);
+    logBtn.appendChild(icon('edit'));
     logBtn.appendChild(document.createTextNode('Καταχώρηση'));
     logBtn.addEventListener('click', () => openGymLogSheet(x));
     card.appendChild(logBtn);
     body.appendChild(card);
   });
-  if (model.total) body.appendChild(gymEl('div', 'gym-total', 'Σύνολο: ' + model.total + ' σετ προπόνησης'));
   const a = gymEl('a', 'gym-link', 'Άνοιγμα στο Google Sheets ↗');
   a.href = 'https://docs.google.com/spreadsheets/d/' + GYM_SHEET_ID + '/edit';
   a.target = '_blank';

@@ -498,8 +498,8 @@
   #viewGym .gym-link { display: block; text-align: center; margin: 14px 0 4px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
 
   /* ---------- Καταχώρηση κιλών/επαναλήψεων (v8.9) ---------- */
-  #viewGym .ex-log { flex: none; min-height: 40px; font: inherit; cursor: pointer; border-radius: 999px; border: none; background: transparent; color: var(--primary); padding: 8px 10px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
-  #viewGym .ex-log .msr { font-size: 16px; }
+  #viewGym .ex-log { flex: none; width: 44px; height: 44px; padding: 0; cursor: pointer; border-radius: 50%; border: 1px solid var(--outline-variant); background: transparent; color: var(--primary); display: inline-flex; align-items: center; justify-content: center; }
+  #viewGym .ex-log .msr { font-size: 24px; }
   #viewGym .ex-log:active { background: var(--surface-variant); }
   #gymLogSheet .wk-chips { display: flex; flex-wrap: wrap; gap: 7px; }
   #gymLogSheet .wk-chips button { font: inherit; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--outline-variant); background: var(--surface); color: var(--text); font-weight: 600; font-size: 13.5px; }
@@ -3407,8 +3407,9 @@ function gymRender(d, model, ts) {
       foot.appendChild(gymEl('div', 'ex-last none', 'Καμία καταχώρηση ακόμα'));
     }
     const logBtn = gymEl('button', 'ex-log', null);
-    logBtn.appendChild(icon('edit'));
-    logBtn.appendChild(document.createTextNode('Καταχώρηση'));
+    logBtn.appendChild(icon('add'));
+    logBtn.setAttribute('aria-label', 'Καταχώρηση: ' + x.name);
+    logBtn.title = 'Καταχώρηση';
     logBtn.addEventListener('click', () => openGymLogSheet(x));
     foot.appendChild(logBtn);
     card.appendChild(foot);

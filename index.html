@@ -476,20 +476,21 @@
   #viewGym .ex-num { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-variant); color: var(--text); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
   #viewGym .ex-name { flex: 1; font-size: 16px; font-weight: 700; line-height: 1.3; padding-top: 2px; }
   #viewGym .ex-done { flex: none; font-size: 22px; color: var(--primary); }
-  #viewGym .ex-rx { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  #viewGym .ex-rx { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
   #viewGym .ex-main { font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -.3px; }
   #viewGym .ex-main .ex-x { font-weight: 400; color: var(--muted); margin: 0 5px; font-size: 20px; }
   #viewGym .ex-main small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 5px; }
   #viewGym .ex-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
   #viewGym .ex-meta span { display: inline-flex; align-items: center; gap: 4px; }
   #viewGym .ex-meta .msr { font-size: 16px; color: var(--muted); }
-  #viewGym .ex-last { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--primary-container); color: var(--on-primary-container); border-radius: 12px; padding: 9px 12px; }
-  #viewGym .ex-last .lbl { font-size: 12.5px; font-weight: 600; }
-  #viewGym .ex-last .val { font-size: 16px; font-weight: 700; text-align: right; }
-  #viewGym .ex-last.none { background: var(--surface-variant); color: var(--muted); font-size: 13px; }
-  #viewGym .ex-hist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+  #viewGym .ex-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--outline-variant); }
+  #viewGym .ex-last { min-width: 0; }
+  #viewGym .ex-last .lbl { display: block; font-size: 12px; color: var(--muted); }
+  #viewGym .ex-last .val { display: block; font-size: 15px; font-weight: 700; color: var(--text); }
+  #viewGym .ex-last.none { color: var(--muted); font-size: 13px; }
+  #viewGym .ex-hist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   #viewGym .ex-hist span { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 8px; padding: 3px 7px; }
-  #viewGym .ex-notes { display: flex; gap: 6px; font-size: 13px; color: var(--muted); margin-top: 11px; line-height: 1.45; }
+  #viewGym .ex-notes { display: flex; gap: 6px; font-size: 13px; color: var(--muted); line-height: 1.45; }
   #viewGym .ex-notes .msr { flex: none; font-size: 16px; margin-top: 1px; }
   #viewGym .gym-total { text-align: center; font-size: 12.5px; color: var(--muted); margin: 12px 0 4px; }
   #viewGym .gym-status { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; }
@@ -497,9 +498,9 @@
   #viewGym .gym-link { display: block; text-align: center; margin: 14px 0 4px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
 
   /* ---------- Καταχώρηση κιλών/επαναλήψεων (v8.9) ---------- */
-  #viewGym .ex-log { margin-top: 12px; width: 100%; min-height: 44px; font: inherit; cursor: pointer; border-radius: 999px; border: none; background: var(--primary); color: var(--on-primary); padding: 10px 16px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; }
-  #viewGym .ex-log .msr { font-size: 18px; }
-  #viewGym .ex-log:active { opacity: .85; }
+  #viewGym .ex-log { flex: none; min-height: 40px; font: inherit; cursor: pointer; border-radius: 999px; border: none; background: transparent; color: var(--primary); padding: 8px 10px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+  #viewGym .ex-log .msr { font-size: 16px; }
+  #viewGym .ex-log:active { background: var(--surface-variant); }
   #gymLogSheet .wk-chips { display: flex; flex-wrap: wrap; gap: 7px; }
   #gymLogSheet .wk-chips button { font: inherit; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--outline-variant); background: var(--surface); color: var(--text); font-weight: 600; font-size: 13.5px; }
   #gymLogSheet .wk-chips button.on { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
@@ -541,20 +542,20 @@
   #viewMeals .g-bar { flex: 1; height: 8px; background: var(--surface-variant); border-radius: 99px; overflow: hidden; }
   #viewMeals .g-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; transition: width .3s; }
   #viewMeals .g-pct { font-size: 12px; color: var(--muted); min-width: 78px; text-align: right; }
-  #viewMeals .day { background: var(--surface-container); border-radius: 16px; margin-bottom: 10px; overflow: hidden; box-shadow: var(--elev1); }
-  #viewMeals .day-head { padding: 10px 14px; font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--surface-variant); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-  #viewMeals .day-kcal { font-weight: 400; font-size: 12.5px; color: var(--muted); } /* v8.5 */
-  #viewMeals .slot { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
-  #viewMeals .slot + .slot { border-top: 1px dashed var(--surface-variant); }
-  #viewMeals .slot input[type=checkbox] { width: 19px; height: 19px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
-  #viewMeals .tag { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 99px; flex-shrink: 0; min-width: 76px; text-align: center; } /* v8.5 */
-  #viewMeals .tag.lunch { background: var(--lunch-soft); color: var(--lunch); }
-  #viewMeals .tag.dinner { background: var(--dinner-soft); color: var(--dinner); }
+  #viewMeals .day { background: var(--surface-container); border-radius: 18px; margin-bottom: 12px; overflow: hidden; box-shadow: var(--elev1); }
+  #viewMeals .day-head { padding: 13px 14px 9px; font-weight: 700; font-size: 16px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  #viewMeals .day-kcal { font-weight: 600; font-size: 12.5px; color: var(--muted); }
+  #viewMeals .slot { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--outline-variant); }
+  #viewMeals .slot input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+  #viewMeals .tag { display: block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 1px; }
+  #viewMeals .tag.lunch { color: var(--lunch); }
+  #viewMeals .tag.dinner { color: var(--dinner); }
   #viewMeals .meal { flex: 1; min-width: 0; cursor: pointer; }
-  #viewMeals .meal-name { font-size: 14px; font-weight: 600; }
-  #viewMeals .meal-meta { font-size: 12.5px; color: var(--muted); margin-top: 1px; display: flex; align-items: center; gap: 3px; } /* v8.5 */
+  #viewMeals .meal-name { font-size: 15px; font-weight: 700; line-height: 1.3; }
+  #viewMeals .meal-meta { font-size: 12.5px; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+  #viewMeals .meal-meta b { color: var(--text); font-weight: 600; }
   #viewMeals .slot.done .meal-name { text-decoration: line-through; color: var(--muted); font-weight: 400; }
-  #viewMeals .g-swap { border: none; background: var(--surface-variant); color: var(--muted); border-radius: 999px; width: 30px; height: 30px; font-size: 17px; cursor: pointer; flex-shrink: 0; position: relative; }
+  #viewMeals .g-swap { border: none; background: transparent; color: var(--muted); border-radius: 999px; width: 36px; height: 36px; font-size: 19px; cursor: pointer; flex-shrink: 0; position: relative; }
   #viewMeals .g-foot { margin-top: 14px; font-size: 12px; color: var(--warn-text); line-height: 1.5; background: var(--warn-bg); border-radius: 16px; padding: 12px 16px; }
   .g-overlay { position: fixed; inset: 0; background: var(--scrim); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
   .g-overlay.open { display: flex; }
@@ -1361,7 +1362,7 @@ function dietItems(custom) {
 const GYM_SHEET_ID = '1VPNVq0KLeHfqGDNjyntgXQPbLXtAP4qN462kl20Hmog';
 const GYM_DAYS = ['Α', 'Β', 'Γ', 'Δ', 'Ε'];
 /* Καταχώρηση στο Sheet (v8.9): Apps Script Web App — βλ. docs/odigies-gym-sync.md */
-const GYM_WEEKS = 8;
+const GYM_WEEKS = 12;
 const GYM_WRITE_URL = 'https://script.google.com/macros/s/AKfycbzX2ASguApe4lE8P2Zq7crQHYNd9nrunyVHLvZ5u5icG-QwqDNCvj_XVG5L-loB3fRKvw/exec'; // Apps Script Web App (deployed 25/11/2026)
 const GYM_WRITE_TOKEN = 'lp-gym-7Qk4mR2vXw9s';
 
@@ -1377,9 +1378,9 @@ function gymParseGviz(text) {
 // Ο merged header του φύλλου: "Ημέρα Α — ΣΤΗΘΟΣ… ΣΕ ΕΛΛΕΙΜΜΑ: σημείωση… Άσκηση"
 function gymHeaderParts(label) {
   const s = String(label || '').trim().replace(/\s*Άσκηση$/, '');
-  const i = s.indexOf('ΣΕ ΕΛΛΕΙΜΜΑ');
-  if (i === -1) return { title: s, note: '' };
-  return { title: s.slice(0, i).trim(), note: s.slice(i).trim() };
+  const m = s.match(/\s(ΣΕ ΕΛΛΕΙΜΜΑ|ΟΔΗΓΙΕΣ:)/); // v8.11: και ο νέος δείκτης «ΟΔΗΓΙΕΣ:»
+  if (!m) return { title: s, note: '' };
+  return { title: s.slice(0, m.index).trim(), note: s.slice(m.index).trim().replace(/^ΟΔΗΓΙΕΣ:\s*/, '') };
 }
 // Τελευταία καταχωρημένα κιλά: στήλες «Εβδ N — Κιλά» (index 6, 8, 10, …)
 function gymLastKg(row, cols) {
@@ -3023,7 +3024,7 @@ function gRender() {
     const kcal = L.kcal + B.kcal, p = L.p + B.p;
     return `
     <div class="day">
-      <div class="day-head"><span>${d.day}</span><span class="day-kcal">~${kcal} kcal · ${p}γρ πρωτ. (μεσημέρι+βράδυ)</span></div>
+      <div class="day-head"><span>${d.day}</span><span class="day-kcal">~${kcal} kcal · ${p}γρ πρωτ.</span></div>
       ${gSlot(li, "lunch", "Μεσημέρι", L)}
       ${gSlot(bi, "dinner", "Βράδυ", B)}
     </div>`;
@@ -3037,10 +3038,10 @@ function gSlot(i, cls, label, r) {
   return `
     <div class="slot ${gState.done[i] ? "done" : ""}">
       <input type="checkbox" ${gState.done[i] ? "checked" : ""} onchange="gToggle(${i})">
-      <span class="tag ${cls}">${label}</span>
       <div class="meal" onclick="gOpenModal('${gState.picks[i]}')">
+        <span class="tag ${cls}">${label}</span>
         <div class="meal-name">${r.n}</div>
-        <div class="meal-meta"><span class="msr tiny" aria-hidden="true">schedule</span>${r.t} · ${r.kcal} kcal · ${r.p}γρ πρωτεΐνη</div>
+        <div class="meal-meta"><span class="msr tiny" aria-hidden="true">schedule</span>${r.t} · <b>${r.kcal}</b> kcal · <b>${r.p}γρ</b> πρωτεΐνη</div>
       </div>
       <button class="g-swap msr" title="Άλλη συνταγή ίδιας κατηγορίας" aria-label="Άλλη συνταγή ίδιας κατηγορίας" onclick="gSwap(${i})">autorenew</button>
     </div>`;
@@ -3314,32 +3315,34 @@ function gymRender(d, model, ts) {
     }
     rx.appendChild(meta);
     card.appendChild(rx);
-    const hist = gymHistory(x.weeks, 4);
-    if (hist.length) {
-      const lastE = hist[hist.length - 1];
-      const last = gymEl('div', 'ex-last');
-      last.appendChild(gymEl('span', 'lbl', 'Τελευταία · Εβδ ' + lastE.week));
-      last.appendChild(gymEl('span', 'val', gymEntryText(lastE)));
-      card.appendChild(last);
-      if (hist.length > 1) {
-        const hb = gymEl('div', 'ex-hist');
-        hist.slice(0, -1).forEach(e => hb.appendChild(gymEl('span', null, 'Εβδ ' + e.week + ' · ' + gymEntryText(e))));
-        card.appendChild(hb);
-      }
-    } else {
-      card.appendChild(gymEl('div', 'ex-last none', 'Καμία καταχώρηση ακόμα'));
-    }
     if (x.notes) {
       const n = gymEl('div', 'ex-notes');
       n.appendChild(icon('info'));
       n.appendChild(gymEl('span', null, x.notes));
       card.appendChild(n);
     }
+    const hist = gymHistory(x.weeks, 4);
+    const foot = gymEl('div', 'ex-foot');
+    if (hist.length) {
+      const lastE = hist[hist.length - 1];
+      const last = gymEl('div', 'ex-last');
+      last.appendChild(gymEl('span', 'lbl', 'Τελευταία · Εβδ ' + lastE.week));
+      last.appendChild(gymEl('span', 'val', gymEntryText(lastE)));
+      foot.appendChild(last);
+    } else {
+      foot.appendChild(gymEl('div', 'ex-last none', 'Καμία καταχώρηση ακόμα'));
+    }
     const logBtn = gymEl('button', 'ex-log', null);
     logBtn.appendChild(icon('edit'));
     logBtn.appendChild(document.createTextNode('Καταχώρηση'));
     logBtn.addEventListener('click', () => openGymLogSheet(x));
-    card.appendChild(logBtn);
+    foot.appendChild(logBtn);
+    card.appendChild(foot);
+    if (hist.length > 1) {
+      const hb = gymEl('div', 'ex-hist');
+      hist.slice(0, -1).forEach(e => hb.appendChild(gymEl('span', null, 'Εβδ ' + e.week + ' · ' + gymEntryText(e))));
+      card.appendChild(hb);
+    }
     body.appendChild(card);
   });
   const a = gymEl('a', 'gym-link', 'Άνοιγμα στο Google Sheets ↗');

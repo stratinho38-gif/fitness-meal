@@ -379,5 +379,13 @@ t('gymDaySummary: ασκήσεις/σετ από total/logged', gs.count === 3 &
 t('gymDaySummary: χωρίς total → άθροισμα σετ', m.gymDaySummary({ total: null, exercises: gex }, 2).sets === 10 && m.gymDaySummary({ total: null, exercises: gex }, 2).logged === 1);
 t('gymDaySummary: κενό μοντέλο', m.gymDaySummary(null, 1).count === 0 && m.gymDaySummary(null, 1).sets === 0);
 
+// v8.11: 12 εβδομάδες + νέος δείκτης σημείωσης «ΟΔΗΓΙΕΣ:»
+t('GYM_WEEKS = 12', m.GYM_WEEKS === 12);
+const ghp = m.gymHeaderParts('Ημέρα Γ — ΩΜΟΙ + ΧΕΡΙΑ ΟΔΗΓΙΕΣ: Πρόγραμμα υπερτροφίας. Άσκηση');
+t('gymHeaderParts: δείκτης ΟΔΗΓΙΕΣ → τίτλος', ghp.title === 'Ημέρα Γ — ΩΜΟΙ + ΧΕΡΙΑ');
+t('gymHeaderParts: δείκτης ΟΔΗΓΙΕΣ → σημείωση χωρίς το πρόθεμα', ghp.note === 'Πρόγραμμα υπερτροφίας.');
+t('gymHeaderParts: παλιός δείκτης ΣΕ ΕΛΛΕΙΜΜΑ ακόμα δουλεύει', m.gymHeaderParts('Ημέρα Α — ΣΤΗΘΟΣ ΣΕ ΕΛΛΕΙΜΜΑ: κράτα. Άσκηση').note === 'ΣΕ ΕΛΛΕΙΜΜΑ: κράτα.');
+t('gymLogPayload: εβδομάδα 12 έγκυρη, 13 όχι', m.gymLogPayload('Α', 'Χ', 12, '80', '') !== null && m.gymLogPayload('Α', 'Χ', 13, '80', '') === null);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

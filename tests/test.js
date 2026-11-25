@@ -123,7 +123,7 @@ t('ingMatch: γλυκοπατάτα ≠ πατάτα', m.ingMatch('2 γλυκο�
 t('ingMatch: χυμός λεμονιού → Λεμόνια (minor)', m.ingMatch('Χυμός 1 λεμονιού').n === 'Λεμόνια' && m.ingMatch('Χυμός 1 λεμονιού').m === true);
 t('ingMatch: παρένθεση δεν επηρεάζει', m.ingMatch('1 αυγό + χυμός λεμονιού (αυγολέμονο)'.split('+')[1]).n === 'Λεμόνια');
 t('ingMatch: άγνωστο → null', m.ingMatch('κάτι εντελώς άγνωστο') === null);
-t('ingMatch: κάλυψη — όλα τα μέρη των 150 συνταγών', (() => {
+t('ingMatch: κάλυψη — όλα τα μέρη των 165 συνταγών', (() => {
   const gS = script.indexOf('const MEALS ='), gE = script.indexOf('function gSwap');
   const g = new Function('lsGet', 'lsSet', script.slice(gS, gE) + ';return {MEALS};')(() => null, () => {});
   return Object.values(g.MEALS).every(r => r.ing.every(line => m.ingSplit(line).every(p => m.ingMatch(p) !== null)));
@@ -271,9 +271,12 @@ const gFactory = new Function('lsGet', 'lsSet', script.slice(gStart, gEnd) +
 const g = gFactory(() => null, () => {});
 
 const keys = Object.keys(g.MEALS);
-t('MEALS = 150 συνταγές', keys.length === 150);
+t('MEALS = 165 συνταγές (150 προγράμματος + 15 Ελένη)', keys.length === 165);
 // v8: 15 συνταγές σε κάθε κατηγορία
-t('15 συνταγές ανά κατηγορία', Object.values(g.mealsByCat).every(a => a.length === 15) && Object.keys(g.mealsByCat).length === 10);
+t('15 συνταγές ανά κατηγορία', Object.values(g.mealsByCat).every(a => a.length === 15) && Object.keys(g.mealsByCat).length === 11);
+t('Ελένη: 15 συνταγές, καμία στο εβδομαδιαίο πρόγραμμα', g.mealsByCat.eleni.length === 15 && g.MEAL_TEMPLATE.every(d => d.lunch !== 'eleni' && d.dinner !== 'eleni'));
+t('Ελένη: χωρίς αυγολέμονο/ωμά στα υλικά', g.mealsByCat.eleni.every(k => !/αυγολέμονο|ωμ[όά] /i.test(g.MEALS[k].ing.join(' '))));
+t('buildAiPrompt: εκδοχή εγκυμοσύνης για κατηγορία eleni', m.buildAiPrompt(g.MEALS.elFakes).includes('έγκυος') && !m.buildAiPrompt(g.MEALS.elFakes).includes('cut'));
 t('MEALS πλήρη πεδία', keys.every(k => {
   const r = g.MEALS[k];
   return typeof r.n === 'string' && r.n && typeof r.cat === 'string' &&

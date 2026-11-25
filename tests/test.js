@@ -16,7 +16,7 @@ const logic = script
   .replace(/firebase\.initializeApp[\s\S]*?const db = firebase\.database\(\);/, '');
 
 const factory = new Function(logic +
-  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, ING_DICT, ingNorm, ingSplit, ingStripParens, ingMatch, ingParseQty, ingLineMinor, mergeQty, ingPlan, ingPlanPairs, weekPlan, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel, GYM_WEEKS, GYM_WRITE_TOKEN, gymCellText, gymWeeks, gymLogPayload, gymHistory, gymEntryText, gymRestLabel, gymActiveWeek, gymDaySummary, GYM_GUIDE, gymGuideFor, gymNoteParts, gymRestSeconds, gymClock, gymTimerNext};');
+  ';return {LIMITS, clampQty, cleanText, unitStep, formatQty, buildAiPrompt, themeTokens, nextScheme, resolveDark, CATEGORIES, DIET, PALETTE, CAT_ICON, dietDefaults, dietItems, ING_DICT, ingNorm, ingSplit, ingStripParens, ingMatch, ingParseQty, ingLineMinor, mergeQty, ingPlan, ingPlanPairs, weekPlan, itemPayload, itemSnapshot, validRoomCode, GYM_DAYS, GYM_SHEET_ID, gymParseGviz, gymHeaderParts, gymLastKg, gymFormatKg, gymDayModel, GYM_WEEKS, GYM_WRITE_TOKEN, gymCellText, gymWeeks, gymLogPayload, gymHistory, gymEntryText, gymRestLabel, gymActiveWeek, gymDaySummary, GYM_GUIDE, gymGuideFor, gymNoteParts, gymRestSeconds, gymClock, gymTimerNext, FIG_ANIM, FIG_FOR, fig3SVG, fig3Joints, figLerp, figPhase, gymSetsSummary, gymSuggestWeek};');
 const m = factory();
 
 let pass = 0, fail = 0;
@@ -423,6 +423,22 @@ const tex = [{ sets: 2 }, { sets: 1 }];
 t('gymTimerNext: επόμενο σετ → επόμενη άσκηση → τέλος',
   JSON.stringify(m.gymTimerNext(tex, 0, 1)) === '{"ex":0,"set":2}' && JSON.stringify(m.gymTimerNext(tex, 0, 2)) === '{"ex":1,"set":1}' &&
   m.gymTimerNext(tex, 1, 1) === null && m.gymTimerNext(tex, 5, 1) === null);
+
+// v8.14: κινούμενη φιγούρα + mode προπόνησης
+t('FIG_FOR: κάθε οδηγός έχει υπαρκτή κίνηση', m.GYM_GUIDE.every(g => m.FIG_ANIM[m.FIG_FOR[g.id]]));
+t('fig3SVG: όλες οι κινήσεις σε t=0/0.5/1 και 3 γωνίες χωρίς NaN', Object.keys(m.FIG_ANIM).every(id => [0, 0.5, 1].every(tt => [-90, 0, 120].every(y => { const sv = m.fig3SVG(id, tt, y); return sv.length > 300 && !/NaN|undefined|Infinity/.test(sv); }))));
+t('fig3SVG: άγνωστη κίνηση → κενό', m.fig3SVG('nope', 0, 0) === '');
+t('fig3Joints: όρθιος πατάει στο έδαφος (Y=0)', (() => { const j = m.fig3Joints(m.FIG_ANIM.curl.a); return Math.abs(j.legs[0][2][1]) < 0.5 && Math.abs(j.legs[1][2][1]) < 0.5; })());
+t('fig3Joints: ank κρατάει το πόδι σταθερό στο squat', (() => { const j = m.fig3Joints(m.figLerp(m.FIG_ANIM.squat.a, m.FIG_ANIM.squat.b, 0.7)); return Math.abs(j.legs[0][2][0] - 4) < 0.01 && Math.abs(j.legs[0][2][1]) < 0.01; })());
+t('fig3Joints: μπροστινή όψη, τα χέρια συμμετρικά', (() => { const j = m.fig3Joints(m.FIG_ANIM.lateral.b); return Math.abs(j.arms[0][2][2] + j.arms[1][2][2]) < 0.01 && Math.abs(j.arms[0][2][1] - j.arms[1][2][1]) < 0.01; })());
+t('figPhase: 0 στην αρχή, 1 στο κράτημα', m.figPhase(0) === 0 && m.figPhase(1200) === 1 && m.figPhase(2700) === 0);
+t('gymSetsSummary: βαρύτερο σετ + «10/9/8»', JSON.stringify(m.gymSetsSummary([{ kg: 40, reps: '10' }, { kg: 42.5, reps: '9' }, { kg: 40, reps: '8' }])) === '{"kg":42.5,"reps":"10/9/8"}');
+t('gymSetsSummary: κενά/μόνο επαναλήψεις', m.gymSetsSummary([]) === null && m.gymSetsSummary([null, { kg: null, reps: '' }]) === null &&
+  JSON.stringify(m.gymSetsSummary([{ kg: null, reps: '12' }, undefined, { kg: null, reps: '10' }])) === '{"kg":null,"reps":"12/10"}');
+const swM = { total: 2, exercises: [{ sets: 1, weeks: { 3: { kg: 1, reps: '' } } }, { sets: 1, weeks: { 3: { kg: 1, reps: '' } } }] };
+t('gymSuggestWeek: πλήρης εβδομάδα → επόμενη', m.gymSuggestWeek(swM, null) === 4);
+t('gymSuggestWeek: μισή εβδομάδα → ίδια', m.gymSuggestWeek({ total: 2, exercises: [{ sets: 1, weeks: { 3: { kg: 1, reps: '' } } }, { sets: 1, weeks: {} }] }, null) === 3);
+t('gymSuggestWeek: εβδ. 12 πλήρης → μένει 12', m.gymSuggestWeek({ total: 1, exercises: [{ sets: 1, weeks: { 12: { kg: 1, reps: '' } } }] }, null) === 12);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

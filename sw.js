@@ -3,7 +3,7 @@
    Same-origin assets: cache-first. Cross-origin (Firebase, Google Fonts): ανέπαφα. */
 'use strict';
 
-const CACHE = 'lista-v8.9.0';
+const CACHE = 'lista-v8.9.1';
 const ASSETS = [
   './',
   './index.html',
